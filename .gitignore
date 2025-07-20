@@ -1,0 +1,38 @@
+# --- Node Modules ---
+node_modules/
+
+# --- Build Output ---
+dist/
+.vite/
+.cache/
+
+# --- Logs ---
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# --- Environment Files ---
+.env
+.env.*.local
+
+# --- Editor Configs ---
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# --- macOS System Files ---
+.DS_Store
+
+# --- Testing ---
+coverage/
+
+# --- TypeScript build info ---
+*.tsbuildinfo
+
+# --- Optional Git keep ---
+!.gitkeep
