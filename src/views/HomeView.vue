@@ -1,9 +1,14 @@
+<!-- 홈 페이지 -->
+<template>
+  <div class="home-view">
+    <!-- TODO: 홈 페이지 구현 -->
+  </div>
+</template>
+
 <script setup>
-import TheWelcome from '../components/TheWelcome.vue'
+// TODO: 홈 페이지 로직 구현
 </script>
 
-<template>
-  <main>
-    <TheWelcome />
-  </main>
-</template>
+<style scoped>
+/* TODO: 홈 페이지 스타일 구현 */
+</style>
