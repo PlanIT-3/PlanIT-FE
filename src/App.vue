@@ -3,7 +3,9 @@
   <div class="min-h-screen bg-gray-100 flex items-center justify-center">
     <div id="app" class="w-[393px] h-[852px] bg-white shadow-md overflow-hidden relative">
       <!-- TODO: 앱 레이아웃 구현 -->
-      <RouterView></RouterView>
+
+      <router-view />
+     
     </div>
   </div>
 </template>
