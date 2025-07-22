@@ -2,6 +2,9 @@ import { createRouter, createWebHistory } from "vue-router";
 import HomeView from "../views/HomeView.vue";
 import InvestmentSurveyView from "../views/onBoarding/InvestmentSurveyView.vue";
 import InvestmentSurveyResult from "../views/onBoarding/InvestmentSurveyResult.vue";
+import BankSelectView from "../views/onBoarding/BankSelectView.vue";
+import BankLoginView from "../views/onBoarding/BankLoginView.vue";
+import BankLinkingSuccessView from "../views/onBoarding/BankLinkingSuccessView.vue";
 import BankSelectView from "../views/onBoarding/bankSelectView.vue";
 import BankLoginView from "../views/onBoarding/bankLoginView.vue";
 import RecommendView from "../views/recommendation/RecommendView.vue";
@@ -15,12 +18,12 @@ const router = createRouter({
       component: HomeView,
     },
     {
-      path: "/onBoarding/investment-survey",
+      path: "/investment-survey",
       name: "InvestmentSurvey",
       component: InvestmentSurveyView,
     },
     {
-      path: "/onBoarding/investment-survey/result",
+      path: "/investment-survey/result",
       name: "InvestmentSurveyResult",
       component: InvestmentSurveyResult,
     },
@@ -33,6 +36,11 @@ const router = createRouter({
       path: "/bank-login",
       name: "bankLogin",
       component: BankLoginView,
+    },
+    {
+      path: "/bank-linking-success",
+      name: "bankLinkingSuccess",
+      component: BankLinkingSuccessView,
     },
     {
       path: "/recommend",
