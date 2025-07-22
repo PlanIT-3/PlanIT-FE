@@ -51,7 +51,8 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import Header from '@/components/common/Header.vue';
 
 const types = ['안전형', '안정추구형', '위험중립형', '적극투자형', '공격투자형'];
@@ -123,6 +124,17 @@ const resultType = computed(() => {
   const max = Math.max(...scores.value);
   const idx = scores.value.findIndex(s => s === max);
   return types[idx];
+});
+
+const router = useRouter();
+
+watch(showResult, (val) => {
+  if (val) {
+    router.push({
+      name: 'InvestmentSurveyResult',
+      query: { type: resultType.value }
+    });
+  }
 });
 
 function nextOrFinish() {
