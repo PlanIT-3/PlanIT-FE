@@ -16,7 +16,7 @@
       <div class="h-12 left-6 absolute top-5 w-[398px]">
         <!-- Logo -->
         <div class="h-12 left-0 absolute top-0 w-[111px] flex items-center">
-          <img :src="LogoSvg" alt="PlanIT Logo" class="h-10 w-auto" />
+          <img :src="logoSvg" alt="PlanIT Logo" class="h-10 w-auto" />
         </div>
 
         <!-- Search -->
