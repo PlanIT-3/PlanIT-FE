@@ -4,6 +4,7 @@ import InvestmentSurveyView from "../views/onBoarding/InvestmentSurveyView.vue";
 import InvestmentSurveyResult from "../views/onBoarding/InvestmentSurveyResult.vue";
 import BankSelectView from "../views/onBoarding/bankSelectView.vue";
 import BankLoginView from "../views/onBoarding/bankLoginView.vue";
+import RecommendView from "../views/recommendation/RecommendView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -32,6 +33,11 @@ const router = createRouter({
       path: "/bank-login",
       name: "bankLogin",
       component: BankLoginView,
+    },
+    {
+      path: "/recommend",
+      name: "recommend",
+      component: RecommendView,
     },
   ],
 });
