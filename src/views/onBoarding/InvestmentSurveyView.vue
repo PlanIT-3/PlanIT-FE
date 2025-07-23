@@ -3,10 +3,7 @@
     <OnboardingHeader />
     <div class="flex-1 flex flex-col items-center">
       <!-- 설문 카드 -->
-      <div
-        class="absolute left-0 right-0 w-full bg-white rounded-t-3xl rounded-b-3xl shadow-lg px-6 pt-12 pb-8 flex flex-col justify-start items-center z-10"
-        style="top: 108px; height: calc(100vh - 108px)"
-      >
+      <CardContainer>
         <template v-if="!showResult">
           <!-- Progress Bar -->
           <div class="w-full mb-6">
@@ -55,7 +52,7 @@
             <button class="mt-8 text-[#4B3C8A] underline" @click="resetSurvey">다시하기</button>
           </div>
         </template>
-      </div>
+      </CardContainer>
     </div>
   </div>
 </template>
@@ -64,6 +61,7 @@
 import { ref, computed, watch } from "vue";
 import { useRouter } from "vue-router";
 import OnboardingHeader from "@/components/common/OnboardingHeader.vue";
+import CardContainer from "@/components/common/CardContainer.vue";
 
 const types = ["안전형", "안정추구형", "위험중립형", "적극투자형", "공격투자형"];
 
