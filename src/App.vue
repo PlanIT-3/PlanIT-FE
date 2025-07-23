@@ -12,6 +12,7 @@
 
 <script setup>
 // TODO: 앱 로직 구현
+import { RouterView } from "vue-router";
 import MainHeader from "./components/common/MainHeader.vue";
 import NavBar from "./components/common/NavBar.vue";
 </script>
