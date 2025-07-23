@@ -2,11 +2,16 @@ import { createRouter, createWebHistory } from "vue-router";
 import HomeView from "../views/HomeView.vue";
 import InvestmentSurveyView from "../views/onBoarding/InvestmentSurveyView.vue";
 import InvestmentSurveyResult from "../views/onBoarding/InvestmentSurveyResult.vue";
+import BankLinkingSuccessView from "../views/onBoarding/BankLinkingSuccessView.vue";
 import BankSelectView from "../views/onBoarding/BankSelectView.vue";
 import BankLoginView from "../views/onBoarding/BankLoginView.vue";
-import BankLinkingSuccessView from "../views/onBoarding/BankLinkingSuccessView.vue";
 import RecommendView from "../views/recommendation/RecommendView.vue";
 import MainView from "../views/MainView.vue";
+import LoginPage from "@/views/onBoarding/LoginPage.vue";
+import GoalEditView from "../views/goal/GoalEditView.vue";
+import SignupView from "@/views/auth/SignupView.vue";
+import PasswordFindView from "@/views/auth/PasswordFindView.vue";
+import PasswordResetView from "@/views/auth/PasswordResetView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -65,6 +70,27 @@ const router = createRouter({
       path: "/goal/edit",
       name: "GoalEditView",
       component: GoalEditView,
+    },
+
+    {
+      path: "/signup",
+      name: "signup",
+      component: SignupView,
+      meta: { layout: "noHeader" },
+    },
+
+    {
+      path: "/passwordfind",
+      name: "passwordfind",
+      component: PasswordFindView,
+      meta: { layout: "noHeader" },
+    },
+
+    {
+      path: "/passwordreset",
+      name: "passwordreset",
+      component: PasswordResetView,
+      meta: { layout: "noHeader" },
     },
   ],
 });
