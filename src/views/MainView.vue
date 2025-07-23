@@ -463,7 +463,7 @@ import { CanvasRenderer } from "echarts/renderers";
 import { PieChart, LineChart } from "echarts/charts";
 import { TitleComponent, TooltipComponent, LegendComponent, GridComponent } from "echarts/components";
 import VChart from "vue-echarts";
-import headerBg from "@/assets/images/header배경.svg";
+import headerBg from "@/assets/images/headerBackground.svg";
 import logoSvg from "@/assets/images/Logo.svg";
 
 use([CanvasRenderer, PieChart, LineChart, TitleComponent, TooltipComponent, LegendComponent, GridComponent]);
