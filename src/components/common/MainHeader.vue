@@ -4,7 +4,7 @@
     style="background: none"
   >
     <img
-      src="@/assets/images/HeaderBack.png"
+      src="@/assets/images/headerBackground.svg"
       alt="PlanIT Header"
       class="absolute inset-0 w-full h-full object-cover z-0"
     />
@@ -12,7 +12,7 @@
       <div class="flex items-start justify-between px-6 pt-5">
         <div class="flex flex-col items-start">
           <div class="flex items-center">
-            <img src="@/assets/images/Logo.svg" alt="PlanIT Logo" class="w-16 h-auto mr-2" />
+            <img src="@/assets/images/logo.svg" alt="PlanIT Logo" class="w-16 h-auto mr-2" />
             <span class="text-white text-2xl font-semibold drop-shadow">Plan<span class="font-light">IT</span></span>
           </div>
           <span class="text-white text-sm mt-1 ml-1 drop-shadow">스마트한 자산 관리</span>
