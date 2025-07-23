@@ -3,9 +3,12 @@ import HomeView from "../views/HomeView.vue";
 import InvestmentSurveyView from "../views/onBoarding/InvestmentSurveyView.vue";
 import InvestmentSurveyResult from "../views/onBoarding/InvestmentSurveyResult.vue";
 import BankLinkingSuccessView from "../views/onBoarding/BankLinkingSuccessView.vue";
+import BankSelectView from "../views/onBoarding/bankSelectView.vue";
+import BankLoginView from "../views/onBoarding/bankLoginView.vue";
 import RecommendView from "../views/recommendation/RecommendView.vue";
 import MainView from "../views/MainView.vue";
 import LoginPage from "@/views/onBoarding/LoginPage.vue";
+import GoalEditView from "../views/goal/GoalEditView.vue";
 
 
 const router = createRouter({
@@ -55,6 +58,11 @@ const router = createRouter({
       path: "/login",
       name: "login",
       component: LoginPage,
+    },
+    {
+      path: "/goal/edit",
+      name: "GoalEditView",
+      component: GoalEditView,
     },
   ],
 });
