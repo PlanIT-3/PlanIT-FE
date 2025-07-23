@@ -3,14 +3,17 @@
   <div class="min-h-screen bg-gray-100 flex items-center justify-center">
     <div id="app" class="w-[393px] h-[852px] bg-white shadow-md overflow-hidden relative">
       <!-- TODO: 앱 레이아웃 구현 -->
+      <MainHeader></MainHeader>
       <RouterView></RouterView>
+      <NavBar></NavBar>
     </div>
   </div>
 </template>
 
 <script setup>
 // TODO: 앱 로직 구현
-import Button from "./components/base/Button.vue";
+import MainHeader from "./components/common/MainHeader.vue";
+import NavBar from "./components/common/NavBar.vue";
 </script>
 
 <style>
