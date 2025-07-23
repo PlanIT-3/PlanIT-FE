@@ -2,7 +2,7 @@
 import { ref } from "vue";
 import Button from "@/components/base/Button.vue";
 import KbLogo from "@/assets/icons/bank/KB.svg?url";
-import GoBackButton from "@/components/base/goBackButton.vue";
+import GoBackButton from "@/components/base/GoBackButton.vue";
 
 const email = ref("");
 const password = ref("");
