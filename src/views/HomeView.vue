@@ -1,7 +1,7 @@
 <!-- 홈 페이지 -->
 <template>
   <div class="home-view">
-    <BankAccountCard bankName="토스" productName="예금" percent="15" amount="675" />
+    <BankAccountCard bankName="광주" productName="예금" percent="15" amount="675" />
   </div>
 </template>
 
