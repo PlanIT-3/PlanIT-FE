@@ -5,8 +5,13 @@ import InvestmentSurveyResult from "../views/onBoarding/InvestmentSurveyResult.v
 import BankSelectView from "../views/onBoarding/BankSelectView.vue";
 import BankLoginView from "../views/onBoarding/BankLoginView.vue";
 import BankLinkingSuccessView from "../views/onBoarding/BankLinkingSuccessView.vue";
+import BankSelectView from "../views/onBoarding/BankSelectView.vue";
+import BankLoginView from "../views/onBoarding/BankLoginView.vue";
 import RecommendView from "../views/recommendation/RecommendView.vue";
 import MainView from "../views/MainView.vue";
+import LoginPage from "@/views/onBoarding/LoginPage.vue";
+import GoalEditView from "../views/goal/GoalEditView.vue";
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -50,6 +55,21 @@ const router = createRouter({
       path: "/recommend",
       name: "recommend",
       component: RecommendView,
+    },
+    {
+      path: "/main",
+      name: "main",
+      component: MainView,
+    },
+    {
+      path: "/login",
+      name: "login",
+      component: LoginPage,
+    },
+    {
+      path: "/goal/edit",
+      name: "GoalEditView",
+      component: GoalEditView,
     },
   ],
 });
