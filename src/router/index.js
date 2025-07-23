@@ -41,6 +41,21 @@ const router = createRouter({
       name: "recommend",
       component: RecommendView,
     },
+    {
+      path: "/main",
+      name: "main",
+      component: MainView,
+    },
+    {
+      path: "/login",
+      name: "login",
+      component: LoginPage,
+    },
+    {
+      path: "/goal/edit",
+      name: "GoalEditView",
+      component: GoalEditView,
+    },
   ],
 });
 
