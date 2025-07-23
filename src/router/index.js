@@ -3,10 +3,10 @@ import HomeView from "../views/HomeView.vue";
 import InvestmentSurveyView from "../views/onBoarding/InvestmentSurveyView.vue";
 import InvestmentSurveyResult from "../views/onBoarding/InvestmentSurveyResult.vue";
 import BankLinkingSuccessView from "../views/onBoarding/BankLinkingSuccessView.vue";
-import BankSelectView from "../views/onBoarding/bankSelectView.vue";
-import BankLoginView from "../views/onBoarding/bankLoginView.vue";
 import RecommendView from "../views/recommendation/RecommendView.vue";
+import MainView from "../views/MainView.vue";
 import LoginPage from "@/views/onBoarding/LoginPage.vue";
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -45,6 +45,11 @@ const router = createRouter({
       path: "/recommend",
       name: "recommend",
       component: RecommendView,
+    },
+    {
+      path: "/main",
+      name: "main",
+      component: MainView,
     },
     {
       path: "/login",
