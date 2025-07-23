@@ -1,6 +1,6 @@
 <template>
   <header
-    class="w-full h-[180px] relative rounded-b-3xl overflow-hidden flex flex-col justify-between"
+    class="w-full h-[180px] relative rounded-b-3xl overflow-hidden flex flex-col justify-between z-10"
     style="background: none"
   >
     <img
@@ -13,7 +13,6 @@
         <div class="flex flex-col items-start">
           <div class="flex items-center">
             <img src="@/assets/images/logo.svg" alt="PlanIT Logo" class="w-16 h-auto mr-2" />
-            <span class="text-white text-2xl font-semibold drop-shadow">Plan<span class="font-light">IT</span></span>
           </div>
           <span class="text-white text-sm mt-1 ml-1 drop-shadow">스마트한 자산 관리</span>
         </div>
