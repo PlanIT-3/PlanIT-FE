@@ -13,8 +13,4 @@
 // 필요시 추가 로직 작성
 </script>
 
-<style scoped>
-header {
-  /* 상단 고정, 배경 등 필요시 스타일 추가 */
-}
-</style>
+<style scoped></style>
