@@ -4,6 +4,7 @@
       <goBackButton />
     </div>
 
+    <div class="flex justify-center mt-10"></div>
     <h1 class="text-2xl font-semibold mt-6 mb-20">비밀번호 찾기</h1>
 
     <div class="flex items-center gap-2 mb-4">

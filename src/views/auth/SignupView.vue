@@ -48,7 +48,7 @@
 import { reactive } from "vue";
 import { useRouter } from "vue-router";
 import Button from "@/components/base/Button.vue";
-import goBackButton from "@/components/base/goBackButton.vue";
+import goBackButton from "@/components/base/GoBackButton.vue";
 import BaseTextInput from "@/components/base/BaseTextInput.vue";
 import KaKaoLogo from "@/assets/icons/Kakao.svg";
 import NaverLogo from "@/assets/icons/Naver.svg";
