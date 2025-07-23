@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white rounded-t-2xl shadow-lg h-16 w-[393px] absolute left-0 top-[789px]">
+  <div class="bg-white rounded-t-2xl shadow-lg h-16 w-[393px] absolute left-0 top-[789px] z-11">
     <div class="flex justify-around items-center h-full px-4">
       <!-- Home Button (Active) -->
       <div class="flex flex-col items-center">

@@ -28,28 +28,33 @@ const router = createRouter({
     },
     {
       path: "/investment-survey",
-      name: "InvestmentSurvey",
+      name: "investmentSurvey",
       component: InvestmentSurveyView,
+      meta: { layout: "onboardHeader" },
     },
     {
       path: "/investment-survey/result",
-      name: "InvestmentSurveyResult",
+      name: "investmentSurveyResult",
       component: InvestmentSurveyResult,
+      meta: { layout: "noHeader" },
     },
     {
       path: "/bank-select",
       name: "bankSelect",
       component: BankSelectView,
+      meta: { layout: "noHeader" },
     },
     {
       path: "/bank-login",
       name: "bankLogin",
       component: BankLoginView,
+      meta: { layout: "noHeader" },
     },
     {
       path: "/bank-linking-success",
       name: "bankLinkingSuccess",
       component: BankLinkingSuccessView,
+      meta: { layout: "noHeader" },
     },
     {
       path: "/recommend",
@@ -65,10 +70,11 @@ const router = createRouter({
       path: "/login",
       name: "login",
       component: LoginPage,
+      meta: { layout: "noHeader" },
     },
     {
       path: "/goal/edit",
-      name: "GoalEditView",
+      name: "goalEditView",
       component: GoalEditView,
     },
 

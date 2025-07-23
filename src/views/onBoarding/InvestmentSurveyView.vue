@@ -1,66 +1,55 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-b from-[#2D2363] to-white flex flex-col relative">
-    <OnboardingHeader />
-    <div class="flex-1 flex flex-col items-center">
-      <!-- 설문 카드 -->
-      <CardContainer>
-        <template v-if="!showResult">
-          <!-- Progress Bar -->
-          <div class="w-full mb-6">
-            <div class="flex justify-between items-center mb-2">
-              <span class="text-xs text-gray-400">진행률</span>
-              <span class="text-xs text-gray-400">{{ currentIndex + 1 }}/{{ questions.length }}</span>
-            </div>
-            <div class="w-full bg-gray-200 rounded-full h-2.5">
-              <div
-                class="bg-[#4B3C8A] h-2.5 rounded-full"
-                :style="{ width: ((currentIndex + 1) / questions.length) * 100 + '%' }"
-              ></div>
-            </div>
-          </div>
-          <!-- 질문 -->
-          <div class="mb-6 font-bold text-gray-800 text-base w-full">
-            {{ questions[currentIndex].question }}
-          </div>
-          <!-- 체크리스트 -->
-          <form class="w-full">
-            <div class="flex flex-col gap-3 text-sm text-gray-700">
-              <label
-                v-for="(choice, idx) in questions[currentIndex].choices"
-                :key="idx"
-                class="flex items-center gap-2"
-              >
-                <input type="radio" :name="'q' + currentIndex" :value="idx" v-model="selected" />
-                {{ choice.text }}
-              </label>
-            </div>
-          </form>
-          <!-- 다음/완료 버튼 -->
-          <button
-            class="w-full py-3 rounded-lg text-white font-semibold bg-[#B9AFFF] shadow-md disabled:bg-[#B9AFFF]/50 transition mt-8"
-            :disabled="selected === null"
-            @click="nextOrFinish"
-          >
-            {{ currentIndex === questions.length - 1 ? "완료" : "다음" }}
-          </button>
-        </template>
-        <template v-else>
-          <div class="w-full flex flex-col items-center justify-center h-full">
-            <div class="text-lg font-bold mb-4">당신의 투자 성향은?</div>
-            <div class="text-2xl font-extrabold text-[#4B3C8A] mb-2">{{ resultType }}</div>
-            <div class="text-gray-700">가장 높은 점수를 받은 성향입니다.</div>
-            <button class="mt-8 text-[#4B3C8A] underline" @click="resetSurvey">다시하기</button>
-          </div>
-        </template>
-      </CardContainer>
-    </div>
-  </div>
+  <CardContainer>
+    <template v-if="!showResult">
+      <!-- Progress Bar -->
+      <div class="w-full mb-6">
+        <div class="flex justify-between items-center mb-2">
+          <span class="text-xs text-gray-400">진행률</span>
+          <span class="text-xs text-gray-400">{{ currentIndex + 1 }}/{{ questions.length }}</span>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-2.5">
+          <div
+            class="bg-[#4B3C8A] h-2.5 rounded-full"
+            :style="{ width: ((currentIndex + 1) / questions.length) * 100 + '%' }"
+          ></div>
+        </div>
+      </div>
+      <!-- 질문 -->
+      <div class="mb-6 font-bold text-gray-800 text-base w-full">
+        {{ questions[currentIndex].question }}
+      </div>
+      <!-- 체크리스트 -->
+      <form class="w-full">
+        <div class="flex flex-col gap-3 text-sm text-gray-700">
+          <label v-for="(choice, idx) in questions[currentIndex].choices" :key="idx" class="flex items-center gap-2">
+            <input type="radio" :name="'q' + currentIndex" :value="idx" v-model="selected" />
+            {{ choice.text }}
+          </label>
+        </div>
+      </form>
+      <!-- 다음/완료 버튼 -->
+      <button
+        class="w-full py-3 rounded-lg text-white font-semibold bg-[#B9AFFF] shadow-md disabled:bg-[#B9AFFF]/50 transition mt-8"
+        :disabled="selected === null"
+        @click="nextOrFinish"
+      >
+        {{ currentIndex === questions.length - 1 ? "완료" : "다음" }}
+      </button>
+    </template>
+    <template v-else>
+      <div class="w-full flex flex-col items-center justify-center h-full">
+        <div class="text-lg font-bold mb-4">당신의 투자 성향은?</div>
+        <div class="text-2xl font-extrabold text-[#4B3C8A] mb-2">{{ resultType }}</div>
+        <div class="text-gray-700">가장 높은 점수를 받은 성향입니다.</div>
+        <button class="mt-8 text-[#4B3C8A] underline" @click="resetSurvey">다시하기</button>
+      </div>
+    </template>
+  </CardContainer>
 </template>
 
 <script setup>
 import { ref, computed, watch } from "vue";
 import { useRouter } from "vue-router";
-import OnboardingHeader from "@/components/common/OnboardingHeader.vue";
 import CardContainer from "@/components/common/CardContainer.vue";
 
 const types = ["안전형", "안정추구형", "위험중립형", "적극투자형", "공격투자형"];
