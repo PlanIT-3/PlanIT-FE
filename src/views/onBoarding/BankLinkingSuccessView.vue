@@ -1,5 +1,5 @@
 <script setup>
-import GoBackButton from "@/components/common/goBackButton.vue";
+import GoBackButton from "@/components/base/goBackButton.vue";
 </script>
 
 <template>
