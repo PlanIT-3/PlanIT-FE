@@ -10,7 +10,7 @@
 
 <script setup>
 // TODO: 앱 로직 구현
-import Button from "./components/common/Button.vue";
+import Button from "./components/base/Button.vue";
 </script>
 
 <style>
