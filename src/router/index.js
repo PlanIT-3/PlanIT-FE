@@ -1,11 +1,10 @@
 import { createRouter, createWebHistory } from "vue-router";
 import HomeView from "../views/HomeView.vue";
 import MainView from "../views/MainView.vue";
-import LoginPage from "@/views/onBoarding/LoginPage.vue";
-import GoalEditView from "../views/goal/GoalEditView.vue";
-import SignupView from "@/views/auth/SignupView.vue";
-import PasswordFindView from "@/views/auth/PasswordFindView.vue";
-import PasswordResetView from "@/views/auth/PasswordResetView.vue";
+import authRoutes from "./auth";
+import onBoardingRoutes from "./onBoarding";
+import goalRoutes from "./goal";
+import recommendationRoutes from "./recommendation";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -20,78 +19,10 @@ const router = createRouter({
       name: "main",
       component: MainView,
     },
-    {
-      path: "/investment-survey",
-      name: "investmentSurvey",
-      component: InvestmentSurveyView,
-      meta: { layout: "onboardHeader" },
-    },
-    {
-      path: "/investment-survey/result",
-      name: "investmentSurveyResult",
-      component: InvestmentSurveyResult,
-      meta: { layout: "noHeader" },
-    },
-    {
-      path: "/bank-select",
-      name: "bankSelect",
-      component: BankSelectView,
-      meta: { layout: "noHeader" },
-    },
-    {
-      path: "/bank-login",
-      name: "bankLogin",
-      component: BankLoginView,
-      meta: { layout: "noHeader" },
-    },
-    {
-      path: "/bank-linking-success",
-      name: "bankLinkingSuccess",
-      component: BankLinkingSuccessView,
-      meta: { layout: "noHeader" },
-    },
-    {
-      path: "/recommend",
-      name: "recommend",
-      component: RecommendView,
-    },
-    {
-      path: "/main",
-      name: "main",
-      component: MainView,
-    },
-    {
-      path: "/login",
-      name: "login",
-      component: LoginPage,
-      meta: { layout: "noHeader" },
-    },
-    {
-      path: "/goal/edit",
-      name: "goalEditView",
-      component: GoalEditView,
-    },
-
-    {
-      path: "/signup",
-      name: "signup",
-      component: SignupView,
-      meta: { layout: "noHeader" },
-    },
-
-    {
-      path: "/passwordfind",
-      name: "passwordfind",
-      component: PasswordFindView,
-      meta: { layout: "noHeader" },
-    },
-
-    {
-      path: "/passwordreset",
-      name: "passwordreset",
-      component: PasswordResetView,
-      meta: { layout: "noHeader" },
-    },
+    ...authRoutes,
+    ...onBoardingRoutes,
+    ...goalRoutes,
+    ...recommendationRoutes,
   ],
 });
 
