@@ -26,7 +26,7 @@
           class="border rounded px-2 py-1 text-xs w-32"
         />
       </div>
-      <div class="max-h-40 overflow-y-auto border rounded p-2 bg-white">
+      <div class="max-h-40 overflow-y-auto rounded p-2 bg-gray-50 border border-gray-200">
         <template v-for="item in filteredProducts" :key="item.id">
           <label class="flex items-center py-1 cursor-pointer">
             <input
