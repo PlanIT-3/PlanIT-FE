@@ -7,7 +7,7 @@ import authRoutes from "./auth";
 import onBoardingRoutes from "./onBoarding";
 import goalRoutes from "./goal";
 import recommendationRoutes from "./recommendation";
-
+import mypageRoutes from "./mypage";
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -33,6 +33,7 @@ const router = createRouter({
     ...onBoardingRoutes,
     ...goalRoutes,
     ...recommendationRoutes,
+    ...mypageRoutes,
   ],
 });
 

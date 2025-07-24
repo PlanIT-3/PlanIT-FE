@@ -2,7 +2,7 @@
   <div class="bg-white rounded-t-2xl shadow-lg h-16 w-full relative z-10 mt-4">
     <div class="flex justify-around items-center h-full px-4">
       <!-- Home Button -->
-      <div class="flex flex-col items-center cursor-pointer" @click="selectedTab = 'home'">
+      <div class="flex flex-col items-center cursor-pointer" @click="selectTab('home')">
         <div
           :class="[
             'w-6 h-6 flex items-center justify-center',
@@ -30,7 +30,7 @@
       </div>
 
       <!-- Goals Button -->
-      <div class="flex flex-col items-center cursor-pointer" @click="selectedTab = 'goals'">
+      <div class="flex flex-col items-center cursor-pointer" @click="selectTab('goals')">
         <div
           :class="[
             'w-6 h-6 flex items-center justify-center',
@@ -75,7 +75,7 @@
       </div>
 
       <!-- Investments Button -->
-      <div class="flex flex-col items-center cursor-pointer" @click="selectedTab = 'invest'">
+      <div class="flex flex-col items-center cursor-pointer" @click="selectTab('invest')">
         <div
           :class="[
             'w-6 h-6 flex items-center justify-center',
@@ -103,7 +103,7 @@
       </div>
 
       <!-- Profile Button -->
-      <div class="flex flex-col items-center cursor-pointer" @click="selectedTab = 'reward'">
+      <div class="flex flex-col items-center cursor-pointer" @click="selectTab('reward')">
         <div
           :class="[
             'w-6 h-6 flex items-center justify-center',
@@ -135,5 +135,17 @@
 
 <script setup>
 import { ref } from "vue";
+import { useRouter } from "vue-router";
 const selectedTab = ref("home");
+const router = useRouter();
+const tabRoutes = {
+  home: "/",
+  goals: "/goals",
+  invest: "/invest",
+  reward: "/reward",
+};
+function selectTab(tab) {
+  selectedTab.value = tab;
+  router.push(tabRoutes[tab]);
+}
 </script>
