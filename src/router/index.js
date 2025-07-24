@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from "vue-router";
 import HomeView from "../views/HomeView.vue";
 import MainView from "../views/MainView.vue";
+
+import RewardView from "@/views/reward/RewardView.vue";
 import authRoutes from "./auth";
 import onBoardingRoutes from "./onBoarding";
 import goalRoutes from "./goal";
@@ -19,6 +21,14 @@ const router = createRouter({
       name: "main",
       component: MainView,
     },
+
+    {
+      path: "/reward",
+      name: "reward",
+      component: RewardView,
+      meta: { layout: "noHeader" },
+    },
+
     ...authRoutes,
     ...onBoardingRoutes,
     ...goalRoutes,
