@@ -8,8 +8,8 @@
     <!-- 목표 금액 입력 -->
     <div class="mb-4">
       <label class="block text-sm font-medium mb-1">ISA 계좌의 목표 금액(정확 비율의 금액)</label>
-      <BaseTextInput v-model="isaGoalAmountInput" type="number" :placeholder="`${totalGoalAmount}만원`" />
-      <div class="flex justify-between text-xs text-gray-500">
+      <BaseTextInput v-model="isaGoalAmountInput" type="number" :placeholder="`${totalGoalAmount}만원`" class="w-full max-w-lg mb-3" />
+      <div class="flex justify-between text-xs text-gray-500 mb-2">
         <span>목표 남은 금액: {{ remainingAmount.toLocaleString() }}만원</span>
         <span>비과세 현황: {{ selectedTotal.toLocaleString() }} / {{ isaGoalAmount.toLocaleString() }}</span>
       </div>
@@ -137,15 +137,26 @@ const chartColors = [
   '#10b981', // 초록
 ];
 
-// 선택된 상품의 차트 데이터
+// 선택된 상품의 차트 데이터 (미할당 금액 포함)
 const selectedChartData = computed(() => {
-  return products.value
+  const selected = products.value
     .filter(item => selectedProductIds.value.includes(item.id))
     .map((item, idx) => ({
       value: item.amount,
       name: item.name,
       itemStyle: { color: chartColors[idx % chartColors.length] },
     }));
+  const total = selected.reduce((sum, item) => sum + item.value, 0);
+  if (isaGoalAmount.value > total) {
+    selected.push({
+      value: isaGoalAmount.value - total,
+      name: '미할당',
+      itemStyle: { color: '#e5e7eb' }, // 연한 회색
+      label: { show: false },
+      tooltip: { show: false },
+    });
+  }
+  return selected;
 });
 // ECharts 옵션
 const chartOption = computed(() => ({
