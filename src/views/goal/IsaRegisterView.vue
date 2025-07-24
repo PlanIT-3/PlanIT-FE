@@ -8,7 +8,7 @@
     <!-- 목표 금액 입력 -->
     <div class="mb-4">
       <label class="block text-sm font-medium mb-1">ISA 계좌의 목표 금액(정확 비율의 금액)</label>
-      <BaseTextInput v-model="isaGoalAmountInput" type="number" :placeholder="`${totalGoalAmount}만원`" class="w-full max-w-lg mb-3" />
+      <BaseTextInput :model-value="isaGoalAmount" type="number" :placeholder="`${totalGoalAmount}만원`" class="w-full max-w-lg mb-3" disabled />
       <div class="flex justify-between text-xs text-gray-500 mb-2">
         <span>목표 남은 금액: {{ remainingAmount.toLocaleString() }}만원</span>
         <span>비과세 현황: {{ selectedTotal.toLocaleString() }} / {{ isaGoalAmount.toLocaleString() }}</span>
@@ -79,9 +79,7 @@ import { TooltipComponent, LegendComponent } from 'echarts/components';
 use([CanvasRenderer, PieChart, TooltipComponent, LegendComponent]);
 // 전체 목표 금액(예: 3,000만원) - 실제로는 props로 받을 것
 const totalGoalAmount = 3000;
-// BaseTextInput용 입력값 (항상 string)
-const isaGoalAmountInput = ref('200');
-// 실제 숫자값
+// ISA 계좌 목표 금액 (전 페이지에서 넘어온 값)
 const isaGoalAmount = ref(200);
 // 상품 mock 데이터
 const products = ref([
@@ -190,21 +188,6 @@ const chartOption = computed(() => ({
     },
   ],
 }));
-
-// 입력값이 바뀔 때마다 숫자 변환 및 최대값 제한
-watch(isaGoalAmountInput, (val) => {
-  let num = parseInt(val.replace(/[^\d]/g, ''), 10);
-  if (isNaN(num)) num = 0;
-  if (num > totalGoalAmount) num = totalGoalAmount;
-  if (num < 0) num = 0;
-  isaGoalAmount.value = num;
-  // 입력값도 동기화(최대값 초과 시 자동 반영)
-  if (val !== String(num)) isaGoalAmountInput.value = String(num);
-});
-// isaGoalAmount가 외부에서 바뀔 때도 입력값 동기화
-watch(isaGoalAmount, (val) => {
-  if (isaGoalAmountInput.value !== String(val)) isaGoalAmountInput.value = String(val);
-});
 
 // 상품 선택 시 ISA 목표 금액을 초과하지 않도록 체크박스 비활성화
 function isProductDisabled(item) {
