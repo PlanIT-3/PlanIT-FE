@@ -1,58 +1,25 @@
 <template>
-  <div class="">
-    <div class="h-[262px] left-0 absolute top-0 w-[422px] z-10">
-      <!-- Asset Info Card -->
-      <div
-        class="h-[180px] left-[13px] absolute top-[93px] w-[370px] bg-white rounded-2xl shadow-lg p-5 flex items-center justify-around"
-      >
-        <!-- Asset Summary -->
-        <div class="flex flex-col justify-center items-start w-auto h-[132px] mr-4 pr-4">
-          <div class="text-black text-base font-semibold mb-1 text-left">전체 자산</div>
-          <div class="text-gray-600 text-sm mb-1 text-left">총 7개 계좌 관리 중</div>
-          <div class="text-black text-2xl font-bold mb-1 text-left">3,015,000원</div>
-          <div class="text-green-600 text-xs text-left">전월 대비 +12.5%</div>
-        </div>
-
-        <!-- ECharts Circular Chart - 크기 및 위치 조정 -->
-        <div class="ml-6 w-40 h-40 flex items-center justify-center">
-          <v-chart class="w-full h-full" :option="chartOption" autoresize />
-        </div>
+  <div class="flex flex-col min-h-screen relative">
+    <!-- Asset Info Card - MainHeader에 겹쳐짐 -->
+    <div
+      class="h-[180px] w-[370px] bg-white rounded-2xl shadow-lg p-5 flex items-center justify-around mx-[13px] -mt-[87px] mb-4 relative z-20"
+    >
+      <!-- Asset Summary -->
+      <div class="flex flex-col justify-center items-start w-auto h-[132px] mr-4 pr-4">
+        <div class="text-black text-base font-semibold mb-1 text-left">전체 자산</div>
+        <div class="text-gray-600 text-sm mb-1 text-left">총 7개 계좌 관리 중</div>
+        <div class="text-black text-2xl font-bold mb-1 text-left">3,015,000원</div>
+        <div class="text-green-600 text-xs text-left">전월 대비 +12.5%</div>
       </div>
-    </div>
 
-    <!-- Character Section -->
-    <div class="h-[82px] left-[307px] absolute top-14 w-20">
-      <div class="h-[82px] relative w-[79px]">
-        <!-- Character Circle -->
-        <div class="h-14 w-14 bg-indigo-600 rounded-full absolute left-3 top-3 flex items-center justify-center">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-8 w-8 text-white"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-            />
-          </svg>
-        </div>
-
-        <!-- Character Name -->
-        <div class="text-white text-sm font-bold absolute left-[34px] top-[74px] text-center w-3">루나</div>
+      <!-- ECharts Circular Chart - 크기 및 위치 조정 -->
+      <div class="ml-6 w-40 h-40 flex items-center justify-center">
+        <v-chart class="w-full h-full" :option="chartOption" autoresize />
       </div>
-    </div>
-
-    <!-- Motivational Text -->
-    <div class="text-white text-xs font-light absolute left-[234px] top-[74px] text-center w-[102px]">
-      끝까지 파이팅!
     </div>
 
     <!-- Goals Section -->
-    <div class="h-[209px] left-8 absolute top-[290px] w-[331px] bg-white rounded-2xl shadow-lg p-4">
+    <div class="h-[209px] w-[331px] mx-8 mt-8 bg-white rounded-2xl shadow-lg p-4 relative">
       <!-- Goals Header -->
       <div class="flex items-center justify-between mb-4">
         <div class="flex items-center text-black text-sm font-semibold">
@@ -343,7 +310,7 @@
     </button>
 
     <!-- Investment Status Section -->
-    <div class="h-auto w-[341px] absolute left-[26px] top-[515px] bg-white rounded-2xl shadow-lg p-5">
+    <div class="h-auto w-[341px] mx-[26px] mt-4 bg-white rounded-2xl shadow-lg p-5">
       <!-- Header -->
       <div class="flex justify-between items-center mb-2">
         <div class="flex items-center">

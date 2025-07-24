@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white rounded-t-2xl shadow-lg h-16 w-[393px] absolute left-0 top-[789px] z-11">
+  <div class="bg-white rounded-t-2xl shadow-lg h-16 w-full relative z-10 mt-4">
     <div class="flex justify-around items-center h-full px-4">
       <!-- Home Button -->
       <div class="flex flex-col items-center cursor-pointer" @click="selectedTab = 'home'">
