@@ -172,21 +172,25 @@
 import { ref, computed } from "vue";
 import BarChart from "@/components/graph/BarChart.vue";
 import GoalAssignedCard from "@/components/manageGoal/GoalAssignedCard.vue";
-import RecommendBanner from "@/components/recommendation/RecommendBanner.vue";
-import CardListView from "@/views/recommendation/CardListView.vue";
+import SummaryCard from "@/components/common/SummaryCard.vue";
+import RebalanceCard from "@/components/goal/RebalanceCard.vue";
 
 export default {
   name: "GoalDetailView",
   components: {
     BarChart,
     GoalAssignedCard,
-    RecommendBanner,
-    CardListView,
+    SummaryCard,
+    RebalanceCard,
   },
   setup() {
     // 목표 정보
     const goalTitle = ref("자가용 구매하기");
     const targetAmount = ref(5000);
+
+    // 리밸런싱 기간 선택
+    const periods = ref(["한달", "3개월", "6개월", "1년"]);
+    const selectedPeriod = ref("한달");
 
     // 계좌별 데이터
     const accounts = ref([
@@ -230,6 +234,8 @@ export default {
       remainingAmount,
       progressPercentage,
       accounts,
+      periods,
+      selectedPeriod,
     };
   },
 };
