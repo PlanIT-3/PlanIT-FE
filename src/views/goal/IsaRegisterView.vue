@@ -6,7 +6,7 @@
     </div>
 
     <!-- 목표 금액 입력 -->
-    <div class="mb-4">
+    <div class="mb-4 w-full">
       <label class="block text-sm font-medium mb-1">ISA 계좌의 목표 금액(정확 비율의 금액)</label>
       <BaseTextInput :model-value="isaGoalAmount" type="number" :placeholder="`${totalGoalAmount}만원`" class="w-full max-w-lg mb-3" disabled />
       <div class="flex justify-between text-xs text-gray-500 mb-2">
@@ -16,7 +16,7 @@
     </div>
 
     <!-- 상품 선택 -->
-    <div class="mb-4">
+    <div class="mb-4 w-full">
       <div class="flex items-center justify-between mb-2">
         <span class="font-semibold">상품 선택</span>
         <input
@@ -26,7 +26,7 @@
           class="border rounded px-2 py-1 text-xs w-32"
         />
       </div>
-      <div class="max-h-40 overflow-y-auto rounded p-2 bg-gray-50 border border-gray-200">
+      <div class="max-h-40 overflow-y-auto rounded p-2">
         <template v-for="item in filteredProducts" :key="item.id">
           <label class="flex items-center py-1 cursor-pointer">
             <input
@@ -37,7 +37,7 @@
               :disabled="isProductDisabled(item)"
             />
             <div class="flex-1">
-              <div class="font-medium">{{ item.name }}</div>
+              <div class="font-medium text-sm">{{ item.name }}</div>
               <div class="text-xs text-gray-500">{{ item.desc }}</div>
             </div>
             <span class="ml-2">{{ item.amount.toLocaleString() }}만원</span>
@@ -62,7 +62,7 @@
     </div>
 
     <!-- 완료 버튼 -->
-    <button class="w-full bg-indigo-700 text-white py-3 rounded font-bold text-base" :disabled="selectedTotal !== isaGoalAmount">ISA 계좌 합당 완료</button>
+    <button class="w-full bg-indigo-700 text-white py-3 rounded font-bold text-base" :disabled="selectedTotal !== isaGoalAmount">ISA 계좌 할당 완료</button>
   </CardContainer>
 </template>
 
