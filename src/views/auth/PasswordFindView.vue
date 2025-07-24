@@ -30,4 +30,5 @@
 import goBackButton from "@/components/base/GoBackButton.vue";
 import Button from "@/components/base/Button.vue";
 import BaseTextInput from "@/components/base/BaseTextInput.vue";
+import SummaryCard from "@/components/common/SummaryCard.vue";
 </script>
