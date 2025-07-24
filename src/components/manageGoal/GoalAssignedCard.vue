@@ -1,19 +1,21 @@
 <template>
-  <div class="flex flex-col items-center justify-center">
-    <div class="flex items-center justify-between bg-white rounded-2xl shadow px-10 py-4 w-11/12 max-w-2xl">
-    <!-- 은행 로고 -->
-    <img :src="imgUrl" alt="은행 로고" class="w-10 h-10 mr-4" />
-    <!-- 은행명/상품명 -->
-    <div class="flex flex-col flex-1 min-w-0">
-      <span class="font-medium text-base truncate">{{ bankName }}</span>
-      <span class="text-gray-400 text-sm font-normal">{{ productName }}</span>
+  <div class="border border-gray-200 rounded-xl p-4">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center">
+        <div class="w-10 h-10 rounded-full flex items-center justify-center mr-3 overflow-hidden bg-white">
+          <img :src="imgUrl" alt="은행 로고" class="w-8 h-8 object-contain" />
+        </div>
+        <div>
+          <h4 class="font-semibold text-gray-800">{{ bankName }}</h4>
+          <p class="text-sm text-gray-600">{{ productName }}</p>
+        </div>
+      </div>
+      <div class="text-right">
+        <p class="text-sm text-blue-600 font-medium">전체 대비 {{ percent }}%</p>
+        <p class="text-lg font-bold text-gray-800">{{ amount }}만원</p>
+      </div>
     </div>
-    <!-- 전체 대비 퍼센트 -->
-    <span class="text-blue-600 font-normal text-sm mr-6 whitespace-nowrap"> 전체 대비 {{ percent }}% </span>
-    <!-- 금액 -->
-    <span class="font-medium text-base whitespace-nowrap">{{ amount }}만원</span>
   </div>
-</div>
 </template>
 
 <script setup>
@@ -26,15 +28,14 @@ const props = defineProps({
   amount: { type: [String, Number], required: true },
 });
 
-const logos = import.meta.glob('@/assets/icons/bank/*.svg', {
+const logos = import.meta.glob("@/assets/icons/bank/*.svg", {
   eager: true,
-  import: 'default',
+  import: "default",
 });
 
 const imgUrl = computed(() => {
   const path = `/src/assets/icons/bank/${props.bankName}.svg`;
-  return logos[path] || '';
+  return logos[path] || "";
 });
-
 </script>
 <style scoped></style>
