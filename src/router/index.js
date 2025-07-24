@@ -12,6 +12,7 @@ import GoalEditView from "../views/goal/GoalEditView.vue";
 import SignupView from "@/views/auth/SignupView.vue";
 import PasswordFindView from "@/views/auth/PasswordFindView.vue";
 import PasswordResetView from "@/views/auth/PasswordResetView.vue";
+import RewardView from "@/views/reward/RewardView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -96,6 +97,12 @@ const router = createRouter({
       path: "/passwordreset",
       name: "passwordreset",
       component: PasswordResetView,
+      meta: { layout: "noHeader" },
+    },
+    {
+      path: "/reward",
+      name: "reward",
+      component: RewardView,
       meta: { layout: "noHeader" },
     },
   ],
