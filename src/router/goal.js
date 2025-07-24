@@ -10,4 +10,9 @@ export default [
     name: "goalIsaRegisterView",
     component: () => import('../views/goal/IsaRegisterView.vue'),
   },
+  {
+    path: "/goal/detail",
+    name: "goalDetailView",
+    component: () => import("../views/goal/GoalDetailView.vue"),
+  },
 ];

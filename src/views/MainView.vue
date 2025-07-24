@@ -1,10 +1,8 @@
 <template>
   <div class="flex flex-col min-h-screen relative">
-    <!-- Asset Info Card - MainHeader에 겹쳐짐 -->
     <div
       class="h-[180px] w-[370px] bg-white rounded-2xl shadow-lg p-5 flex items-center justify-around mx-[13px] -mt-[87px] mb-4 relative z-20"
     >
-      <!-- Asset Summary -->
       <div class="flex flex-col justify-center items-start w-auto h-[132px] mr-4 pr-4">
         <div class="text-black text-base font-semibold mb-1 text-left">전체 자산</div>
         <div class="text-gray-600 text-sm mb-1 text-left">총 7개 계좌 관리 중</div>
@@ -12,17 +10,17 @@
         <div class="text-green-600 text-xs text-left">전월 대비 +12.5%</div>
       </div>
 
-      <!-- ECharts Circular Chart - 크기 및 위치 조정 -->
       <div class="ml-6 w-40 h-40 flex items-center justify-center">
         <v-chart class="w-full h-full" :option="chartOption" autoresize />
       </div>
     </div>
 
-    <!-- Goals Section -->
     <div class="h-[209px] w-[331px] mx-8 mt-8 bg-white rounded-2xl shadow-lg p-4 relative">
-      <!-- Goals Header -->
       <div class="flex items-center justify-between mb-4">
-        <div class="flex items-center text-black text-sm font-semibold">
+        <router-link
+          to="/goal/detail"
+          class="flex items-center text-black text-sm font-semibold hover:text-indigo-600 transition-colors"
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             class="h-4 w-4 mr-2 text-indigo-600"
@@ -38,7 +36,7 @@
             />
           </svg>
           나의 목표
-        </div>
+        </router-link>
 
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -56,17 +54,13 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
         </svg>
       </div>
-
-      <!-- Slider Container -->
       <div class="goals-slider absolute top-[38px] left-0 w-[331px] h-[171px] overflow-hidden">
         <div
           class="flex transition-transform duration-300 ease-in-out h-full"
           :style="{ transform: `translateX(-${currentSlide * 100}%)` }"
         >
-          <!-- Goal Card 1 - 자가용 구매 (완료) -->
           <div class="min-w-full h-full flex">
             <div class="w-[331px] h-[170px] bg-white rounded-2xl shadow-lg p-4 relative">
-              <!-- Goal Item -->
               <div class="absolute left-4 top-4 w-[250px] h-[117px]">
                 <div class="flex items-center text-black text-xs font-semibold">
                   <svg
@@ -87,14 +81,12 @@
                 </div>
               </div>
 
-              <!-- Achievement Badge -->
               <div class="absolute right-4 top-6">
                 <div class="bg-green-500 rounded-full h-5 px-3 flex items-center justify-center">
                   <span class="text-white text-xs font-semibold">목표 달성 !</span>
                 </div>
               </div>
 
-              <!-- 계좌 범례 -->
               <div class="absolute left-4 top-18 flex flex-wrap gap-1 text-xs">
                 <div class="flex items-center">
                   <div class="w-2 h-2 rounded-sm mr-1 bg-green-500"></div>
@@ -106,7 +98,6 @@
                 </div>
               </div>
 
-              <!-- Progress Section - 다중 계좌 막대 -->
               <div class="absolute left-4 bottom-16 w-[calc(100%-32px)] h-3">
                 <div class="bg-gray-300 rounded-full h-3 w-full relative overflow-hidden">
                   <div class="bg-green-500 h-3 rounded-l-full absolute left-0" style="width: 60%"></div>
@@ -114,7 +105,6 @@
                 </div>
               </div>
 
-              <!-- Achievement Info -->
               <div class="bg-green-50 rounded-lg h-10 w-[calc(100%-32px)] absolute left-4 bottom-4 p-2">
                 <div class="text-green-800 text-xs font-bold">예상 달성일: 2025-12-28</div>
                 <div class="text-green-600 text-xs">목표보다 199일 빠름</div>
@@ -122,10 +112,8 @@
             </div>
           </div>
 
-          <!-- Goal Card 2 - 여행 자금 -->
           <div class="min-w-full h-full flex">
             <div class="w-[331px] h-[170px] bg-white rounded-2xl shadow-lg p-4 relative">
-              <!-- Goal Item -->
               <div class="absolute left-4 top-4 w-[250px]">
                 <div class="flex items-center text-black text-xs font-semibold">
                   <svg
@@ -147,14 +135,12 @@
                 <div class="text-blue-600 text-xs mt-2 font-medium">진행 중 (75%)</div>
               </div>
 
-              <!-- Progress Badge -->
               <div class="absolute right-4 top-6">
                 <div class="bg-blue-500 rounded-full h-5 px-3 flex items-center justify-center">
                   <span class="text-white text-xs font-semibold">75%</span>
                 </div>
               </div>
 
-              <!-- 계좌 범례 -->
               <div class="absolute left-4 top-18 flex flex-wrap gap-1 text-xs">
                 <div class="flex items-center">
                   <div class="w-2 h-2 rounded-sm mr-1 bg-blue-500"></div>
@@ -170,7 +156,6 @@
                 </div>
               </div>
 
-              <!-- Progress Section - 다중 계좌 막대 -->
               <div class="absolute left-4 bottom-16 w-[calc(100%-32px)] h-3">
                 <div class="bg-gray-300 rounded-full h-3 w-full relative overflow-hidden">
                   <div class="bg-blue-500 h-3 absolute left-0" style="width: 40%"></div>
@@ -179,7 +164,6 @@
                 </div>
               </div>
 
-              <!-- Progress Info -->
               <div class="bg-blue-50 rounded-lg h-10 w-[calc(100%-32px)] absolute left-4 bottom-2 p-2">
                 <div class="text-blue-800 text-xs font-bold">예상 달성일: 2025-08-20</div>
                 <div class="text-blue-600 text-xs">1,500,000원 / 2,000,000원</div>
@@ -187,10 +171,8 @@
             </div>
           </div>
 
-          <!-- Goal Card 3 - 비상 자금 -->
           <div class="min-w-full h-full flex">
             <div class="w-[331px] h-[170px] bg-white rounded-2xl shadow-lg p-4 relative">
-              <!-- Goal Item -->
               <div class="absolute left-4 top-4 w-[250px]">
                 <div class="flex items-center text-black text-xs font-semibold">
                   <svg
@@ -212,14 +194,12 @@
                 <div class="text-orange-600 text-xs mt-2 font-medium">진행 중 (45%)</div>
               </div>
 
-              <!-- Progress Badge -->
               <div class="absolute right-4 top-6">
                 <div class="bg-orange-500 rounded-full h-5 px-3 flex items-center justify-center">
                   <span class="text-white text-xs font-semibold">45%</span>
                 </div>
               </div>
 
-              <!-- 계좌 범례 -->
               <div class="absolute left-4 top-18 flex flex-wrap gap-1 text-xs">
                 <div class="flex items-center">
                   <div class="w-2 h-2 rounded-sm mr-1 bg-orange-500"></div>
