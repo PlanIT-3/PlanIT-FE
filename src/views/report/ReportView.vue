@@ -61,22 +61,14 @@
           </button>
         </div>
       </div>
-      <!-- 그래프 카드 영역 (임시 박스) -->
+      <!-- 그래프 카드 영역 (GraphBox 컴포넌트 사용) -->
       <div class="w-full max-w-xl flex flex-col gap-4">
-        <div class="bg-white rounded-2xl shadow p-4">
-          <div class="flex justify-between items-center mb-2">
-            <span class="font-semibold text-sm">내 일별 수익률 변화</span>
-            <span class="text-xs text-gray-400">Weekly ▾</span>
-          </div>
-          <div class="h-32 flex items-center justify-center text-gray-300">[그래프 영역]</div>
-        </div>
-        <div class="bg-white rounded-2xl shadow p-4">
-          <div class="flex justify-between items-center mb-2">
-            <span class="font-semibold text-sm">주별 투자금 총액 비교</span>
-            <span class="text-xs text-gray-400">Weekly ▾</span>
-          </div>
-          <div class="h-32 flex items-center justify-center text-gray-300">[그래프 영역]</div>
-        </div>
+        <GraphBox title="내 일별 수익률 변화" dropdown-text="Weekly ▾">
+          [그래프 영역]
+        </GraphBox>
+        <GraphBox title="주별 투자금 총액 비교" dropdown-text="Weekly ▾">
+          [그래프 영역]
+        </GraphBox>
       </div>
     
   </DefaultLayout>
@@ -85,6 +77,7 @@
 <script setup>
 import DefaultLayout from "@/components/layouts/DefaultLayout.vue";
 import CircleProgress from '@/components/report/CircleProgress.vue';
+import GraphBox from '@/components/report/GraphBox.vue';
 import { ref } from 'vue';
 
 const activeTab = ref('investment'); // 기본값: 투자 리포트
