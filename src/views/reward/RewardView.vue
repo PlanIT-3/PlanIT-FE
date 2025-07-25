@@ -1,18 +1,164 @@
 <template>
   <div
-    class="flex flex-col items-center justify-center min-h-[400px] w-full h-full bg-cover bg-center relative"
-    style="background-image: url(&quot;/src/assets/images/background.png&quot;)"
+    class="flex flex-col items-center justify-center min-h-[400px] w-full h-full bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 relative overflow-hidden"
   >
-    <svg viewBox="0 0 800 600" class="w-[440px] h-[440px] max-w-[95vw] object-contain">
-      <g
-        v-for="constellation in constellations"
-        :key="constellation.id"
-        :class="
-          activeConstellationIds.includes(constellation.id)
-            ? 'transition-all duration-500 drop-shadow-[0_0_10px_#60a5fa] drop-shadow-[0_0_20px_#3b82f6]'
-            : 'transition-all duration-500'
+    <!-- 미세한 격자 배경 -->
+    <div class="absolute inset-0 opacity-[0.02]">
+      <div
+        class="absolute inset-0"
+        style="
+          background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.15) 1px, transparent 0);
+          background-size: 20px 20px;
         "
+      ></div>
+    </div>
+
+    <!-- 은은한 배경 별들 - 더 작고 절제된 -->
+    <div class="absolute inset-0 overflow-hidden">
+      <div
+        v-for="star in backgroundStars"
+        :key="star.id"
+        class="absolute bg-slate-300 rounded-full"
+        :style="{
+          left: `${star.x}%`,
+          top: `${star.y}%`,
+          width: `${star.size}px`,
+          height: `${star.size}px`,
+          opacity: star.opacity,
+          animationDelay: `${star.delay}ms`,
+        }"
+      ></div>
+    </div>
+
+    <!-- 세련된 조명 효과 -->
+    <div class="absolute inset-0 opacity-5">
+      <div
+        class="absolute top-1/3 left-1/3 w-96 h-48 bg-gradient-to-r from-blue-400/40 to-cyan-400/40 rounded-full blur-[100px]"
+      ></div>
+      <div
+        class="absolute bottom-1/3 right-1/3 w-80 h-80 bg-gradient-to-t from-indigo-400/30 to-purple-400/30 rounded-full blur-[120px]"
+      ></div>
+    </div>
+
+    <!-- 전문적인 확산 효과 -->
+    <div v-if="showBigBang" class="absolute inset-0 z-50 flex items-center justify-center">
+      <!-- 중심점 -->
+      <div
+        v-if="bigBangStage >= 1"
+        class="absolute w-1 h-1 bg-white rounded-full"
+        :class="bigBangStage >= 2 ? 'animate-pulse' : ''"
+      ></div>
+
+      <!-- 첫 번째 확산 -->
+      <div
+        v-if="bigBangStage >= 2"
+        class="absolute w-16 h-16 border border-white/20 rounded-full animate-ping opacity-60"
+      ></div>
+
+      <!-- 두 번째 확산 -->
+      <div
+        v-if="bigBangStage >= 3"
+        class="absolute w-32 h-32 border border-slate-300/15 rounded-full animate-ping opacity-40"
+      ></div>
+
+      <!-- 세 번째 확산 -->
+      <div
+        v-if="bigBangStage >= 4"
+        class="absolute w-64 h-64 border border-slate-400/10 rounded-full animate-ping opacity-30"
+      ></div>
+
+      <!-- 최종 확산 -->
+      <div
+        v-if="bigBangStage >= 5"
+        class="absolute w-96 h-96 border border-white/5 rounded-full animate-ping opacity-20"
+      ></div>
+
+      <!-- 미세한 파티클들 -->
+      <div
+        v-if="bigBangStage >= 3"
+        v-for="sparkle in sparkles"
+        :key="sparkle.id"
+        class="absolute w-0.5 h-0.5 bg-slate-200 rounded-full opacity-40 pointer-events-none"
+        :style="{
+          left: `${sparkle.x}%`,
+          top: `${sparkle.y}%`,
+          animationDelay: `${sparkle.delay}ms`,
+          transform: `translate(${sparkle.moveX}px, ${sparkle.moveY}px)`,
+          transition: `all ${sparkle.duration}ms cubic-bezier(0.2, 0.8, 0.2, 1)`,
+        }"
+      ></div>
+
+      <!-- 프리미엄 보상 모달 -->
+      <div
+        v-if="bigBangStage >= 6"
+        class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/96 backdrop-blur-md z-70"
       >
+        <!-- 메인 카드 -->
+        <div class="relative">
+          <div
+            class="bg-gradient-to-br from-slate-900/90 to-slate-800/90 rounded-2xl p-10 shadow-2xl border border-slate-700/30 max-w-md backdrop-blur-xl"
+          >
+            <!-- 미세한 테두리 글로우 -->
+            <div class="absolute inset-0 bg-gradient-to-br from-slate-500/5 to-transparent rounded-2xl"></div>
+            <div class="absolute inset-px bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl"></div>
+
+            <!-- 카드 콘텐츠 -->
+            <div class="relative text-center space-y-8">
+              <!-- 아이콘 -->
+              <div
+                class="w-14 h-14 mx-auto bg-gradient-to-br from-slate-700/50 to-slate-800/50 rounded-xl flex items-center justify-center border border-slate-600/30"
+              >
+                <svg class="w-7 h-7 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.5"
+                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                  />
+                </svg>
+              </div>
+
+              <!-- 텍스트 정보 -->
+              <div class="space-y-4">
+                <h1 class="text-xl font-medium text-white tracking-tight">프리미엄 분석 리포트</h1>
+                <div class="text-base text-slate-300 font-normal">접근 권한 획득</div>
+                <div class="text-sm text-slate-400 leading-relaxed max-w-xs mx-auto">
+                  전문가 분석 리포트와 시장 인사이트에 대한 24시간 무제한 접근
+                </div>
+              </div>
+
+              <!-- 상태 표시 -->
+              <div class="inline-flex items-center px-5 py-2.5 bg-slate-800/50 rounded-lg border border-slate-600/20">
+                <div class="w-1.5 h-1.5 bg-emerald-400 rounded-full mr-3"></div>
+                <span class="text-sm text-slate-200 font-medium">활성화 완료</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 확인 버튼 -->
+        <button
+          @click="closeBigBang"
+          class="mt-10 px-10 py-3.5 bg-white/8 hover:bg-white/12 text-white font-medium rounded-lg border border-white/10 backdrop-blur-sm transition-all duration-300 hover:border-white/20"
+        >
+          확인
+        </button>
+      </div>
+    </div>
+
+    <!-- 별자리 SVG -->
+    <svg viewBox="0 0 800 600" class="w-[420px] h-[420px] max-w-[95vw] object-contain relative z-10">
+      <defs>
+        <filter id="subtleGlow">
+          <feGaussianBlur stdDeviation="1" result="coloredBlur" />
+          <feMerge>
+            <feMergeNode in="coloredBlur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
+
+      <g v-for="constellation in constellations" :key="constellation.id" class="transition-all duration-500 ease-out">
         <!-- 연결선 -->
         <line
           v-for="line in constellation.lines"
@@ -21,47 +167,54 @@
           :y1="line.y1"
           :x2="line.x2"
           :y2="line.y2"
-          :class="
-            activeConstellationIds.includes(constellation.id)
-              ? 'stroke-blue-400 stroke-2 drop-shadow-[0_0_2px_#3b82f6]'
-              : 'stroke-slate-500 stroke-1 opacity-80'
-          "
+          :stroke="activeConstellationIds.includes(constellation.id) ? '#cbd5e1' : '#64748b'"
+          :stroke-width="activeConstellationIds.includes(constellation.id) ? '1.5' : '1'"
+          :opacity="activeConstellationIds.includes(constellation.id) ? '0.8' : '0.3'"
+          filter="url(#subtleGlow)"
+          stroke-linecap="round"
         />
-        <!-- 별 -->
+
+        <!-- 별점 -->
         <circle
           v-for="star in constellation.stars"
           :key="star.id"
           :cx="star.x"
           :cy="star.y"
-          :r="star.size"
-          :class="
-            activeConstellationIds.includes(constellation.id)
-              ? 'fill-amber-400 animate-pulse drop-shadow-[0_0_6px_#fbbf24]'
-              : 'fill-slate-500 opacity-80'
-          "
+          :r="star.size * 0.8"
+          :fill="activeConstellationIds.includes(constellation.id) ? '#f1f5f9' : '#94a3b8'"
+          :opacity="activeConstellationIds.includes(constellation.id) ? '0.9' : '0.5'"
+          filter="url(#subtleGlow)"
         />
       </g>
     </svg>
-    <!-- 별자리 진행률 텍스트: SVG 바로 아래, 버튼 위 -->
-    <div class="mt-6 mb-2 text-white text-lg font-bold drop-shadow-md z-10">{{ activeCount }} / {{ totalCount }}</div>
-    <!-- 하단 보상 수령 버튼: 기존보다 더 위쪽 (bottom-32) -->
+
+    <!-- 진행률 표시 -->
+    <div class="mt-8 mb-8 text-center z-10">
+      <div class="text-xl font-light text-white tracking-wide">
+        {{ activeCount }}<span class="text-slate-500 mx-2">/</span>{{ totalCount }}
+      </div>
+      <div class="text-xs text-slate-500 mt-2 tracking-wider uppercase">Progress</div>
+    </div>
+
+    <!-- 보상 수령 버튼 -->
     <button
-      class="absolute bottom-32 left-1/2 -translate-x-1/2 px-8 py-3 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-xl shadow-lg transition-all z-20"
+      @click="triggerBigBang"
+      :disabled="showBigBang"
+      class="absolute bottom-28 left-1/2 -translate-x-1/2 px-8 py-3 bg-white/8 hover:bg-white/12 disabled:bg-slate-800/40 text-white font-medium rounded-lg border border-white/10 backdrop-blur-sm transition-all duration-300 hover:border-white/20 disabled:opacity-40 disabled:cursor-not-allowed z-20 text-sm"
     >
-      보상 수령
+      보상 수령하기
     </button>
   </div>
 </template>
 
 <script setup>
-import { computed, ref } from "vue";
+import { computed, ref, onMounted } from "vue";
 
-// 별자리 데이터는 그대로 유지
+// 별자리 데이터 (동일)
 const constellations = [
   {
     id: 1,
     name: "양자리",
-    fullName: "양자리 (Aries)",
     lines: [
       { id: 1, x1: 80, y1: 120, x2: 120, y2: 100 },
       { id: 2, x1: 120, y1: 100, x2: 140, y2: 130 },
@@ -77,7 +230,6 @@ const constellations = [
   {
     id: 2,
     name: "황소자리",
-    fullName: "황소자리 (Taurus)",
     lines: [
       { id: 1, x1: 250, y1: 80, x2: 280, y2: 100 },
       { id: 2, x1: 280, y1: 100, x2: 320, y2: 90 },
@@ -96,7 +248,6 @@ const constellations = [
   {
     id: 3,
     name: "쌍둥이자리",
-    fullName: "쌍둥이자리 (Gemini)",
     lines: [
       { id: 1, x1: 480, y1: 70, x2: 520, y2: 90 },
       { id: 2, x1: 520, y1: 90, x2: 540, y2: 120 },
@@ -117,7 +268,6 @@ const constellations = [
   {
     id: 4,
     name: "게자리",
-    fullName: "게자리 (Cancer)",
     lines: [
       { id: 1, x1: 680, y1: 80, x2: 700, y2: 110 },
       { id: 2, x1: 700, y1: 110, x2: 720, y2: 90 },
@@ -135,7 +285,6 @@ const constellations = [
   {
     id: 5,
     name: "사자자리",
-    fullName: "사자자리 (Leo)",
     lines: [
       { id: 1, x1: 60, y1: 230, x2: 90, y2: 250 },
       { id: 2, x1: 90, y1: 250, x2: 130, y2: 240 },
@@ -156,7 +305,6 @@ const constellations = [
   {
     id: 6,
     name: "처녀자리",
-    fullName: "처녀자리 (Virgo)",
     lines: [
       { id: 1, x1: 250, y1: 220, x2: 280, y2: 240 },
       { id: 2, x1: 280, y1: 240, x2: 320, y2: 250 },
@@ -176,7 +324,6 @@ const constellations = [
   {
     id: 7,
     name: "천칭자리",
-    fullName: "천칭자리 (Libra)",
     lines: [
       { id: 1, x1: 480, y1: 210, x2: 510, y2: 230 },
       { id: 2, x1: 510, y1: 230, x2: 540, y2: 220 },
@@ -196,7 +343,6 @@ const constellations = [
   {
     id: 8,
     name: "전갈자리",
-    fullName: "전갈자리 (Scorpio)",
     lines: [
       { id: 1, x1: 680, y1: 200, x2: 700, y2: 220 },
       { id: 2, x1: 700, y1: 220, x2: 720, y2: 240 },
@@ -218,7 +364,6 @@ const constellations = [
   {
     id: 9,
     name: "사수자리",
-    fullName: "사수자리 (Sagittarius)",
     lines: [
       { id: 1, x1: 60, y1: 370, x2: 90, y2: 390 },
       { id: 2, x1: 90, y1: 390, x2: 130, y2: 380 },
@@ -240,7 +385,6 @@ const constellations = [
   {
     id: 10,
     name: "염소자리",
-    fullName: "염소자리 (Capricorn)",
     lines: [
       { id: 1, x1: 250, y1: 360, x2: 280, y2: 380 },
       { id: 2, x1: 280, y1: 380, x2: 320, y2: 370 },
@@ -261,7 +405,6 @@ const constellations = [
   {
     id: 11,
     name: "물병자리",
-    fullName: "물병자리 (Aquarius)",
     lines: [
       { id: 1, x1: 480, y1: 350, x2: 510, y2: 370 },
       { id: 2, x1: 510, y1: 370, x2: 540, y2: 360 },
@@ -284,7 +427,6 @@ const constellations = [
   {
     id: 12,
     name: "물고기자리",
-    fullName: "물고기자리 (Pisces)",
     lines: [
       { id: 1, x1: 680, y1: 340, x2: 700, y2: 360 },
       { id: 2, x1: 700, y1: 360, x2: 720, y2: 380 },
@@ -304,11 +446,67 @@ const constellations = [
   },
 ];
 
-// 활성화된 별자리 id 배열 (예시: 5, 7, 9번이 활성화)
-const activeConstellationIds = ref([5]); // 실제 활성화된 별자리 id로 교체
+// 반응형 변수들
+const activeConstellationIds = ref([5]);
+const showBigBang = ref(false);
+const bigBangStage = ref(0);
+const backgroundStars = ref([]);
+const sparkles = ref([]);
 
-// 활성화된 별자리 개수
+// 계산된 값들
 const activeCount = computed(() => constellations.filter((c) => activeConstellationIds.value.includes(c.id)).length);
-// 총 별자리 개수
 const totalCount = computed(() => constellations.length);
+
+// 절제된 배경 별들 생성
+const createBackgroundStars = () => {
+  backgroundStars.value = Array.from({ length: 15 }, (_, i) => ({
+    id: i,
+    x: Math.random() * 100,
+    y: Math.random() * 100,
+    size: Math.random() * 1.5 + 0.5,
+    opacity: Math.random() * 0.3 + 0.1,
+    delay: Math.random() * 5000,
+  }));
+};
+
+// 세련된 확산 효과
+const triggerBigBang = () => {
+  showBigBang.value = true;
+  bigBangStage.value = 0;
+
+  // 미세한 파티클 생성
+  sparkles.value = Array.from({ length: 12 }, (_, i) => {
+    const angle = (i / 12) * 2 * Math.PI;
+    const distance = Math.random() * 80 + 60;
+    return {
+      id: i,
+      x: 50,
+      y: 50,
+      moveX: Math.cos(angle) * distance,
+      moveY: Math.sin(angle) * distance,
+      delay: Math.random() * 300,
+      duration: Math.random() * 800 + 1500,
+    };
+  });
+
+  // 부드러운 단계별 진행
+  setTimeout(() => (bigBangStage.value = 1), 100);
+  setTimeout(() => (bigBangStage.value = 2), 300);
+  setTimeout(() => (bigBangStage.value = 3), 600);
+  setTimeout(() => (bigBangStage.value = 4), 900);
+  setTimeout(() => (bigBangStage.value = 5), 1200);
+  setTimeout(() => (bigBangStage.value = 6), 1600);
+};
+
+// 효과 종료
+const closeBigBang = () => {
+  showBigBang.value = false;
+  bigBangStage.value = 0;
+  sparkles.value = [];
+};
+
+// 초기화
+onMounted(() => {
+  createBackgroundStars();
+});
 </script>

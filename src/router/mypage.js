@@ -14,4 +14,14 @@ export default [
     name: "ChangePassword",
     component: () => import("@/views/mypage/ChangePassword.vue"),
   },
+  {
+    path: "/mypage/edit-profile",
+    name: "EditProfile",
+    component: () => import("@/views/mypage/EditProfile.vue"),
+  },
+  {
+    path: "/mypage/edit-account",
+    name: "EditAccount",
+    component: () => import("@/views/mypage/EditAccount.vue"),
+  },
 ];

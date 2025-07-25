@@ -1,5 +1,6 @@
 <template>
-  <CardContainer>
+  <DefaultLayout>
+    <div class="flex flex-col w-full">
     <!-- 상단 헤더 -->
     <div class="flex items-center mb-6">
       <h2 class="text-lg font-bold">ISA 계좌 할당</h2>
@@ -63,12 +64,13 @@
 
     <!-- 완료 버튼 -->
     <button class="w-full bg-indigo-700 text-white py-3 rounded font-bold text-base" :disabled="selectedTotal !== isaGoalAmount">ISA 계좌 할당 완료</button>
-  </CardContainer>
+  </div>
+  </DefaultLayout>
 </template>
 
 <script setup>
 import { ref, computed, watch } from 'vue';
-import CardContainer from "@/components/common/CardContainer.vue";
+import DefaultLayout from "@/components/layouts/DefaultLayout.vue";
 import BaseTextInput from '@/components/base/BaseTextInput.vue';
 import VChart from 'vue-echarts';
 import { use } from 'echarts/core';

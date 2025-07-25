@@ -1,9 +1,9 @@
 <!-- 홈 페이지 -->
-<template>
-  <div class="home-view"></div>
-</template>
+<template></template>
 
 <script setup>
+import BarChart from "@/components/graph/BarChart.vue";
+
 // TODO: 홈 페이지 로직 구현
 </script>
 

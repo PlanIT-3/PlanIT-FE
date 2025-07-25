@@ -1,96 +1,89 @@
 <template>
   <div>
     <DefaultLayout>
-      <!-- 마이페이지 헤더 -->
-      <div class="flex flex-col gap-4 w-full">
-        <div class="flex justify-between items-center w-full px-0 mb-4">
+      <div class="flex flex-col gap-6 w-full">
+        <div class="flex flex-col items-start w-full px-0 gap-2">
           <h1 class="text-xl font-bold m-0">마이페이지</h1>
-          <span
-            class="flex items-center text-indigo-600 cursor-pointer text-sm"
-            @click="navigateTo('/investment-survey')"
+        </div>
+
+        <div class="flex flex-row items-center justify-between mb-4 w-full px-6">
+          <div class="flex flex-col items-center justify-center">
+            <div class="w-24 h-24 rounded-full bg-gray-200"></div>
+          </div>
+          <div class="flex flex-col justify-center gap-1">
+            <h2 class="text-base font-semibold text-gray-800">{{ name }}님 환영합니다!</h2>
+            <p class="text-sm text-gray-500">오늘도 자산 관리, 함께해요!</p>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <div class="text-sm text-gray-400 mb-2">계정 설정</div>
+          <router-link
+            to="/mypage/edit-profile"
+            class="block py-2 text-base text-gray-800 hover:font-bold hover:text-indigo-600"
           >
-            투자 성향 검사 다시 하기
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke-width="1.5"
-              stroke="currentColor"
-              class="size-6"
-            >
-              <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
-            </svg>
-          </span>
+            내 정보 수정
+          </router-link>
+          <router-link
+            to="/mypage/edit-account"
+            class="block py-2 text-base text-gray-800 hover:font-bold hover:text-indigo-600"
+          >
+            연결된 계좌 관리
+          </router-link>
+
+          <div class="border-t my-4 border-gray-200"></div>
+
+          <div class="text-sm text-gray-400 mb-2">서비스 설정</div>
+          <router-link
+            to="/alarm/setting"
+            class="block py-2 text-base text-gray-800 hover:font-bold hover:text-indigo-600"
+          >
+            알림 설정
+          </router-link>
+          <router-link to="/agreement" class="block py-2 text-base text-gray-800 hover:font-bold hover:text-indigo-600">
+            이용 약관 및 개인정보 처리방침
+          </router-link>
+          <router-link
+            to="/mypage/delete-profile"
+            class="block py-2 text-base text-gray-800 hover:font-bold hover:text-indigo-600"
+          >
+            회원 탈퇴
+          </router-link>
         </div>
 
-        <div class="flex flex-col items-center justify-center">
-          <div class="w-24 h-24 rounded-full bg-gray-200"></div>
-        </div>
-
-        <div class="flex flex-col gap-2 w-full">
-          <div>이름</div>
-          <!-- 이름 받아오기 -->
-          <BaseTextInput placeholder="username" />
-        </div>
-
-        <div class="flex flex-col gap-2 w-full">
-          <div>이메일</div>
-          <!-- 이메일 받아오기 / 수정 불가 -->
-          <BaseTextInput placeholder="email" disabled />
-        </div>
-
-        <div class="flex flex-col gap-2 w-full">
-          <div class="flex justify-between items-center">
-            <div>비밀번호</div>
-            <span class="text-indigo-600 cursor-pointer text-sm" @click="navigateTo('/mypage/change-password')">
-              비밀번호 변경
-            </span>
-          </div>
-          <!-- 비밀번호 받아오기 -->
-          <BaseTextInput placeholder="password" type="password" />
-        </div>
-
-        <div class="text-xl font-bold mb-4">연결된 계좌 정보</div>
-        <!-- 계좌 카드 -->
-        <div class="flex items-center bg-[#F7F9FB] rounded-xl px-4 py-3 mb-3 shadow-sm w-full">
-          <div class="w-10 h-10 flex items-center justify-center bg-blue-100 rounded-full mr-3">
-            <!-- 은행 아이콘 (예시: 카드 아이콘) -->
-            <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-              <rect x="3" y="7" width="18" height="10" rx="2" stroke="currentColor" stroke-width="1.5" fill="none" />
-              <path d="M3 10h18" stroke="currentColor" stroke-width="1.5" />
-            </svg>
-          </div>
-          <div class="flex-1">
-            <div class="font-semibold text-base">국민은행</div>
-            <div class="text-gray-400 text-sm">****-****-1234</div>
-          </div>
-          <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6" />
-          </svg>
-        </div>
-        <!-- 새 계좌 연결하기 -->
-        <div
-          class="w-full border-2 border-dashed border-gray-200 rounded-xl py-4 flex items-center justify-center text-gray-400 cursor-pointer hover:bg-gray-50 transition"
+        <button
+          @click="logout"
+          class="text-base text-indigo-600 hover:underline text-right flex items-center justify-end"
         >
-          + 새 계좌 연결하기
-        </div>
-
-        <Button label="완료" @click="navigateTo('/mypage')" />
+          로그아웃
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            class="size-6"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+          </svg>
+        </button>
       </div>
     </DefaultLayout>
   </div>
 </template>
-
 <script setup>
-import BaseTextInput from "@/components/base/BaseTextInput.vue";
-import CardContainer from "@/components/common/CardContainer.vue";
-import Button from "@/components/base/Button.vue";
-import { useRouter } from "vue-router";
-import DefaultLayout from "@/layouts/DefaultLayout.vue";
-const router = useRouter();
-const navigateTo = (path) => {
-  router.push(path);
+import DefaultLayout from "@/components/layouts/DefaultLayout.vue";
+import { ref } from "vue";
+// import { useUserStore } from "@/stores/user";
+
+// const userStore = useUserStore();
+// const name = userStore.user.name;
+
+const name = ref("User");
+
+const logout = () => {
+  // 토큰 삭제, 유저 상태 초기화 등
+  alert("로그아웃 되었습니다.");
 };
 </script>
-
 <style scoped></style>

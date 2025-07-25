@@ -1,5 +1,5 @@
 <template>
-  <CardContainer>
+  <SubLayout>
     <template v-if="!showResult">
       <!-- Progress Bar -->
       <div class="w-full mb-6">
@@ -44,13 +44,13 @@
         <button class="mt-8 text-[#4B3C8A] underline" @click="resetSurvey">다시하기</button>
       </div>
     </template>
-  </CardContainer>
+  </SubLayout>
 </template>
 
 <script setup>
 import { ref, computed, watch } from "vue";
 import { useRouter } from "vue-router";
-import CardContainer from "@/components/common/CardContainer.vue";
+import SubLayout from "@/components/layouts/SubLayout.vue";
 
 const types = ["안전형", "안정추구형", "위험중립형", "적극투자형", "공격투자형"];
 

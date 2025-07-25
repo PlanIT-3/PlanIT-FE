@@ -36,7 +36,7 @@ import { ref } from "vue";
 import BaseTextInput from "@/components/base/BaseTextInput.vue";
 import Button from "@/components/base/Button.vue";
 import { useRouter } from "vue-router";
-import DefaultLayout from "@/layouts/DefaultLayout.vue";
+import DefaultLayout from "@/components/layouts/DefaultLayout.vue";
 
 const newPassword = ref("");
 const confirmPassword = ref("");
