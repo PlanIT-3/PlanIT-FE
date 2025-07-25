@@ -1,21 +1,8 @@
 <!-- 루트 애플리케이션 컴포넌트 -->
 <template>
   <div class="min-h-screen bg-gray-100 flex items-center justify-center">
-<<<<<<< HEAD
     <div id="app" class="w-[393px] min-h-[852px] bg-white shadow-md overflow-hidden relative">
       <RouterView></RouterView>
-=======
-    <div id="app" class="w-[393px] min-h-[852px] bg-white shadow-md overflow-hidden relative flex flex-col">
-      <!-- TODO: 앱 레이아웃 구현 -->
-      <component :is="layoutHeader" />
-      <div class="flex-1">
-        <RouterView></RouterView>
-      </div>
-      <!-- 헤더 없으면 nav도 없게 -->
-      <div v-if="!route.meta?.layout || route.meta.layout !== 'noHeader'">
-        <NavBar></NavBar>
-      </div>
->>>>>>> e35e3af (fix: #45 CardContainer 컴포넌트 기반으로 코드 수정)
     </div>
   </div>
 </template>
