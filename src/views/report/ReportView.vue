@@ -63,10 +63,10 @@
       </div>
       <!-- 그래프 카드 영역 (GraphBox 컴포넌트 사용) -->
       <div class="w-full max-w-xl flex flex-col gap-4">
-        <GraphBox title="내 일별 수익률 변화" dropdown-text="Weekly ▾">
+        <GraphBox title="내 일별 수익률 변화" v-model:period="period1">
           [그래프 영역]
         </GraphBox>
-        <GraphBox title="주별 투자금 총액 비교" dropdown-text="Weekly ▾">
+        <GraphBox title="주별 투자금 총액 비교" v-model:period="period2">
           [그래프 영역]
         </GraphBox>
       </div>
@@ -91,4 +91,7 @@ const goals = [
 const setActiveTab = (tab) => {
   activeTab.value = tab;
 };
+
+const period1 = ref('weekly');
+const period2 = ref('weekly');
 </script>
