@@ -1,9 +1,10 @@
 <!-- 홈 페이지 -->
-<template>
-  <div class="home-view"></div>
-</template>
+<template></template>
 
 <script setup>
+import MainLayout from "@/components/layouts/MainLayout.vue";
+import NavBarLayout from "@/components/layouts/NavBarLayout.vue";
+
 // TODO: 홈 페이지 로직 구현
 </script>
 
