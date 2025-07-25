@@ -28,7 +28,7 @@
               <div v-for="(goal, i) in goals" :key="i" class="flex flex-col items-center">
                 <CircleProgress :percent="72" :color="goal.color" :size="64" />
                 <div class="text-xs font-semibold text-gray-700 mt-2">{{ goal.name }}</div>
-                <div class="text-[11px] text-gray-400">{{ goal.value }}만원 / {{ goal.total }}만원</div>
+                <div class="text-[11px] text-gray-400">{{ goal.value }} / {{ goal.total }}</div>
               </div>
             </div>
           </div>
@@ -36,12 +36,28 @@
 
         
         <!-- 탭 버튼 -->
-        <div class="flex w-full gap-2 mb-2">
-          <button class="flex-1 py-2 rounded-lg border bg-gray-100 text-gray-600 font-semibold flex items-center justify-center gap-2">
-            <span class="text-lg">💳</span> ISA 리포트
+        <div class="flex justify-center gap-2 mb-4">
+          <button 
+            @click="setActiveTab('isa')"
+            :class="[
+              'px-6 py-2 rounded-lg border font-semibold flex items-center justify-center gap-2 transition-colors text-sm',
+              activeTab === 'isa' 
+                ? 'bg-blue-100 text-blue-600 border-blue-300' 
+                : 'bg-gray-100 text-gray-600 border-gray-300 hover:bg-gray-200'
+            ]"
+          >
+            <span class="text-base">💳</span> ISA 리포트
           </button>
-          <button class="flex-1 py-2 rounded-lg border bg-blue-100 text-blue-600 font-semibold flex items-center justify-center gap-2">
-            <span class="text-lg">📊</span> 투자 리포트
+          <button 
+            @click="setActiveTab('investment')"
+            :class="[
+              'px-6 py-2 rounded-lg border font-semibold flex items-center justify-center gap-2 transition-colors text-sm',
+              activeTab === 'investment' 
+                ? 'bg-blue-100 text-blue-600 border-blue-300' 
+                : 'bg-gray-100 text-gray-600 border-gray-300 hover:bg-gray-200'
+            ]"
+          >
+            <span class="text-base">📊</span> 투자 리포트
           </button>
         </div>
       </div>
@@ -69,11 +85,17 @@
 <script setup>
 import DefaultLayout from "@/components/layouts/DefaultLayout.vue";
 import CircleProgress from '@/components/report/CircleProgress.vue';
+import { ref } from 'vue';
+
+const activeTab = ref('investment'); // 기본값: 투자 리포트
 
 const goals = [
   { name: 'ISA 내집마련', value: 2160, total: 3000, color: '#3b82f6' },
   { name: 'ISA 내집마련', value: 2160, total: 3000, color: '#10b981' },
   { name: 'ISA 내집마련', value: 2160, total: 3000, color: '#f59e42' },
-  { name: 'ISA 내집마련', value: 2160, total: 3000, color: '#8b5cf6' },
 ];
+
+const setActiveTab = (tab) => {
+  activeTab.value = tab;
+};
 </script>
