@@ -7,11 +7,11 @@
         </div>
         <div>
           <h4 class="font-semibold text-gray-800">{{ bankName }}</h4>
-          <p class="text-sm text-gray-600">{{ productName }}</p>
+          <p class="text-sm text-gray-600 whitespace-nowrap">{{ productName }}</p>
         </div>
       </div>
       <div class="text-right">
-        <p class="text-sm text-blue-600 font-medium">전체 대비 {{ percent }}%</p>
+        <p class="text-sm text-blue-600 font-medium whitespace-nowrap">전체 대비 {{ percent }}%</p>
         <p class="text-lg font-bold text-gray-800">{{ amount }}만원</p>
       </div>
     </div>
