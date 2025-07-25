@@ -11,7 +11,7 @@ function goBack() {
   <div>
     <button
       @click="goBack"
-      class="absolute left-4 top-6 w-10 h-10 flex items-center justify-center rounded-xl border border-gray-200 bg-white shadow-sm"
+      class="left-4 top-6 w-10 h-10 flex items-center justify-center rounded-xl border border-gray-200 bg-white shadow-sm"
     >
       <svg
         width="24"

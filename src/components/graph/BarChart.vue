@@ -1,4 +1,7 @@
 <script setup>
+import { computed } from "vue";
+import { defineProps } from "vue";
+
 import VChart from "vue-echarts";
 import { use } from "echarts/core";
 import { CanvasRenderer } from "echarts/renderers";
@@ -7,7 +10,17 @@ import { GridComponent, TooltipComponent, LegendComponent } from "echarts/compon
 
 use([CanvasRenderer, BarChart, GridComponent, TooltipComponent, LegendComponent]);
 
-const options = {
+// ✅ props 정의
+const props = defineProps({
+  data: {
+    type: Array,
+    required: true,
+    default: () => [],
+  },
+});
+
+// ✅ echarts option 계산
+const options = computed(() => ({
   tooltip: {
     trigger: "axis",
     triggerOn: "click",
@@ -15,79 +28,47 @@ const options = {
       type: "shadow",
     },
   },
-
   legend: {
-    top: 10, // 범례를 위쪽에 배치
+    top: 10,
+    left: "center",
     textStyle: {
       fontSize: 8,
     },
-    selectedMode: true, //옵션 그래프에서 숨기기
+    selectedMode: true,
   },
   grid: {
-    // 여백
-    left: "3%",
-    right: "4%",
+    left: "",
+    right: "2%",
     bottom: "3%",
     containLabel: true,
   },
   xAxis: {
     type: "value",
-    show: false, // 가로축 안보이게
+    show: false,
   },
   yAxis: {
     type: "category",
-    data: ["오늘"], // 하나의 줄 (막대)
-    show: false, // 세로축 안보이게
+    data: [""],
+    show: false,
   },
-  series: [
-    {
-      name: "식비",
+  series: props.data.map((item, index) => {
+    const isFirst = index === 0;
+    const isLast = index === props.data.length - 1;
+    return {
+      name: item.name,
       type: "bar",
       stack: "total",
-      emphasis: {
-        focus: "series",
-      },
-      data: [40],
+      data: [item.value],
       itemStyle: {
-        borderRadius: [6, 0, 0, 6],
+        borderRadius: isFirst ? [6, 0, 0, 6] : isLast ? [0, 6, 6, 0] : 0,
       },
-    },
-    {
-      name: "교통비",
-      type: "bar",
-      stack: "total",
-      emphasis: {
-        focus: "series",
-      },
-      data: [30],
-    },
-    {
-      name: "여가",
-      type: "bar",
-      stack: "total",
-      emphasis: {
-        focus: "series",
-      },
-      data: [20],
-    },
-    {
-      name: "기타",
-      type: "bar",
-      stack: "total",
-      emphasis: {
-        focus: "series",
-      },
-      data: [10],
-      itemStyle: {
-        borderRadius: [0, 6, 6, 0],
-      },
-    },
-  ],
-};
+    };
+  }),
+}));
 </script>
 
 <template>
-  <div class="w-full h-[60px]">
+  <div class="w-full h-[100px]">
     <VChart :option="options" autoresize />
   </div>
 </template>
