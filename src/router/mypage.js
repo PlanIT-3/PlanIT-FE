@@ -9,4 +9,9 @@ export default [
     name: "DeleteProfile",
     component: () => import("@/views/mypage/DeleteProfile.vue"),
   },
+  {
+    path: "/mypage/change-password",
+    name: "ChangePassword",
+    component: () => import("@/views/mypage/ChangePassword.vue"),
+  },
 ];
