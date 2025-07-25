@@ -18,7 +18,7 @@
         </div>
         <div class="flex items-center space-x-4 mt-2">
           <!-- 돋보기 아이콘 -->
-          <button aria-label="검색" class="text-white hover:text-gray-200">
+          <button aria-label="검색" class="text-white hover:text-gray-200 cursor-pointer">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -35,7 +35,7 @@
             </svg>
           </button>
           <!-- 알림 아이콘 -->
-          <button aria-label="알림" class="text-white hover:text-gray-200">
+          <button aria-label="알림" class="text-white hover:text-gray-200 cursor-pointer">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -52,7 +52,11 @@
             </svg>
           </button>
           <!-- 유저 아이콘 -->
-          <button aria-label="마이페이지" class="text-white hover:text-gray-200" @click="navigateTo('/mypage')">
+          <button
+            aria-label="마이페이지"
+            class="text-white hover:text-gray-200 cursor-pointer"
+            @click="navigateTo('/mypage')"
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
