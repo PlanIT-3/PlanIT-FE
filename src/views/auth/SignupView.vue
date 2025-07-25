@@ -17,20 +17,7 @@
 
         <div class="text-center mb-6">
           <p class="text-gray-500 text-sm mb-4">Or Register with</p>
-          <div class="flex justify-center gap-4">
-            <button
-              class="w-[80px] h-[44px] flex items-center justify-center rounded-lg border border-gray-300"
-              @click="redirectToKakao"
-            >
-              <img :src="KaKaoLogo" alt="Kakao Logo" class="w-full h-full object-cover rounded-lg" />
-            </button>
-            <button
-              class="w-[80px] h-[44px] flex items-center justify-center rounded-lg border border-gray-300"
-              @click="redirectToNaver"
-            >
-              <img :src="NaverLogo" alt="Naver Logo" class="w-full h-full object-cover rounded-lg" />
-            </button>
-          </div>
+          <div class="flex justify-center gap-4"></div>
         </div>
 
         <div class="text-center">
@@ -50,8 +37,7 @@ import { useRouter } from "vue-router";
 import Button from "@/components/base/Button.vue";
 import goBackButton from "@/components/base/GoBackButton.vue";
 import BaseTextInput from "@/components/base/BaseTextInput.vue";
-import KaKaoLogo from "@/assets/icons/Kakao.svg";
-import NaverLogo from "@/assets/icons/Naver.svg";
+
 // import { useAuthStore } from "@/stores/user";
 
 const router = useRouter();
