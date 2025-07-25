@@ -86,7 +86,7 @@ import BaseTextInput from "@/components/base/BaseTextInput.vue";
 import CardContainer from "@/components/common/CardContainer.vue";
 import Button from "@/components/base/Button.vue";
 import { useRouter } from "vue-router";
-import DefaultLayout from "@/layouts/DefaultLayout.vue";
+import DefaultLayout from "@/components/layouts/DefaultLayout.vue";
 const router = useRouter();
 const navigateTo = (path) => {
   router.push(path);

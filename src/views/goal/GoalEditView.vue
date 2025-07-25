@@ -70,7 +70,7 @@
 
 <script setup>
 import { ref, computed } from "vue";
-import DefaultLayout from "@/layouts/DefaultLayout.vue";
+import DefaultLayout from "@/components/layouts/DefaultLayout.vue";
 
 const goalAmount = ref(0); // 목표 금액
 const depositRatio = ref(50); // 예적금 비율 (0~100, 기본 50%)
