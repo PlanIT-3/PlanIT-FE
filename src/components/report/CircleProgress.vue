@@ -41,7 +41,7 @@ const option = {
 <template>
   <div :style="{ width: size + 'px', height: size + 'px', position: 'relative' }">
     <VChart :option="option" autoresize :style="{ width: size + 'px', height: size + 'px', position: 'absolute', top: 0, left: 0 }" />
-    <span class="absolute inset-0 flex items-center justify-center text-xl font-bold text-gray-700 z-10">
+    <span class="absolute inset-0 flex items-center justify-center text-base font-bold text-gray-700 z-10">
       {{ centerText || percent + '%' }}
     </span>
   </div>
