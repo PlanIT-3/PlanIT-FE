@@ -39,7 +39,7 @@
 <script setup>
 import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { api } from "@/services/api";
+import { saveInvestmentType } from "@/api/surveyApi";
 
 const route = useRoute();
 const router = useRouter();
@@ -88,15 +88,10 @@ const characterImg = computed(() => new URL(`../../assets/images/${resultInfo.im
 
 async function goHome() {
   const investType = resultInfo.apiType;
-  const apiUrl = "/member/invest-type";
 
   try {
     // api 유틸리티를 사용해 POST 요청
-    const response = await api.post(apiUrl, null, {
-      params: {
-        type: investType,
-      },
-    });
+    const response = await saveInvestmentType(investType);
 
     if (response.status === 200) {
       console.log("투자 성향이 성공적으로 저장되었습니다.");
