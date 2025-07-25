@@ -1,7 +1,7 @@
 <template>
   <header
-    class="w-full h-[180px] relative rounded-b-3xl overflow-hidden flex flex-col justify-between z-10"
-    style="background: none"
+    class="w-full h-[180px] relative rounded-b-3xl overflow-hidden flex flex-col justify-between"
+    style="background: none z-10"
   >
     <img
       src="@/assets/images/headerBackground.svg"
