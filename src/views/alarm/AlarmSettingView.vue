@@ -151,7 +151,7 @@
 <script setup>
 import { ref, watch } from "vue";
 import { useRouter } from "vue-router";
-import DefaultLayout from "@/layouts/DefaultLayout.vue";
+import DefaultLayout from "@/components/layouts/DefaultLayout.vue";
 import AlarmToggle from "@/components/alarm/AlarmSettingItem.vue";
 
 const router = useRouter();
