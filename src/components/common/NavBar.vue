@@ -58,7 +58,7 @@
       </div>
 
       <!-- Add Button (Center) -->
-      <div class="flex flex-col items-center relative -top-5">
+      <div class="flex flex-col items-center relative -top-5" @click="selectTab('add')">
         <div
           class="w-14 h-14 rounded-full bg-indigo-600 flex items-center justify-center shadow-lg transition-all duration-200 hover:scale-110 hover:bg-indigo-700 group"
         >
@@ -134,16 +134,34 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
-import { useRouter } from "vue-router";
-const selectedTab = ref("home");
+import { ref, watch, onMounted } from "vue";
+import { useRouter, useRoute } from "vue-router";
+
 const router = useRouter();
+const route = useRoute();
+
 const tabRoutes = {
-  home: "/",
-  goals: "/goals",
-  invest: "/invest",
+  home: "/main",
+  goals: "/goal/detail",
+  invest: "/recommend",
   reward: "/reward",
+  add: "/goal/edit",
 };
+
+// 경로 기반으로 탭 이름 역으로 찾기
+function getTabByPath(path) {
+  return Object.keys(tabRoutes).find((key) => tabRoutes[key] === path);
+}
+
+const selectedTab = ref(getTabByPath(route.path) || "home");
+
+watch(
+  () => route.path,
+  (newPath) => {
+    selectedTab.value = getTabByPath(newPath) || "home";
+  }
+);
+
 function selectTab(tab) {
   selectedTab.value = tab;
   router.push(tabRoutes[tab]);

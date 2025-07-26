@@ -10,7 +10,6 @@ import { GridComponent, TooltipComponent, LegendComponent } from "echarts/compon
 
 use([CanvasRenderer, BarChart, GridComponent, TooltipComponent, LegendComponent]);
 
-// ✅ props 정의
 const props = defineProps({
   data: {
     type: Array,
@@ -19,7 +18,6 @@ const props = defineProps({
   },
 });
 
-// ✅ echarts option 계산
 const options = computed(() => ({
   tooltip: {
     trigger: "axis",
