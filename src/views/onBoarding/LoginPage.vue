@@ -44,7 +44,7 @@
 </template>
 
 <script setup>
-import goBackButton from "@/components/base/goBackButton.vue";
+import goBackButton from "@/components/base/GoBackButton.vue";
 import BaseTextInput from "@/components/base/BaseTextInput.vue";
 import BasePasswordInput from "@/components/base/BasePasswordInput.vue";
 import Button from "@/components/base/Button.vue";

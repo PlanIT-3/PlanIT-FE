@@ -8,6 +8,7 @@ import onBoardingRoutes from "./onBoarding";
 import goalRoutes from "./goal";
 import recommendationRoutes from "./recommendation";
 import mypageRoutes from "./mypage";
+import alarmRoutes from "./alarm";
 import reportRoutes from "./report";
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -35,6 +36,7 @@ const router = createRouter({
     ...goalRoutes,
     ...recommendationRoutes,
     ...mypageRoutes,
+    ...alarmRoutes,
     ...reportRoutes,
   ],
 });
