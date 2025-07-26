@@ -27,7 +27,7 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import DefaultLayout from "@/layouts/DefaultLayout.vue";
+import DefaultLayout from "@/components/layouts/DefaultLayout.vue";
 import AlarmItem from "@/components/alarm/AlarmItem.vue";
 
 const router = useRouter();
