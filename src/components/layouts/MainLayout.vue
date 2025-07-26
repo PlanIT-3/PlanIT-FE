@@ -6,7 +6,7 @@
       class="w-full bg-white rounded-t-3xl shadow-lg px-6 pt-12 pb-8 -mt-[84px] overflow-y-auto"
       :style="{ maxHeight: 'calc(852px - 148px)', minHeight: 'calc(852px - 148px)' }"
     >
-      <slot></slot>
+      <slot />
     </div>
     <NavBar class="flex-shrink-0 relative z-30" />
   </div>
