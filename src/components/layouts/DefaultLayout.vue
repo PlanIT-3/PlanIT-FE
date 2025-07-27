@@ -8,7 +8,7 @@
     >
       <slot />
     </div>
-    <NavBar class="flex-shrink-0 relative z-30" />
+    <NavBar class="sticky bottom-0 bg-white z-10" />
   </div>
 </template>
 

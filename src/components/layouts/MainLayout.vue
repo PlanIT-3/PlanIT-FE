@@ -3,12 +3,12 @@
     <MainHeader class="flex-shrink-0 relative z-10" />
     <div
       id="content"
-      class="w-full bg-white rounded-t-3xl shadow-lg px-6 pt-12 pb-8 -mt-[84px] overflow-y-auto"
+      class="w-full bg-white rounded-t-3xl shadow-lg px-6 pt-12 pb-8 z-* -mt-[84px] overflow-y-auto"
       :style="{ maxHeight: 'calc(852px - 148px)', minHeight: 'calc(852px - 148px)' }"
     >
       <slot />
     </div>
-    <NavBar class="flex-shrink-0 relative z-30" />
+    <NavBar class="sticky bottom-0 bg-white z-10" />
   </div>
 </template>
 

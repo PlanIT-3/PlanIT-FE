@@ -23,7 +23,6 @@
           </button>
         </div>
 
-        <!-- 목표 제목 -->
         <div class="mb-4">
           <h2 class="text-lg font-semibold text-gray-800 mb-1">{{ goalTitle }}</h2>
           <div class="flex items-center">
@@ -34,7 +33,6 @@
           </div>
         </div>
 
-        <!-- 진행률 바 -->
         <div class="mb-4">
           <div class="flex justify-between text-sm text-gray-600 mb-2">
             <span>{{ currentAmount }}만원</span>
@@ -47,10 +45,15 @@
       <!-- 목표에 할당된 계좌 섹션 -->
       <div class="bg-white rounded-2xl shadow-sm mx-4 mb-4 p-5">
         <h3 class="text-lg font-semibold text-gray-800 mb-4">목표에 할당된 계좌</h3>
-
-        <GoalAssignedCard bank-name="토스" product-name="예금 · 주택청약" percent="15" amount="675" class="mb-3" />
-        <GoalAssignedCard bank-name="KB" product-name="적금 · 주택청약" percent="60" amount="2700" class="mb-3" />
-        <GoalAssignedCard bank-name="카카오뱅크" product-name="자유적금" percent="25" amount="1125" class="mb-4" />
+        <GoalAssignedCard
+          v-for="(account, index) in accounts"
+          :key="index"
+          :bank-name="account.bankName"
+          :product-name="account.productName"
+          :percent="account.percent"
+          :amount="account.amount"
+          class="mb-3"
+        />
       </div>
 
       <!-- 목표 금액 및 저축액 요약 -->
@@ -65,7 +68,6 @@
             <p class="text-2xl font-bold text-green-600">{{ currentAmount }}만원</p>
           </div>
         </div>
-
         <div class="border-t pt-4">
           <div class="flex justify-between items-center">
             <p class="text-sm font-medium text-gray-700">목표 금액까지</p>
@@ -74,11 +76,10 @@
         </div>
       </div>
 
-      <!-- 목표 진행 추이 요약 섹션 -->
+      <!-- 목표 진행 요약 및 차트 -->
       <div class="bg-white rounded-2xl shadow-sm mx-4 mb-4 p-5">
         <h3 class="text-lg font-semibold text-gray-800 mb-4">주식 진행 추이</h3>
 
-        <!-- 차트 영역 -->
         <div class="mb-6 h-48 bg-gray-50 rounded-lg flex items-center justify-center border-2 border-purple-200">
           <div class="text-center text-gray-500">
             <div class="text-sm mb-2">주식 진행 추이 차트</div>
@@ -86,7 +87,6 @@
           </div>
         </div>
 
-        <!-- 요약 한마디 -->
         <div class="mb-6 flex justify-center">
           <SummaryCard>
             <template #title>🔍 목표 진행 요약</template>
@@ -95,11 +95,9 @@
           </SummaryCard>
         </div>
 
-        <!-- 특정 기간 리밸런싱 -->
+        <!-- 리밸런싱 -->
         <div class="mb-4">
           <h4 class="text-base font-semibold text-gray-800 mb-3">특정 기간 리밸런싱</h4>
-
-          <!-- 기간 선택 버튼 -->
           <div class="flex gap-2 mb-4">
             <button
               v-for="period in periods"
@@ -115,7 +113,6 @@
               {{ period }}
             </button>
           </div>
-
           <RebalanceCard
             title="한달"
             expected-yield="8.2%"
@@ -128,7 +125,7 @@
           />
         </div>
 
-        <!-- OOO + GLD 포트폴리오 -->
+        <!-- 포트폴리오 & 코인 -->
         <div class="mb-4">
           <h4 class="text-base font-semibold text-gray-800 mb-3">QQQ + QLD 포트폴리오</h4>
           <div class="bg-gray-50 rounded-lg p-4">
@@ -145,7 +142,6 @@
           </div>
         </div>
 
-        <!-- 코인 보유 종목 -->
         <div class="mb-4">
           <h4 class="text-base font-semibold text-gray-800 mb-3">코인 보유 종목</h4>
           <div class="bg-gray-50 rounded-lg p-4">
@@ -170,7 +166,7 @@
   </DefaultLayout>
 </template>
 
-<script>
+<script setup>
 import { ref, computed } from "vue";
 import BarChart from "@/components/graph/BarChart.vue";
 import GoalAssignedCard from "@/components/manageGoal/GoalAssignedCard.vue";
@@ -178,69 +174,24 @@ import SummaryCard from "@/components/common/SummaryCard.vue";
 import RebalanceCard from "@/components/goal/RebalanceCard.vue";
 import DefaultLayout from "@/components/layouts/DefaultLayout.vue";
 
-export default {
-  name: "GoalDetailView",
-  components: {
-    BarChart,
-    GoalAssignedCard,
-    SummaryCard,
-    RebalanceCard,
-    DefaultLayout,
-  },
-  setup() {
-    // 목표 정보
-    const goalTitle = ref("자가용 구매하기");
-    const targetAmount = ref(5000);
+// Props (나중에 외부에서 넘기도록 할 수 있음)
+const goalTitle = ref("자가용 구매하기");
+const targetAmount = ref(5000);
 
-    // 리밸런싱 기간 선택
-    const periods = ref(["한달", "3개월", "6개월", "1년"]);
-    const selectedPeriod = ref("한달");
+const accounts = ref([
+  { bankName: "토스", productName: "예금 · 주택청약", percent: 15, amount: 675 },
+  { bankName: "KB", productName: "적금 · 주택청약", percent: 60, amount: 2700 },
+  { bankName: "카카오뱅크", productName: "자유적금", percent: 25, amount: 1125 },
+]);
 
-    // 계좌별 데이터
-    const accounts = ref([
-      {
-        bankName: "토스",
-        productName: "예금 · 주택청약",
-        percent: 15,
-        amount: 675,
-      },
-      {
-        bankName: "KB",
-        productName: "적금 · 주택청약",
-        percent: 60,
-        amount: 2700,
-      },
-      {
-        bankName: "카카오뱅크",
-        productName: "자유적금",
-        percent: 25,
-        amount: 1125,
-      },
-    ]);
+const currentAmount = computed(() => {
+  return accounts.value.reduce((sum, acc) => sum + acc.amount, 0);
+});
 
-    // 계산된 값들
-    const currentAmount = computed(() => {
-      return accounts.value.reduce((total, account) => total + Number(account.amount), 0);
-    });
+const remainingAmount = computed(() => targetAmount.value - currentAmount.value);
+const progressPercentage = computed(() => Math.round((currentAmount.value / targetAmount.value) * 100));
 
-    const remainingAmount = computed(() => {
-      return targetAmount.value - currentAmount.value;
-    });
-
-    const progressPercentage = computed(() => {
-      return Math.round((currentAmount.value / targetAmount.value) * 100);
-    });
-
-    return {
-      goalTitle,
-      targetAmount,
-      currentAmount,
-      remainingAmount,
-      progressPercentage,
-      accounts,
-      periods,
-      selectedPeriod,
-    };
-  },
-};
+// 리밸런싱 기간
+const periods = ref(["한달", "3개월", "6개월", "1년"]);
+const selectedPeriod = ref("한달");
 </script>
