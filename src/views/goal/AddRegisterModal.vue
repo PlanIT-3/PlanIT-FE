@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import BaseModal from "@/components/base/BaseModal.vue";
 import Button from "@/components/base/Button.vue";
-import { ref } from "vue";
-import { useRouter } from "vue-router"; // 라우터 import
+import { useRouter } from "vue-router";
 
 const props = defineProps({ isOpen: Boolean });
 const emit = defineEmits(["close"]);
@@ -10,11 +9,11 @@ const emit = defineEmits(["close"]);
 const router = useRouter();
 
 const goToISA = () => {
-  router.push("/goal/isa"); // 원하는 경로로 변경하세요
+  router.push("/goal/isa");
 };
 
 const goToSavings = () => {
-  router.push("/goal/deposit"); // 원하는 경로로 변경하세요
+  router.push("/goal/deposit");
 };
 </script>
 
