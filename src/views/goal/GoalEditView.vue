@@ -58,10 +58,12 @@
         >
           <span class="text-gray-400 text-sm mb-2">합당할 자산이 없습니다.</span>
           <button
+            @click="showModal = true"
             class="w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 bg-white text-2xl text-gray-400 hover:bg-gray-100"
           >
             +
           </button>
+          <AddRegisterModal :isOpen="showModal" @close="showModal = false" />
         </div>
       </div>
     </div>
@@ -71,6 +73,9 @@
 <script setup>
 import { ref, computed } from "vue";
 import DefaultLayout from "@/components/layouts/DefaultLayout.vue";
+import AddRegisterModal from "./AddRegisterModal.vue";
+
+const showModal = ref(false);
 
 const goalAmount = ref(0); // 목표 금액
 const depositRatio = ref(50); // 예적금 비율 (0~100, 기본 50%)
