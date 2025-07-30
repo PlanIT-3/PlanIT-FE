@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run dev:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(git checkout:*)",
+      "WebFetch(domain:capacitorjs.com)",
+      "Bash(npm i:*)",
+      "Bash(npx cap init:*)",
+      "Bash(npm run build:*)",
+      "Bash(npx cap add:*)"
+    ],
+    "deny": []
+  }
+}
