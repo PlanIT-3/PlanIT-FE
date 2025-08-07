@@ -16,6 +16,10 @@ const props = defineProps({
     required: true,
     default: () => [],
   },
+  showLegend: {
+    type: Boolean,
+    default: true, // 기본값은 범례 표시
+  },
 });
 
 const options = computed(() => ({
@@ -27,6 +31,7 @@ const options = computed(() => ({
     },
   },
   legend: {
+    show: props.showLegend,
     top: 10,
     left: "center",
     textStyle: {
