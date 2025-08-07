@@ -1,5 +1,10 @@
 export default [
   {
+    path: "/goal",
+    name: "goalView",
+    component: () => import("../views/goal/GoalView.vue"),
+  },
+  {
     path: "/goal/edit",
     name: "goalEditView",
     component: () => import("../views/goal/GoalEditView.vue"),

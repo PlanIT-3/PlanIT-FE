@@ -2,7 +2,7 @@
   <DefaultLayout>
     <div class="w-full">
       <!-- 상단 탭 -->
-      <div class="flex justify-around -mt-6">
+      <div class="flex justify-around">
         <button class="flex flex-col items-center">
           <span class="font-bold">최근 알림</span>
           <div class="mt-4 h-[3px] w-[160px] bg-[#433D8B] rounded-full"></div>

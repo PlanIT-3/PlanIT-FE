@@ -17,7 +17,7 @@
           <span class="text-white text-sm mt-1 ml-1 drop-shadow">스마트한 자산 관리</span>
         </div>
         <div class="flex items-center space-x-4 mt-2">
-          <button aria-label="알림" class="text-white hover:text-gray-200 cursor-pointer">
+          <button aria-label="알림" class="text-white hover:text-gray-200 cursor-pointer" @click="navigateTo('/alarm')">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
