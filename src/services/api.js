@@ -54,7 +54,7 @@ apiClient.interceptors.response.use(
       try {
         const refreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
         if (refreshToken) {
-          const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
+          const response = await axios.post(`${API_BASE_URL}/api/reissue`, {
             refreshToken,
           });
 
@@ -111,6 +111,33 @@ export const api = {
         ...config.headers,
       },
     });
+  },
+};
+
+// 인증 관련 API
+export const authApi = {
+  // 로그인
+  login: async (email, password) => {
+    const response = await apiClient.post("/login", { email, password });
+    return response.data;
+  },
+
+  // 로그아웃
+  logout: async () => {
+    const response = await apiClient.post("/logout");
+    return response.data;
+  },
+
+  // 토큰 갱신
+  refresh: async (refreshToken) => {
+    const response = await apiClient.post("/auth/refresh", { refreshToken });
+    return response.data;
+  },
+
+  // 사용자 정보 조회
+  getUserInfo: async () => {
+    const response = await apiClient.get("/user/me");
+    return response.data;
   },
 };
 
