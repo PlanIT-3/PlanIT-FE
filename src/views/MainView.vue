@@ -24,21 +24,9 @@
                 />
               </svg>
             </div>
-            <h3 class="text-base font-semibold text-gray-800 whitespace-nowrap">최근 투자 현황</h3>
+            <h3 class="text-base font-semibold text-gray-800 whitespace-nowrap">일일 계좌 총 잔고 추이</h3>
           </div>
           <button class="text-xs text-indigo-600 font-medium whitespace-nowrap">전체보기</button>
-        </div>
-
-        <!-- Asset and ROI Summary -->
-        <div class="flex justify-between items-baseline mb-3">
-          <div>
-            <p class="text-sm text-gray-500 whitespace-nowrap">총 투자 자산</p>
-            <p class="text-xl font-bold whitespace-nowrap">12,450,000원</p>
-          </div>
-          <div class="text-right">
-            <p class="text-sm text-gray-500 whitespace-nowrap">총 수익률</p>
-            <p class="text-xl font-bold text-green-600 whitespace-nowrap">+8.2%</p>
-          </div>
         </div>
 
         <!-- Time Period Toggle Buttons -->
@@ -73,7 +61,7 @@
         </div>
 
         <!-- Investment Chart -->
-        <div class="h-[150px] pointer-events-none">
+        <div class="h-[150px]">
           <VChart :option="investmentChartOption" autoresize />
         </div>
       </div>
@@ -88,6 +76,7 @@ import { CanvasRenderer } from "echarts/renderers";
 import { PieChart, LineChart } from "echarts/charts";
 import { TitleComponent, TooltipComponent, LegendComponent, GridComponent } from "echarts/components";
 import VChart from "vue-echarts";
+import { onMounted } from "vue";
 
 import MainLayout from "@/components/layouts/MainLayout.vue";
 import GoalSliderCard from "@/components/goal/GoalSliderCard.vue";
@@ -95,6 +84,60 @@ import GoalSliderCard from "@/components/goal/GoalSliderCard.vue";
 use([CanvasRenderer, PieChart, LineChart, TitleComponent, TooltipComponent, LegendComponent, GridComponent]);
 
 const selectedPeriod = ref("daily");
+
+// API에서 받아온 daily 데이터
+const dailyData = ref([]);
+// API에서 받아온 weekly 데이터
+const weeklyData = ref([]);
+// API에서 받아온 monthly 데이터
+const monthlyData = ref([]);
+
+// 일자 버튼 클릭 시 API 호출
+const fetchDailyData = async () => {
+  try {
+    const response = await fetch("http://localhost:8080/auth/api/account/day");
+    const json = await response.json();
+    if (json.status === "OK" && json.data && json.data.balanceResList) {
+      dailyData.value = json.data.balanceResList;
+      updateInvestmentChart();
+    }
+  } catch (error) {
+    console.error("일별 데이터 불러오기 실패:", error);
+  }
+};
+
+// 주 버튼 클릭 시 API 호출
+const fetchWeeklyData = async () => {
+  try {
+    const response = await fetch("http://localhost:8080/auth/api/account/week");
+    const json = await response.json();
+    if (json.status === "OK" && json.data && json.data.balanceResList) {
+      weeklyData.value = json.data.balanceResList;
+      updateInvestmentChart();
+    }
+  } catch (error) {
+    console.error("주별 데이터 불러오기 실패:", error);
+  }
+};
+
+// 월 버튼 클릭 시 API 호출
+const fetchMonthlyData = async () => {
+  try {
+    const response = await fetch("http://localhost:8080/auth/api/account/month");
+    const json = await response.json();
+    if (json.status === "OK" && json.data && json.data.balanceResList) {
+      monthlyData.value = json.data.balanceResList;
+      updateInvestmentChart();
+    }
+  } catch (error) {
+    console.error("월별 데이터 불러오기 실패:", error);
+  }
+};
+
+// 페이지 로드 시 일자 데이터 자동 로드
+onMounted(() => {
+  fetchDailyData();
+});
 
 const investmentData = {
   daily: {
@@ -118,22 +161,84 @@ const investmentChartOption = ref({});
 
 const selectPeriod = (period) => {
   selectedPeriod.value = period;
-  updateInvestmentChart();
+  if (period === "daily") {
+    fetchDailyData();
+  } else if (period === "weekly") {
+    fetchWeeklyData();
+  } else if (period === "monthly") {
+    fetchMonthlyData();
+  } else {
+    updateInvestmentChart();
+  }
 };
 
 const updateInvestmentChart = () => {
-  const data = investmentData[selectedPeriod.value];
+  let data;
+
+  if (selectedPeriod.value === "daily" && dailyData.value.length > 0) {
+    // API에서 받아온 daily 데이터 사용
+    const labels = dailyData.value.map((item) => {
+      const date = new Date(item.createdAt);
+      return `${date.getMonth() + 1}/${date.getDate()}`;
+    });
+    const amounts = dailyData.value.map((item) => Math.round(item.amount / 10000)); // 만원 단위로 변환
+
+    data = {
+      labels: labels,
+      returns: amounts,
+    };
+  } else if (selectedPeriod.value === "weekly" && weeklyData.value.length > 0) {
+    // API에서 받아온 weekly 데이터 사용
+    const labels = weeklyData.value.map((item) => {
+      const date = new Date(item.createdAt);
+      return `${date.getMonth() + 1}/${date.getDate()}`;
+    });
+    const amounts = weeklyData.value.map((item) => Math.round(item.amount / 10000)); // 만원 단위로 변환
+
+    data = {
+      labels: labels,
+      returns: amounts,
+    };
+  } else if (selectedPeriod.value === "monthly" && monthlyData.value.length > 0) {
+    // API에서 받아온 monthly 데이터 사용
+    const labels = monthlyData.value.map((item) => {
+      const date = new Date(item.createdAt);
+      return `${date.getMonth() + 1}/${date.getDate()}`;
+    });
+    const amounts = monthlyData.value.map((item) => Math.round(item.amount / 10000)); // 만원 단위로 변환
+
+    data = {
+      labels: labels,
+      returns: amounts,
+    };
+  } else {
+    // 기존 mock 데이터 사용
+    data = investmentData[selectedPeriod.value];
+  }
+
   investmentChartOption.value = {
     tooltip: {
-      trigger: "axis",
+      trigger: "item",
       formatter: (params) => {
-        const date = params[0].axisValue;
-        let tooltip = `${date}<br/>`;
-        params.forEach((cur) => {
-          tooltip += `${cur.seriesName}: ${cur.value}%<br/>`;
-        });
+        const date = params.name || params.axisValue;
+        const value = params.value;
+        let tooltip = `<div style="font-weight: bold; margin-bottom: 5px;">${date}</div>`;
+        if (
+          selectedPeriod.value === "daily" ||
+          selectedPeriod.value === "weekly" ||
+          selectedPeriod.value === "monthly"
+        ) {
+          tooltip += `<div style="margin: 2px 0;">잔고: <span style="color: #3b82f6; font-weight: bold;">${value.toLocaleString()}만원</span></div>`;
+        } else {
+          tooltip += `<div style="margin: 2px 0;">수익률: <span style="color: #3b82f6; font-weight: bold;">${value}%</span></div>`;
+        }
         return tooltip;
       },
+      backgroundColor: "rgba(255,255,255,0.95)",
+      borderColor: "#3b82f6",
+      borderWidth: 2,
+      textStyle: { color: "#333", fontSize: 13 },
+      padding: [8, 12],
     },
     grid: { left: "3%", right: "4%", bottom: "3%", containLabel: true },
     xAxis: {
@@ -144,16 +249,27 @@ const updateInvestmentChart = () => {
     },
     yAxis: {
       type: "value",
-      axisLabel: { formatter: "{value}%", fontSize: 10 },
+      axisLabel: {
+        formatter:
+          selectedPeriod.value === "daily" || selectedPeriod.value === "weekly" || selectedPeriod.value === "monthly"
+            ? "{value}만원"
+            : "{value}%",
+        fontSize: 10,
+      },
       splitLine: { lineStyle: { type: "dashed", color: "#eee" } },
     },
     series: [
       {
-        name: "수익률",
+        name:
+          selectedPeriod.value === "daily" || selectedPeriod.value === "weekly" || selectedPeriod.value === "monthly"
+            ? "잔고"
+            : "수익률",
         type: "line",
         smooth: true,
         data: data.returns,
         itemStyle: { color: "#3b82f6" },
+        symbol: "circle",
+        symbolSize: 6,
         areaStyle: {
           color: {
             type: "linear",
@@ -167,14 +283,6 @@ const updateInvestmentChart = () => {
             ],
           },
         },
-      },
-      {
-        name: "평균 수익률",
-        type: "line",
-        smooth: true,
-        data: data.avgReturns,
-        itemStyle: { color: "#10b981" },
-        lineStyle: { type: "dashed" },
       },
     ],
   };
