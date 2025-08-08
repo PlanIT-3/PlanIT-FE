@@ -7,15 +7,15 @@
 </template>
 
 <script setup>
-import { RouterView } from "vue-router";
-import { onMounted } from "vue";
+import { RouterView, useRouter } from "vue-router";
 import { useUserStore } from "@/stores/user";
 
 const userStore = useUserStore();
 
-onMounted(() => {
-  userStore.initAuth();
-});
+if (userStore.isLoggedIn) {
+  const router = useRouter();
+  router.push({ name: "main" });
+}
 </script>
 
 <style>

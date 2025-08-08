@@ -74,16 +74,23 @@
 <script setup>
 import DefaultLayout from "@/components/layouts/DefaultLayout.vue";
 import { ref } from "vue";
-// import { useUserStore } from "@/stores/user";
+import { useUserStore } from "@/stores/user";
+import { useRouter } from "vue-router";
 
-// const userStore = useUserStore();
-// const name = userStore.user.name;
-
+const userStore = useUserStore();
+const router = useRouter();
 const name = ref("User");
 
-const logout = () => {
-  // 토큰 삭제, 유저 상태 초기화 등
-  alert("로그아웃 되었습니다.");
+const logout = async () => {
+  try {
+    await userStore.logout();
+    alert("로그아웃 되었습니다.");
+    router.push({ name: "onboardLoading" });
+  } catch (error) {
+    console.error("로그아웃 중 오류 발생:", error);
+    // 에러가 발생해도 로컬 데이터는 정리되므로 로그인 페이지로 이동
+    router.push({ name: "onboardLoading" });
+  }
 };
 </script>
 <style scoped></style>
