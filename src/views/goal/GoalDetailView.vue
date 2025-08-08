@@ -104,7 +104,6 @@ import { ref, computed } from "vue";
 import BarChart from "@/components/graph/BarChart.vue";
 import GoalAssignedCard from "@/components/manageGoal/GoalAssignedCard.vue";
 import SummaryCard from "@/components/common/SummaryCard.vue";
-import RebalanceCard from "@/components/goal/RebalanceCard.vue";
 import DefaultLayout from "@/components/layouts/DefaultLayout.vue";
 
 // Props (나중에 외부에서 넘기도록 할 수 있음)
@@ -123,8 +122,4 @@ const currentAmount = computed(() => {
 
 const remainingAmount = computed(() => targetAmount.value - currentAmount.value);
 const progressPercentage = computed(() => Math.round((currentAmount.value / targetAmount.value) * 100));
-
-// 리밸런싱 기간
-const periods = ref(["한달", "3개월", "6개월", "1년"]);
-const selectedPeriod = ref("한달");
 </script>

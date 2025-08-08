@@ -1,8 +1,7 @@
 <template>
-  <DefaultLayout>
-    <div class="w-full">
-      <!-- 상단 탭 -->
-      <div class="flex justify-around -mt-6">
+  <div class="w-full">
+    <!-- 상단 탭 -->
+    <!-- <div class="flex justify-around -mt-6">
         <button @click="goToAlarm" class="flex flex-col items-center">
           <span class="font-bold">최근 알림</span>
           <div class="mt-4 h-[3px] w-[160px] bg-gray-300"></div>
@@ -11,141 +10,140 @@
           <span class="font-bold">알림설정</span>
           <div class="mt-4 h-[3px] w-[160px] bg-[#433D8B] rounded-full"></div>
         </button>
+      </div> -->
+
+    <!-- 알림 콘텐츠-->
+    <div class="">
+      <!-- 기본설정알림 -->
+      <div class="flex justify-between items-center border-b pb-2">
+        <p class="text-sm font-bold text-gray-500">기본설정</p>
       </div>
+      <AlarmToggle title="푸시 알림 받기" v-model="pushEnabled" />
 
-      <!-- 알림 콘텐츠-->
-      <div class="mt-5">
-        <!-- 기본설정알림 -->
-        <div class="flex justify-between items-center border-b pb-2">
-          <p class="text-sm font-bold text-gray-500">기본설정</p>
-        </div>
-        <AlarmToggle title="푸시 알림 받기" v-model="pushEnabled" />
+      <!-- 목표 달성 알림 설정 -->
+      <div class="flex justify-between items-center border-b pb-2 mt-10">
+        <p class="text-sm font-extrabold text-gray-500">목표 달성 알림 설정</p>
+      </div>
+      <AlarmToggle title="목표 달성 알림 받기" v-model="goalAchievementEnabled" />
 
-        <!-- 목표 달성 알림 설정 -->
-        <div class="flex justify-between items-center border-b pb-2 mt-10">
-          <p class="text-sm font-extrabold text-gray-500">목표 달성 알림 설정</p>
-        </div>
-        <AlarmToggle title="목표 달성 알림 받기" v-model="goalAchievementEnabled" />
+      <!-- 달성률 설정 아코디언 버튼 -->
 
-        <!-- 달성률 설정 아코디언 버튼 -->
+      <!-- 상품 알림 설정 -->
+      <div class="flex justify-between items-center border-b pb-2 mt-10">
+        <p class="text-sm font-extrabold text-gray-500">상품 알림 설정</p>
+      </div>
+      <AlarmToggle title="목표금액 달성 알림 받기" v-model="productAlertEnabled" />
 
-        <!-- 상품 알림 설정 -->
-        <div class="flex justify-between items-center border-b pb-2 mt-10">
-          <p class="text-sm font-extrabold text-gray-500">상품 알림 설정</p>
-        </div>
-        <AlarmToggle title="목표금액 달성 알림 받기" v-model="productAlertEnabled" />
-
-        <!-- 상품별 목표가 설정 -->
-        <div v-if="productAlertEnabled" class="ml-4 mt-2 space-y-3">
-          <button
-            @click="showProductOptions = !showProductOptions"
-            class="flex items-center gap-1 text-sm text-[#433D8B]"
+      <!-- 상품별 목표가 설정 -->
+      <div v-if="productAlertEnabled" class="ml-4 mt-2 space-y-3">
+        <button
+          @click="showProductOptions = !showProductOptions"
+          class="flex items-center gap-1 text-sm text-[#433D8B]"
+        >
+          <svg
+            v-if="showProductOptions"
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-4 h-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="1.5"
           >
-            <svg
-              v-if="showProductOptions"
-              xmlns="http://www.w3.org/2000/svg"
-              class="w-4 h-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              stroke-width="1.5"
-            >
-              <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 15.75L12 8.25 4.5 15.75" />
-            </svg>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 15.75L12 8.25 4.5 15.75" />
+          </svg>
 
-            <svg
-              v-else
-              xmlns="http://www.w3.org/2000/svg"
-              class="w-4 h-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              stroke-width="1.5"
-            >
-              <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 8.25L12 15.75 19.5 8.25" />
-            </svg>
+          <svg
+            v-else
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-4 h-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="1.5"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 8.25L12 15.75 19.5 8.25" />
+          </svg>
 
-            <span class="text-xs text-gray-400">보유 상품의 목표가를 설정하세요</span>
-          </button>
+          <span class="text-xs text-gray-400">보유 상품의 목표가를 설정하세요</span>
+        </button>
 
-          <!-- 토클 열면 보유 상품 목록 -->
-          <div v-if="showProductOptions" class="space-y-2">
-            <div v-for="product in ownedProducts" :key="product.code" class="border rounded-lg p-4">
-              <!-- 상품 정보 및 토글 -->
-              <div class="flex justify-between items-center mb-2">
-                <div class="flex-1">
-                  <div class="flex items-center justify-between">
-                    <span class="text-sm font-bold">{{ product.name }}</span>
-                    <label class="relative inline-block w-8 h-4 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        class="sr-only peer"
-                        :checked="selectedProducts.includes(product.code)"
-                        @change="toggleProduct(product.code, $event.target.checked)"
-                      />
-                      <div class="w-8 h-4 bg-gray-300 peer-checked:bg-[#433D8B] rounded-full transition-colors"></div>
-                      <div
-                        class="absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full shadow transition-transform peer-checked:translate-x-4"
-                      ></div>
-                    </label>
-                  </div>
-                  <div class="flex justify-between text-xs text-gray-500 mt-1">
-                    <span>{{ product.code }}</span>
-                    <span>현재가: {{ product.currentPrice.toLocaleString() }}원</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- 목표가 입력 (선택된 상품만 표시) -->
-              <div v-if="selectedProducts.includes(product.code)" class="mt-3 pt-3 border-t border-gray-200">
-                <div class="flex items-center space-x-2">
-                  <label class="text-xs text-gray-600 whitespace-nowrap">목표가:</label>
-                  <div class="flex-1 relative">
+        <!-- 토클 열면 보유 상품 목록 -->
+        <div v-if="showProductOptions" class="space-y-2">
+          <div v-for="product in ownedProducts" :key="product.code" class="border rounded-lg p-4">
+            <!-- 상품 정보 및 토글 -->
+            <div class="flex justify-between items-center mb-2">
+              <div class="flex-1">
+                <div class="flex items-center justify-between">
+                  <span class="text-sm font-bold">{{ product.name }}</span>
+                  <label class="relative inline-block w-8 h-4 cursor-pointer">
                     <input
-                      type="number"
-                      :value="productTargets[product.code] || ''"
-                      @input="updateProductTarget(product.code, $event.target.value)"
-                      placeholder="목표가 입력"
-                      class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#433D8B]"
+                      type="checkbox"
+                      class="sr-only peer"
+                      :checked="selectedProducts.includes(product.code)"
+                      @change="toggleProduct(product.code, $event.target.checked)"
                     />
-                    <span class="absolute right-3 top-2 text-xs text-gray-500">원</span>
-                  </div>
+                    <div class="w-8 h-4 bg-gray-300 peer-checked:bg-[#433D8B] rounded-full transition-colors"></div>
+                    <div
+                      class="absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full shadow transition-transform peer-checked:translate-x-4"
+                    ></div>
+                  </label>
                 </div>
-
-                <!-- 목표가 대비 현재가 비교 -->
-                <div v-if="productTargets[product.code]" class="mt-2 text-xs">
-                  <div class="flex justify-between items-center">
-                    <span class="text-gray-600">현재가 대비:</span>
-                    <span
-                      :class="getTargetDifferenceClass(product.currentPrice, productTargets[product.code])"
-                      class="font-medium"
-                    >
-                      {{ getTargetDifferenceText(product.currentPrice, productTargets[product.code]) }}
-                    </span>
-                  </div>
+                <div class="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>{{ product.code }}</span>
+                  <span>현재가: {{ product.currentPrice.toLocaleString() }}원</span>
                 </div>
               </div>
             </div>
 
-            <!-- 선택된 상품이 없을 때 메시지 -->
-            <div v-if="selectedProducts.length === 0" class="text-center py-4 text-gray-500 text-sm">
-              상품을 선택하여 목표가를 설정하세요
+            <!-- 목표가 입력 (선택된 상품만 표시) -->
+            <div v-if="selectedProducts.includes(product.code)" class="mt-3 pt-3 border-t border-gray-200">
+              <div class="flex items-center space-x-2">
+                <label class="text-xs text-gray-600 whitespace-nowrap">목표가:</label>
+                <div class="flex-1 relative">
+                  <input
+                    type="number"
+                    :value="productTargets[product.code] || ''"
+                    @input="updateProductTarget(product.code, $event.target.value)"
+                    placeholder="목표가 입력"
+                    class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#433D8B]"
+                  />
+                  <span class="absolute right-3 top-2 text-xs text-gray-500">원</span>
+                </div>
+              </div>
+
+              <!-- 목표가 대비 현재가 비교 -->
+              <div v-if="productTargets[product.code]" class="mt-2 text-xs">
+                <div class="flex justify-between items-center">
+                  <span class="text-gray-600">현재가 대비:</span>
+                  <span
+                    :class="getTargetDifferenceClass(product.currentPrice, productTargets[product.code])"
+                    class="font-medium"
+                  >
+                    {{ getTargetDifferenceText(product.currentPrice, productTargets[product.code]) }}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- 저장 버튼 -->
-        <div class="mt-8 mb-6">
-          <button
-            @click="saveSettings"
-            class="w-full bg-[#433D8B] text-white py-3 rounded-lg font-medium hover:bg-[#716BBE] transition-colors"
-          >
-            설정 저장
-          </button>
+          <!-- 선택된 상품이 없을 때 메시지 -->
+          <div v-if="selectedProducts.length === 0" class="text-center py-4 text-gray-500 text-sm">
+            상품을 선택하여 목표가를 설정하세요
+          </div>
         </div>
       </div>
+
+      <!-- 저장 버튼 -->
+      <div class="mt-8 mb-6">
+        <button
+          @click="saveSettings"
+          class="w-full bg-[#433D8B] text-white py-3 rounded-lg font-medium hover:bg-[#716BBE] transition-colors"
+        >
+          설정 저장
+        </button>
+      </div>
     </div>
-  </DefaultLayout>
+  </div>
 </template>
 
 <script setup>
