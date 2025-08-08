@@ -1,90 +1,82 @@
 <template>
   <MainLayout :chart-option="chartOption">
-    <!-- 메인 컨텐츠 영역 -->
-    <div class="">
-      <div class="">
-        <div class="">
-          <!-- 목표 슬라이더 카드 -->
-          <GoalSliderCard></GoalSliderCard>
+    <div>
+      <GoalSliderCard />
 
-          <!-- Investment Status Section -->
-          <div class="w-full bg-white rounded-2xl shadow-lg p-5">
-            <!-- Header -->
-            <div class="flex justify-between items-center mb-2">
-              <div class="flex items-center">
-                <div class="text-indigo-600 mr-2">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-5 w-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-                    />
-                  </svg>
-                </div>
-                <h3 class="text-base font-semibold text-gray-800 whitespace-nowrap">최근 투자 현황</h3>
-              </div>
-              <button class="text-xs text-indigo-600 font-medium whitespace-nowrap">전체보기</button>
-            </div>
-
-            <!-- Asset and ROI Summary -->
-            <div class="flex justify-between items-baseline mb-3">
-              <div class="min-w-0 flex-shrink-0">
-                <p class="text-sm text-gray-500 whitespace-nowrap">총 투자 자산</p>
-                <p class="text-xl font-bold whitespace-nowrap">12,450,000원</p>
-              </div>
-              <div class="text-right min-w-0 flex-shrink-0">
-                <p class="text-sm text-gray-500 whitespace-nowrap">총 수익률</p>
-                <p class="text-xl font-bold text-green-600 whitespace-nowrap">+8.2%</p>
-              </div>
-            </div>
-            <!-- Time Period Toggle Buttons -->
-            <div class="flex justify-center space-x-1 bg-gray-100 rounded-lg p-1 -mb-6">
-              <button
-                @click="selectPeriod('daily')"
-                :class="[
-                  'w-full py-1 text-xs rounded-md transition-colors duration-200',
-                  selectedPeriod === 'daily' ? 'bg-white text-indigo-600 shadow' : 'text-gray-500 hover:bg-gray-200',
-                ]"
+      <!-- Investment Status Section -->
+      <div class="w-full bg-white rounded-2xl shadow-lg p-5">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-2">
+          <div class="flex items-center">
+            <div class="text-indigo-600 mr-2">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
               >
-                일
-              </button>
-              <button
-                @click="selectPeriod('weekly')"
-                :class="[
-                  'w-full py-1 text-xs rounded-md transition-colors duration-200',
-                  selectedPeriod === 'weekly' ? 'bg-white text-indigo-600 shadow' : 'text-gray-500 hover:bg-gray-200',
-                ]"
-              >
-                주
-              </button>
-              <button
-                @click="selectPeriod('monthly')"
-                :class="[
-                  'w-full py-1 text-xs rounded-md transition-colors duration-200',
-                  selectedPeriod === 'monthly' ? 'bg-white text-indigo-600 shadow' : 'text-gray-500 hover:bg-gray-200',
-                ]"
-              >
-                월
-              </button>
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                />
+              </svg>
             </div>
+            <h3 class="text-base font-semibold text-gray-800 whitespace-nowrap">최근 투자 현황</h3>
+          </div>
+          <button class="text-xs text-indigo-600 font-medium whitespace-nowrap">전체보기</button>
+        </div>
 
-            <!-- Investment Chart -->
-            <div class="h-[150px]">
-              <v-chart class="" :option="investmentChartOption" autoresize />
-            </div>
-
-            <!-- Quick Actions -->
+        <!-- Asset and ROI Summary -->
+        <div class="flex justify-between items-baseline mb-3">
+          <div>
+            <p class="text-sm text-gray-500 whitespace-nowrap">총 투자 자산</p>
+            <p class="text-xl font-bold whitespace-nowrap">12,450,000원</p>
+          </div>
+          <div class="text-right">
+            <p class="text-sm text-gray-500 whitespace-nowrap">총 수익률</p>
+            <p class="text-xl font-bold text-green-600 whitespace-nowrap">+8.2%</p>
           </div>
         </div>
+
+        <!-- Time Period Toggle Buttons -->
+        <div class="flex justify-center space-x-1 bg-gray-100 rounded-lg p-1 -mb-6 relative z-10">
+          <button
+            @click="selectPeriod('daily')"
+            :class="[
+              'w-full py-1 text-xs rounded-md transition-colors duration-200',
+              selectedPeriod === 'daily' ? 'bg-white text-indigo-600 shadow' : 'text-gray-500 hover:bg-gray-200',
+            ]"
+          >
+            일
+          </button>
+          <button
+            @click="selectPeriod('weekly')"
+            :class="[
+              'w-full py-1 text-xs rounded-md transition-colors duration-200',
+              selectedPeriod === 'weekly' ? 'bg-white text-indigo-600 shadow' : 'text-gray-500 hover:bg-gray-200',
+            ]"
+          >
+            주
+          </button>
+          <button
+            @click="selectPeriod('monthly')"
+            :class="[
+              'w-full py-1 text-xs rounded-md transition-colors duration-200',
+              selectedPeriod === 'monthly' ? 'bg-white text-indigo-600 shadow' : 'text-gray-500 hover:bg-gray-200',
+            ]"
+          >
+            월
+          </button>
+        </div>
+
+        <!-- Investment Chart -->
+        <div class="h-[150px] pointer-events-none">
+          <VChart :option="investmentChartOption" autoresize />
+        </div>
       </div>
-      <!-- 하단 고정 내비게이션 -->
     </div>
   </MainLayout>
 </template>
@@ -136,7 +128,11 @@ const updateInvestmentChart = () => {
       trigger: "axis",
       formatter: (params) => {
         const date = params[0].axisValue;
-        return params.reduce((acc, cur) => acc + `${cur.seriesName}: ${cur.value}%<br/>, ${date}<br/>`);
+        let tooltip = `${date}<br/>`;
+        params.forEach((cur) => {
+          tooltip += `${cur.seriesName}: ${cur.value}%<br/>`;
+        });
+        return tooltip;
       },
     },
     grid: { left: "3%", right: "4%", bottom: "3%", containLabel: true },
@@ -198,7 +194,6 @@ const chartOption = ref({
       fontSize: 13,
     },
   },
-
   series: [
     {
       name: "목표 현황",
