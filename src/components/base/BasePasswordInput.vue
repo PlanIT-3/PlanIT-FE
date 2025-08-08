@@ -10,7 +10,8 @@
     <button
       type="button"
       class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
-      @click="showPassword = !showPassword"
+      @click="togglePassword"
+      @mousedown.prevent
     >
       <!-- 눈 가린 아이콘 -->
       <svg
@@ -65,6 +66,10 @@ defineProps({
 
 const emit = defineEmits(["update:modelValue"]);
 const showPassword = ref(false);
+
+const togglePassword = () => {
+  showPassword.value = !showPassword.value;
+};
 </script>
 <style scoped>
 input::placeholder {

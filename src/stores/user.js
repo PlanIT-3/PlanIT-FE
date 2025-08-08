@@ -18,7 +18,6 @@ export const useUserStore = defineStore("user", () => {
     const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
     if (token) {
       isLoggedIn.value = true;
-      getUserInfo();
     }
   };
 
@@ -80,7 +79,6 @@ export const useUserStore = defineStore("user", () => {
       localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
     }
     isLoggedIn.value = true;
-    getUserInfo();
   };
 
   return {
