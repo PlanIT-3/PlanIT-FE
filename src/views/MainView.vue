@@ -1,5 +1,5 @@
 <template>
-  <MainLayout :chart-option="chartOption">
+  <MainLayout :chart-option="chartOption" :total-balance="totalBalance" :goal-count="goalRatioData.length">
     <div>
       <GoalSliderCard />
 
@@ -91,6 +91,9 @@ const dailyData = ref([]);
 const weeklyData = ref([]);
 // API에서 받아온 monthly 데이터
 const monthlyData = ref([]);
+// API에서 받아온 목표 비율 데이터
+const goalRatioData = ref([]);
+const totalBalance = ref(0);
 
 // 일자 버튼 클릭 시 API 호출
 const fetchDailyData = async () => {
@@ -134,9 +137,25 @@ const fetchMonthlyData = async () => {
   }
 };
 
+// 목표 비율 데이터 API 호출
+const fetchGoalRatioData = async () => {
+  try {
+    const response = await fetch("http://localhost:8080/auth/api/account/goal-ratio");
+    const json = await response.json();
+    if (json.status === "OK" && json.data) {
+      totalBalance.value = json.data.totalBalance;
+      goalRatioData.value = json.data.goalRatios;
+      updateChartOption();
+    }
+  } catch (error) {
+    console.error("목표 비율 데이터 불러오기 실패:", error);
+  }
+};
+
 // 페이지 로드 시 일자 데이터 자동 로드
 onMounted(() => {
   fetchDailyData();
+  fetchGoalRatioData();
 });
 
 const investmentData = {
@@ -293,7 +312,7 @@ updateInvestmentChart();
 const chartOption = ref({
   tooltip: {
     trigger: "item",
-    formatter: (params) => `목표 현황<br/>${params.name}: ${params.value}개 (${params.percent}%)`,
+    formatter: (params) => `목표 현황<br/>${params.name}: ${params.value}%`,
     backgroundColor: "rgba(0,0,0,0.8)",
     borderColor: "#ccc",
     borderWidth: 1,
@@ -306,8 +325,8 @@ const chartOption = ref({
     {
       name: "목표 현황",
       type: "pie",
-      radius: ["45%", "90%"],
-      center: ["50%", "50%"],
+      radius: ["35%", "65%"],
+      center: ["40%", "50%"],
       avoidLabelOverlap: true,
       itemStyle: {
         borderRadius: 2,
@@ -317,19 +336,43 @@ const chartOption = ref({
         shadowColor: "rgba(0, 0, 0, 0.1)",
       },
       label: { show: false },
-      data: [
-        { value: 1, name: "자가용-주거래", itemStyle: { color: "#10b981" } },
-        { value: 1, name: "자가용-적금", itemStyle: { color: "#059669" } },
-        { value: 1, name: "여행-주거래", itemStyle: { color: "#3b82f6" } },
-        { value: 1, name: "여행-적금", itemStyle: { color: "#06b6d4" } },
-        { value: 1, name: "여행-투자", itemStyle: { color: "#8b5cf6" } },
-        { value: 1, name: "비상-통장", itemStyle: { color: "#f59e0b" } },
-        { value: 1, name: "비상-예금", itemStyle: { color: "#eab308" } },
-      ],
+      data: [],
       animationType: "scale",
       animationEasing: "elasticOut",
       animationDelay: () => Math.random() * 200,
     },
   ],
 });
+
+// 도넛 차트 데이터 업데이트
+const updateChartOption = () => {
+  if (goalRatioData.value.length > 0) {
+    const chartColors = [
+      "#10b981", // 초록
+      "#059669", // 진한 초록
+      "#3b82f6", // 파랑
+      "#06b6d4", // 청록
+      "#8b5cf6", // 보라
+      "#f59e0b", // 주황
+      "#eab308", // 노랑
+      "#ef4444", // 빨강
+      "#f97316", // 주황
+      "#84cc16", // 연두
+      "#06b6d4", // 청록
+      "#8b5cf6", // 보라
+      "#f59e0b", // 주황
+      "#eab308", // 노랑
+      "#ef4444", // 빨강
+      "#f97316", // 주황
+    ];
+
+    const chartData = goalRatioData.value.map((item, index) => ({
+      value: item.ratio,
+      name: item.objectName,
+      itemStyle: { color: chartColors[index % chartColors.length] },
+    }));
+
+    chartOption.value.series[0].data = chartData;
+  }
+};
 </script>

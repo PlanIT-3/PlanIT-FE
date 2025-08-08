@@ -13,8 +13,8 @@
       >
         <div class="flex flex-col justify-center items-start w-auto h-[132px] mr-4 pr-4 flex-shrink-0 min-w-0">
           <div class="text-black text-base font-semibold mb-1 text-left whitespace-nowrap">전체 자산</div>
-          <div class="text-gray-600 text-sm mb-1 text-left whitespace-nowrap">총 7개 계좌 관리 중</div>
-          <div class="text-black text-2xl font-bold mb-1 text-left whitespace-nowrap">3,015,000원</div>
+          <div class="text-gray-600 text-sm mb-1 text-left whitespace-nowrap">총 {{ goalCount }}개 목표</div>
+          <div class="text-black text-2xl font-bold mb-1 text-left whitespace-nowrap">{{ formattedTotalBalance }}</div>
           <div class="text-green-600 text-xs text-left whitespace-nowrap">전월 대비 +12.5%</div>
         </div>
         <div class="ml-6 w-56 h-56 flex items-center justify-center">
@@ -33,6 +33,7 @@ import { defineProps } from "vue";
 import MainHeader from "@/components/common/MainHeader.vue";
 import NavBar from "@/components/common/NavBar.vue";
 import VChart from "vue-echarts";
+import { computed } from "vue";
 
 // 🔹 외부에서 chartOption 받기
 const props = defineProps({
@@ -40,9 +41,22 @@ const props = defineProps({
     type: Object,
     required: true,
   },
+  totalBalance: {
+    type: Number,
+    default: 0,
+  },
+  goalCount: {
+    type: Number,
+    default: 0,
+  },
 });
 
 const route = useRoute();
+
+// 전체 자산 포맷팅
+const formattedTotalBalance = computed(() => {
+  return props.totalBalance.toLocaleString() + "원";
+});
 </script>
 
 <style scoped>
