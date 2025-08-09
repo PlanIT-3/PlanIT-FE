@@ -1,0 +1,1 @@
+import{b as a}from"./background-DzGI8bt2.js";import{c as s,a as r,j as e,p as o,z as t,o as c}from"./index-DaUfkS5h.js";const n=["src"],d={__name:"OnboardLoadingView",setup(l){return(u,i)=>(c(),s("div",{class:"w-full h-screen flex items-center justify-center",style:t({backgroundImage:`url(${e(a)})`})},[r("img",{src:e(o),class:"w-32 h-auto"},null,8,n)],4))}};export{d as default};
