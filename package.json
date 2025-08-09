@@ -6,24 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "build:mobile": "vite build && npx cap sync",
     "preview": "vite preview",
     "lint": "eslint . --fix",
-    "format": "prettier --write src/",
-    "cap:sync": "npx cap sync",
-    "cap:android": "npx cap open android",
-    "cap:ios": "npx cap open ios",
-    "cap:run:android": "npx cap run android",
-    "cap:run:ios": "npx cap run ios",
-    "deploy:netlify": "npm run build && netlify deploy --prod",
-    "deploy:vercel": "npm run build && vercel --prod",
-    "deploy:gh-pages": "npm run build && gh-pages -d dist"
+    "format": "prettier --write src/"
   },
   "dependencies": {
-    "@capacitor/android": "^7.4.2",
-    "@capacitor/cli": "^7.4.2",
-    "@capacitor/core": "^7.4.2",
-    "@capacitor/ios": "^7.4.2",
     "@heroicons/vue": "^2.2.0",
     "@vueuse/core": "^13.5.0",
     "axios": "^1.10.0",
