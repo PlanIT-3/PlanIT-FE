@@ -1,9 +1,8 @@
 import axios from "axios";
+
+import { useAuthStore } from "@/stores/auth";
 import { API_BASE_URL, STORAGE_KEYS } from "@/utils/constants";
 
-// API 기본 설정
-
-// Axios 인스턴스 생성
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000,
@@ -12,63 +11,56 @@ const apiClient = axios.create({
   },
 });
 
-// 요청 인터셉터
 apiClient.interceptors.request.use(
   (config) => {
-    // 토큰이 있으면 헤더에 추가
-    const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+    //jwt추출
+    const auth = useAuthStore();
+    const token = auth.getaccessToken();
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers["Authorization"] = `Bearer ${token}`;
     }
-
-    // 요청 로깅 (개발 환경에서만)
-    if (import.meta.env.DEV) {
-      console.log(`🚀 API Request: ${config.method?.toUpperCase()} ${config.url}`, config.data);
-    }
-
     return config;
   },
   (error) => {
-    console.error("Request interceptor error:", error);
     return Promise.reject(error);
   }
 );
 
-// 응답 인터셉터
 apiClient.interceptors.response.use(
   (response) => {
-    // 응답 로깅 (개발 환경에서만)
-    if (import.meta.env.DEV) {
-      console.log(`✅ API Response: ${response.config.method?.toUpperCase()} ${response.config.url}`, response.data);
+    if (response.status === 200) {
+      return response;
+    }
+    if (response.status === 404) {
+      return Promise.reject("404: 페이지 없음" + response.request);
     }
 
     return response;
   },
   async (error) => {
+    const auth = useAuthStore();
     const originalRequest = error.config;
 
-    // 401 에러 처리 (토큰 만료)
+    //에러 응답인 경우 (401, 403, 305, 500)
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
       try {
-        const refreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
+        const refreshToken = auth.getrefreshToken();
         if (refreshToken) {
           const response = await axios.post(`${API_BASE_URL}/auth/reissue`, {
             refreshToken,
           });
 
           const { accessToken } = response.data;
-          localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
-
+          auth.setToken(accessToken);
           // 원래 요청 재시도
           originalRequest.headers.Authorization = `Bearer ${accessToken}`;
           return apiClient(originalRequest);
         }
       } catch (refreshError) {
         // 리프레시 토큰도 만료된 경우 로그아웃
-        localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-        localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+        localStorage.removeItem("auth");
         window.location.href = "/login";
         return Promise.reject(refreshError);
       }
@@ -80,12 +72,10 @@ apiClient.interceptors.response.use(
       data: error.response?.data,
       message: error.message,
     });
-
     return Promise.reject(error);
   }
 );
 
-// API 메서드들
 export const api = {
   // GET 요청
   get: (url, config = {}) => apiClient.get(url, config),
@@ -114,7 +104,6 @@ export const api = {
   },
 };
 
-// 에러 처리 헬퍼
 export const handleApiError = (error) => {
   if (error.response) {
     // 서버 응답이 있는 경우
@@ -145,7 +134,6 @@ export const handleApiError = (error) => {
   }
 };
 
-// API 응답 래퍼
 export const apiWrapper = async (apiCall) => {
   try {
     const response = await apiCall();
@@ -162,21 +150,6 @@ export const apiWrapper = async (apiCall) => {
       status: error.response?.status,
     };
   }
-};
-
-// 인증 관련 API
-export const authApi = {
-  // 로그인
-  login: (email, password) => api.post("/login", { email, password }),
-
-  // 로그아웃
-  logout: () => api.post("/logout"),
-
-  // 회원가입
-  signup: (userData) => api.post("/signup", userData),
-
-  // 토큰 재발급
-  refreshToken: (refreshToken) => api.post("/reissue", { refreshToken }),
 };
 
 export default apiClient;
