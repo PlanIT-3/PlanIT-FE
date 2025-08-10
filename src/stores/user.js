@@ -72,6 +72,21 @@ export const useUserStore = defineStore("user", () => {
     }
   };
 
+  // 회원가입
+  const signup = async (userData) => {
+    try {
+      loading.value = true;
+      const response = await authApi.signup(userData);
+      
+      return { success: true, data: response.data };
+    } catch (error) {
+      console.error("회원가입 실패:", error);
+      return { success: false, error: error.response?.data?.message || "회원가입에 실패했습니다." };
+    } finally {
+      loading.value = false;
+    }
+  };
+
   // 토큰 설정 (외부에서 직접 설정할 때)
   const setToken = (accessToken, refreshToken = null) => {
     localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
@@ -92,6 +107,7 @@ export const useUserStore = defineStore("user", () => {
     login,
     logout,
     getUserInfo,
+    signup,
     setToken,
   };
 });

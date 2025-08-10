@@ -17,7 +17,9 @@
       </div>
     </div>
 
-    <div class="mt-12"><Button :label="isLoading ? 'Loading...' : 'Login'" @click="login" :disabled="isLoading"></Button></div>
+    <div class="mt-12">
+      <Button :label="isLoading ? 'Loading...' : 'Login'" @click="login" :disabled="isLoading"></Button>
+    </div>
 
     <div class="flex items-center my-6">
       <hr class="flex-1 border-gray-200" />
@@ -38,7 +40,9 @@
     </div>
 
     <div class="mt-45 text-center">
-      <button class="text-sm text-[#433D8B] font-semibold hover:underline">회원가입</button>
+      <button class="text-sm text-[#433D8B] font-semibold hover:underline" @click="router.push({ name: 'signup' })">
+        회원가입
+      </button>
     </div>
   </div>
 </template>
@@ -64,7 +68,7 @@ const isLoading = ref(false);
 // 로그인 로직
 const login = async () => {
   if (isLoading.value) return; // 중복 클릭 방지
-  
+
   try {
     isLoading.value = true;
     const response = await authApi.login(email.value, password.value);
