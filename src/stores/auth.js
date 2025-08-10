@@ -85,14 +85,6 @@ export const useAuthStore = defineStore("auth", () => {
     isLoggedIn.value = true;
   };
 
-  // 프로필 변경 함수
-  const changeProfile = (member) => {
-    if (member.email) {
-      state.value.user.email = member.email;
-      localStorage.setItem("auth", JSON.stringify(state.value));
-    }
-  };
-
   // 앱 시작 시 인증 초기화
   initAuth();
 
@@ -107,6 +99,6 @@ export const useAuthStore = defineStore("auth", () => {
     getaccessToken,
     getrefreshToken,
     setToken,
-    changeProfile,
+    initAuth,
   };
 });

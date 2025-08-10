@@ -74,12 +74,14 @@
 <script setup>
 import DefaultLayout from "@/components/layouts/DefaultLayout.vue";
 import { ref } from "vue";
-import { useUserStore } from "@/stores/user";
+import { useAuthStore } from "@/stores/auth";
 import { useRouter } from "vue-router";
 
-const userStore = useUserStore();
+const auth = useAuthStore();
 const router = useRouter();
 const name = ref("User");
+
+name.value = auth.username;
 
 const logout = async () => {
   try {
