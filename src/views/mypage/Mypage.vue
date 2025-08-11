@@ -85,7 +85,7 @@ name.value = auth.username;
 
 const logout = async () => {
   try {
-    await userStore.logout();
+    auth.logout();
     alert("로그아웃 되었습니다.");
     router.push({ name: "onboardLoading" });
   } catch (error) {

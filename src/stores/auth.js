@@ -12,7 +12,7 @@ const initState = {
     refreshToken: "",
   },
   user: {
-    username: "", // 사용자 ID
+    username: "", // 사용자
     email: "", // 사용자 이메일
     roles: [], // 권한 목록
   },
