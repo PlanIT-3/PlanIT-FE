@@ -106,6 +106,14 @@ import BarChart from "@/components/graph/BarChart.vue";
 import GoalAssignedCard from "@/components/manageGoal/GoalAssignedCard.vue";
 import SummaryCard from "@/components/common/SummaryCard.vue";
 import DefaultLayout from "@/components/layouts/DefaultLayout.vue";
+import { useAuthStore } from "@/stores/auth";
+import { useRoute, useRouter } from "vue-router";
+
+const auth = useAuthStore();
+const cr = useRoute();
+const router = useRouter();
+
+const no = cr.params.no; //라우터 경로 변수
 
 // Props (나중에 외부에서 넘기도록 할 수 있음)
 const goalTitle = ref("자가용 구매하기");

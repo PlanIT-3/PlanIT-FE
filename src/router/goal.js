@@ -19,7 +19,7 @@ export default [
     meta: { requiresAuth: true },
   },
   {
-    path: "/goal/detail",
+    path: "/goal/detail/:id",
     name: "goalDetailView",
     component: () => import("../views/goal/GoalDetailView.vue"),
     meta: { requiresAuth: true },

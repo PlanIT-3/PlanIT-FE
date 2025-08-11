@@ -3,6 +3,12 @@ import api from "@/api";
 const BASE_URL = "/auth/api/goals";
 
 export default {
+  //목표 리스트
+  async getGoalList() {
+    const { data } = await api.get(`${BASE_URL}`);
+    console.log("GET GOAL List", data);
+    return data;
+  },
   // 목표 진행 추이 조회
   async getGoalProgress(goalId) {
     const { data } = await api.get(`${BASE_URL}/${goalId}/progress`);
