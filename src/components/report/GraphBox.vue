@@ -10,7 +10,13 @@
           </svg>
         </button>
         <div v-if="showDropdown" class="absolute right-0 mt-1 w-24 bg-white border border-gray-200 rounded shadow z-10">
-          <div v-for="opt in periodOptions" :key="opt.value" @click="selectPeriod(opt.value)" class="px-3 py-1 text-xs cursor-pointer hover:bg-gray-100" :class="{'text-blue-600 font-semibold': period === opt.value}">
+          <div
+            v-for="opt in periodOptions"
+            :key="opt.value"
+            @click="selectPeriod(opt.value)"
+            class="px-3 py-1 text-xs cursor-pointer hover:bg-gray-100"
+            :class="{ 'text-blue-600 font-semibold': period === opt.value }"
+          >
             {{ opt.label }}
           </div>
         </div>
@@ -23,43 +29,47 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
-import { onMounted, onBeforeUnmount } from 'vue';
+import { ref, computed } from "vue";
+import { onMounted, onBeforeUnmount } from "vue";
 
 function useClickOutside(elRef, handler) {
   const listener = (event) => {
     if (!elRef.value || elRef.value.contains(event.target)) return;
     handler(event);
   };
-  onMounted(() => document.addEventListener('mousedown', listener));
-  onBeforeUnmount(() => document.removeEventListener('mousedown', listener));
+  onMounted(() => document.addEventListener("mousedown", listener));
+  onBeforeUnmount(() => document.removeEventListener("mousedown", listener));
 }
 
 const props = defineProps({
   title: { type: String, required: true },
-  period: { type: String, default: 'weekly' },
+  period: { type: String, default: "weekly" },
 });
-const emit = defineEmits(['update:period']);
+const emit = defineEmits(["update:period"]);
 
 const showDropdown = ref(false);
 const periodOptions = [
-  { value: 'weekly', label: 'Weekly' },
-  { value: 'monthly', label: 'Monthly' },
-  { value: 'yearly', label: 'Yearly' },
+  { value: "daily", label: "Daily" },
+  { value: "weekly", label: "Weekly" },
+  { value: "monthly", label: "Monthly" },
 ];
 const periodLabel = computed(() => {
-  const found = periodOptions.find(opt => opt.value === props.period);
-  return found ? found.label + ' ▾' : 'Weekly ▾';
+  const found = periodOptions.find((opt) => opt.value === props.period);
+  return found ? found.label + " ▾" : "Weekly ▾";
 });
 function selectPeriod(val) {
-  emit('update:period', val);
+  emit("update:period", val);
   showDropdown.value = false;
 }
 // 드롭다운 외부 클릭 시 닫기
 const root = ref();
-useClickOutside(root, () => { showDropdown.value = false; });
+useClickOutside(root, () => {
+  showDropdown.value = false;
+});
 </script>
 
 <style scoped>
-.relative { position: relative; }
-</style> 
+.relative {
+  position: relative;
+}
+</style>
