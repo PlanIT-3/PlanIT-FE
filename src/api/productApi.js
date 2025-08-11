@@ -1,7 +1,6 @@
 import api from "@/api";
 // 공통 설정
 const BASE_URL = "/api/product";
-const headers = { "Content-Type": "multipart/form-data" };
 export default {
   // username 중복 체크
   // 반환값: true → 중복(사용 불가), false → 사용 가능

@@ -12,18 +12,18 @@
 <script setup>
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
-import { useUserStore } from "@/stores/user";
+import { useAuthStore } from "@/stores/auth";
 import background from "@/assets/images/background.png";
 import logo from "@/assets/images/logo.svg";
 
+const auth = useAuthStore();
 const router = useRouter();
-const userStore = useUserStore();
 const isFadingOut = ref(false);
 
 const navigateToNextPage = () => {
   isFadingOut.value = true;
   setTimeout(() => {
-    if (userStore.isLoggedIn) {
+    if (auth.isLoggedIn) {
       router.push("/main");
     } else {
       router.push("/login");
@@ -33,7 +33,7 @@ const navigateToNextPage = () => {
 
 onMounted(() => {
   // 인증 상태 초기화
-  userStore.initAuth();
+  auth.initAuth();
 
   setTimeout(() => {
     navigateToNextPage();
