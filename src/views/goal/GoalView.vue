@@ -65,6 +65,8 @@ const load = async () => {
 };
 
 const goDetail = (id) => {
+  console.log("목표 상세로 이동", id);
+
   router.push(`/goal/detail/${id}`);
 };
 

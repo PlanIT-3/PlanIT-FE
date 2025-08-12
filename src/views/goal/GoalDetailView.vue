@@ -1,8 +1,8 @@
 <template>
   <DefaultLayout>
-    <div class="flex flex-col min-h-screen relative mt-10">
+    <div class="flex flex-col relative">
       <!-- 목표 헤더 섹션 -->
-      <div class="bg-white rounded-2xl shadow-lg p-6 mb-4 mx-[13px] -mt-[87px] relative z-20">
+      <div class="w-full">
         <div class="flex items-center justify-between mb-4">
           <h1 class="text-xl font-bold text-gray-900">나의 목표</h1>
           <button class="p-2 rounded-lg hover:bg-gray-100">
@@ -35,7 +35,7 @@
       </div>
 
       <!-- 목표에 할당된 계좌 섹션 -->
-      <div class="bg-white rounded-2xl shadow-sm mx-4 mb-4 p-5">
+      <div class="bg-white rounded-2xl shadow-sm mb-4 p-5">
         <h3 class="text-lg font-semibold text-gray-800 mb-4">목표에 할당된 계좌</h3>
         <GoalAssignedCard
           v-for="(account, index) in accounts"
@@ -49,7 +49,7 @@
       </div>
 
       <!-- 목표 금액 및 저축액 요약 -->
-      <div class="bg-white rounded-2xl shadow-sm mx-4 mb-4 p-5">
+      <div class="bg-white rounded-2xl shadow-sm mb-4 p-5">
         <div class="flex justify-between items-center mb-4">
           <div>
             <p class="text-sm text-gray-600">목표 금액</p>
@@ -69,18 +69,11 @@
       </div>
 
       <!-- 목표 진행 요약 및 차트 -->
-      <div class="bg-white rounded-2xl shadow-sm mx-4 mb-4 p-5">
+      <div class="bg-white rounded-2xl shadow-sm mb-4 p-5 h-90">
         <h3 class="text-lg font-semibold text-gray-800 mb-4">목표 진행 추이</h3>
-        <goalProgress :progressData="goalProgress.value"></goalProgress>
-
-        <div class="mb-6 flex justify-center">
-          <SummaryCard>
-            <template #title>🔍 목표 진행 요약</template>
-            목표 달성을 위한 현재 포트폴리오 상태입니다. 지속적인 적립식 투자로 목표 달성이 가능할 것으로 예상됩니다.
-            AI들어갈예정
-          </SummaryCard>
-        </div>
+        <GoalProgress :progressData="goalProgress"></GoalProgress>
       </div>
+      <!-- <GoalProgressAdvice :goalId="id" /> -->
     </div>
   </DefaultLayout>
 </template>
@@ -88,8 +81,9 @@
 <script setup>
 import { ref, computed, onMounted, watch } from "vue";
 import GoalAssignedCard from "@/components/manageGoal/GoalAssignedCard.vue";
-import SummaryCard from "@/components/common/SummaryCard.vue";
 import DefaultLayout from "@/components/layouts/DefaultLayout.vue";
+import GoalProgress from "./GoalProgress.vue";
+import GoalProgressAdvice from "@/components/goal/GoalProgressAdvice.vue";
 import { useAuthStore } from "@/stores/auth";
 import { useRoute, useRouter } from "vue-router";
 import api from "@/api/GoalApi";
@@ -105,7 +99,7 @@ const id = cr.params.id; //라우터 경로 변수
 const goalDetail = ref({});
 const rateList = ref();
 
-const goalProgress = ref({}); // api 응답 전체 저장
+const goalProgress = ref([]); // api 응답 데이터 배열
 
 const investmentChartOption = ref({}); // 차트 옵션 빈 객체 초기화
 
@@ -113,10 +107,8 @@ const load = async () => {
   try {
     goalDetail.value = (await api.getGoal(id)).data;
     rateList.value = await api.getGoalAccountRates(id);
-    goalProgress.value = await api.getGoalProgress(id); // 전체 응답 저장
-
-    //배열로 변환?
-    console.log("!!!!!!!!1", goalProgress.value);
+    goalProgress.value = await api.getGoalProgress(id);
+    console.log("Goal Progress Response:", goalProgress.value);
   } catch (err) {
     console.log("Goal API 호출 실패", err);
   }
