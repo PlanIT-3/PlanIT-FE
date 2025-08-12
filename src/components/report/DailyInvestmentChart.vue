@@ -1,6 +1,6 @@
 <template>
-  <MixedChart 
-    :data="chartData" 
+  <MixedChart
+    :data="chartData"
     :period="period"
     bar-name="총 투자금액"
     line-name="평가금액"
@@ -24,28 +24,28 @@ const props = defineProps({
       weeklyTotalAmount: [],
       weeklyValuationAmount: [],
       monthlyTotalAmount: [],
-      monthlyValuationAmount: []
-    })
+      monthlyValuationAmount: [],
+    }),
   },
   period: {
     type: String,
-    default: "daily"
+    default: "daily",
   },
   chartType: {
     type: String,
-    default: "daily"
-  }
+    default: "daily",
+  },
 });
 
 const chartData = computed(() => {
   let barData, lineData;
-  
+
   switch (props.chartType) {
-    case 'weekly':
+    case "weekly":
       barData = props.data.weeklyTotalAmount || [];
       lineData = props.data.weeklyValuationAmount || [];
       break;
-    case 'monthly':
+    case "monthly":
       barData = props.data.monthlyTotalAmount || [];
       lineData = props.data.monthlyValuationAmount || [];
       break;
@@ -53,11 +53,11 @@ const chartData = computed(() => {
       barData = props.data.dailyTotalAmount || [];
       lineData = props.data.dailyValuationAmount || [];
   }
-  
+
   return {
     date: props.data.date || [],
     barData,
-    lineData
+    lineData,
   };
 });
 </script>

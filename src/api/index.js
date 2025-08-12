@@ -48,7 +48,7 @@ apiClient.interceptors.response.use(
       try {
         const refreshToken = auth.getrefreshToken();
         if (refreshToken) {
-          const response = await axios.post(`${API_BASE_URL}/auth/reissue`, {
+          const response = await axios.post(`${API_BASE_URL}/api/reissue`, {
             refreshToken,
           });
 
