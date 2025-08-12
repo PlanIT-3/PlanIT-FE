@@ -1,14 +1,10 @@
 <template>
-  <div class="bg-blue-50 rounded-2xl border border-blue-200 p-6 shadow">
-    <div class="flex items-center justify-between mb-4">
-      <div class="flex items-center">
-        <div>
-          <h3 class="text-base font-bold text-gray-800">ISA 비과세 한도 사용 현황</h3>
-          <p class="text-xs text-gray-600">
-            2024년 연간 한도 {{ formatAmount(taxData.maxTaxSavingLimit) }} 중 사용 현황
-          </p>
-        </div>
-      </div>
+  <div class="bg-blue-50 rounded-2xl shadow p-4">
+    <div class="flex justify-between items-center mb-1">
+      <span class="font-semibold text-sm">ISA 비과세 한도 사용 현황</span>
+    </div>
+    <div class="mb-4">
+      <p class="text-xs text-gray-600">2024년 연간 한도 {{ formatAmount(taxData.maxTaxSavingLimit) }} 중 사용 현황</p>
     </div>
 
     <div v-if="loading" class="flex items-center justify-center py-8">
