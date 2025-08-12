@@ -74,31 +74,10 @@
           </button>
         </div>
       </div>
-
-      <!-- 탭 버튼 -->
-      <div class="flex justify-center gap-2 mb-4">
-        <button
-          @click="setActiveTab('isa')"
-          :class="[
-            'px-6 py-2 rounded-lg border font-semibold flex items-center justify-center gap-2 transition-colors text-sm',
-            activeTab === 'isa'
-              ? 'bg-blue-100 text-blue-600 border-blue-300'
-              : 'bg-gray-100 text-gray-600 border-gray-300 hover:bg-gray-200',
-          ]"
-        >
-          <span class="text-base">💳</span> ISA 리포트
-        </button>
-        <button
-          @click="setActiveTab('investment')"
-          :class="[
-            'px-6 py-2 rounded-lg border font-semibold flex items-center justify-center gap-2 transition-colors text-sm',
-            activeTab === 'investment'
-              ? 'bg-blue-100 text-blue-600 border-blue-300'
-              : 'bg-gray-100 text-gray-600 border-gray-300 hover:bg-gray-200',
-          ]"
-        >
-          <span class="text-base">📊</span> 투자 리포트
-        </button>
+      <!-- 그래프 카드 영역 (GraphBox 컴포넌트 사용) -->
+      <div class="w-full max-w-xl flex flex-col gap-4">
+        <GraphBox title="내 일별 수익률 변화" dropdown-text="Weekly ▾"> [그래프 영역] </GraphBox>
+        <GraphBox title="주별 투자금 총액 비교" dropdown-text="Weekly ▾"> [그래프 영역] </GraphBox>
       </div>
     </div>
     <!-- 그래프 카드 영역 (GraphBox 컴포넌트 사용) -->
@@ -112,6 +91,7 @@
 <script setup>
 import DefaultLayout from "@/components/layouts/DefaultLayout.vue";
 import CircleProgress from "@/components/report/CircleProgress.vue";
+import GraphBox from "@/components/report/GraphBox.vue";
 import { ref } from "vue";
 
 const activeTab = ref("investment"); // 기본값: 투자 리포트
