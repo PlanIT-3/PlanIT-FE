@@ -1,6 +1,5 @@
 <script setup>
 const props = defineProps({
-const props = defineProps({
   label: String,
   disabled: {
     type: Boolean,
@@ -40,7 +39,6 @@ function handleMouseLeave(event) {
       @click="!props.disabled && $emit('click')"
       :type="props.type"
     >
-      {{ props.label }}
       {{ props.label }}
     </button>
   </div>

@@ -1,8 +1,8 @@
 <template>
   <DefaultLayout>
-    <div class="flex flex-col min-h-screen relative mt-10">
+    <div class="flex flex-col relative">
       <!-- 목표 헤더 섹션 -->
-      <div class="bg-white rounded-2xl shadow-lg p-6 mb-4 mx-[13px] -mt-[87px] relative z-20">
+      <div class="bg-white rounded-2xl shadow p-6 mb-4 relative z-20">
         <div class="flex items-center justify-between mb-4">
           <h1 class="text-xl font-bold text-gray-900">나의 목표</h1>
           <button class="p-2 rounded-lg hover:bg-gray-100">
@@ -35,7 +35,7 @@
       </div>
 
       <!-- 목표에 할당된 계좌 섹션 -->
-      <div class="bg-white rounded-2xl shadow-sm mx-4 mb-4 p-5">
+      <div class="bg-white rounded-2xl shadow-sm mb-4 p-5">
         <h3 class="text-lg font-semibold text-gray-800 mb-4">목표에 할당된 계좌</h3>
         <GoalAssignedCard
           v-for="(account, index) in accounts"
@@ -49,7 +49,7 @@
       </div>
 
       <!-- 목표 금액 및 저축액 요약 -->
-      <div class="bg-white rounded-2xl shadow-sm mx-4 mb-4 p-5">
+      <div class="bg-white rounded-2xl shadow-sm mb-4 p-5">
         <div class="flex justify-between items-center mb-4">
           <div>
             <p class="text-sm text-gray-600">목표 금액</p>
@@ -69,7 +69,7 @@
       </div>
 
       <!-- 목표 진행 요약 및 차트 -->
-      <div class="bg-white rounded-2xl shadow-sm mx-4 mb-4 p-5">
+      <div class="bg-white rounded-2xl shadow-sm mb-4 p-5">
         <h3 class="text-lg font-semibold text-gray-800 mb-4">목표 진행 추이</h3>
         <goalProgress :progressData="goalProgress.value"></goalProgress>
 
