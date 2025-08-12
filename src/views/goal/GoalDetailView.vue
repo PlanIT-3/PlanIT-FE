@@ -70,14 +70,8 @@
 
       <!-- 목표 진행 요약 및 차트 -->
       <div class="bg-white rounded-2xl shadow-sm mx-4 mb-4 p-5">
-        <h3 class="text-lg font-semibold text-gray-800 mb-4">주식 진행 추이</h3>
-
-        <div class="mb-6 h-48 bg-gray-50 rounded-lg flex items-center justify-center border-2 border-purple-200">
-          <div class="text-center text-gray-500">
-            <div class="text-sm mb-2">주식 진행 추이 차트</div>
-            <div class="text-xs text-purple-600">추후 실제 차트 컴포넌트로 교체</div>
-          </div>
-        </div>
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">목표 진행 추이</h3>
+        <goalProgress :progressData="goalProgress.value"></goalProgress>
 
         <div class="mb-6 flex justify-center">
           <SummaryCard>
@@ -92,8 +86,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
-import BarChart from "@/components/graph/BarChart.vue";
+import { ref, computed, onMounted, watch } from "vue";
 import GoalAssignedCard from "@/components/manageGoal/GoalAssignedCard.vue";
 import SummaryCard from "@/components/common/SummaryCard.vue";
 import DefaultLayout from "@/components/layouts/DefaultLayout.vue";
@@ -101,6 +94,7 @@ import { useAuthStore } from "@/stores/auth";
 import { useRoute, useRouter } from "vue-router";
 import api from "@/api/GoalApi";
 import GoalCard from "@/components/goal/GoalCard.vue";
+import VChart from "vue-echarts";
 
 const auth = useAuthStore();
 const cr = useRoute();
@@ -110,10 +104,19 @@ const id = cr.params.id; //라우터 경로 변수
 
 const goalDetail = ref({});
 const rateList = ref();
+
+const goalProgress = ref({}); // api 응답 전체 저장
+
+const investmentChartOption = ref({}); // 차트 옵션 빈 객체 초기화
+
 const load = async () => {
   try {
     goalDetail.value = (await api.getGoal(id)).data;
     rateList.value = await api.getGoalAccountRates(id);
+    goalProgress.value = await api.getGoalProgress(id); // 전체 응답 저장
+
+    //배열로 변환?
+    console.log("!!!!!!!!1", goalProgress.value);
   } catch (err) {
     console.log("Goal API 호출 실패", err);
   }
@@ -133,7 +136,6 @@ const currentAmount = computed(() => {
 });
 
 const remainingAmount = computed(() => targetAmount.value - currentAmount.value);
-const progressPercentage = computed(() => Math.round((currentAmount.value / targetAmount.value) * 100));
 
 onMounted(load);
 </script>
