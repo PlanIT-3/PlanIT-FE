@@ -1,12 +1,17 @@
 import api from "@/api";
-// 공통 설정
-const BASE_URL = "/api/product";
+
+const BASE_URL = "/auth/api/product";
+
 export default {
-  // username 중복 체크
-  // 반환값: true → 중복(사용 불가), false → 사용 가능
-  async getProductList(username) {
-    const { data } = await api.get(`${BASE_URL}/checkusername/${username}`);
-    console.log("AUTH GET CHECKUSERNAME", data);
-    return data;
+  // 추천 상품 목록 조회
+  async getRecommendList() {
+    try {
+      const { data } = await api.get(`${BASE_URL}/recommend`);
+      console.log("추천 상품 조회:", data);
+      return data;
+    } catch (error) {
+      console.error("추천 상품 조회 실패:", error);
+      throw error;
+    }
   },
 };
