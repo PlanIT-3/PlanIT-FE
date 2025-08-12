@@ -13,32 +13,7 @@
           <div class="text-gray-400 text-sm mb-4">2025년 7월 기준 · 개인 투자 현황 분석</div>
         </div>
         <!-- 목표별 달성률 영역 -->
-        <div class="mb-0">
-          <div class="text-sm font-semibold mb-2 flex items-center">
-            <span class="text-red-500 mr-1">📈</span> 목표별 달성률
-          </div>
-          <div class="text-xs text-gray-400 mb-4">각 투자 목표의 현재 진행 상황</div>
-
-          <!-- 차트 1 ~ 4개까지 자동 배치 가능 -->
-          <div
-            :class="[
-              'grid gap-4 justify-center',
-              goals.length === 1
-                ? 'grid-cols-1'
-                : goals.length === 2
-                  ? 'grid-cols-2'
-                  : goals.length === 3
-                    ? 'grid-cols-3'
-                    : 'grid-cols-4',
-            ]"
-          >
-            <div v-for="(goal, i) in goals" :key="i" class="flex flex-col items-center">
-              <CircleProgress :percent="72" :color="goal.color" :size="64" />
-              <div class="text-xs font-semibold text-gray-700 mt-2">{{ goal.name }}</div>
-              <div class="text-[11px] text-gray-400">{{ goal.value }} / {{ goal.total }}</div>
-            </div>
-          </div>
-        </div>
+        <GoalAchievementChart :goals="goals" />
       </div>
 
       <!-- 탭 버튼 -->
@@ -67,7 +42,7 @@
         </button>
       </div>
     </div>
-    
+
     <!-- 탭별 컨텐츠 -->
     <div v-if="activeTab === 'investment'">
       <InvestmentReport />
@@ -88,17 +63,34 @@
 import DefaultLayout from "@/components/layouts/DefaultLayout.vue";
 import CircleProgress from "@/components/report/CircleProgress.vue";
 import InvestmentReport from "@/components/report/InvestmentReport.vue";
-import { ref } from "vue";
+import GoalAchievementChart from "@/components/report/GoalAchievementChart.vue";
+import { ref, onMounted } from "vue";
+import api from "@/api";
 
-const activeTab = ref("investment"); // 기본값: 투자 리포트
+const activeTab = ref("investment");
+const goals = ref([]);
+const colors = ['#3B82F6', '#EF4444', '#10B981', '#F59E0B', '#8B5CF6', '#F97316'];
 
-const goals = [
-  { name: "ISA 내집마련", value: 2160, total: 3000, color: "#3b82f6" },
-  { name: "ISA 내집마련", value: 2160, total: 3000, color: "#10b981" },
-  { name: "ISA 내집마련", value: 2160, total: 3000, color: "#f59e42" },
-];
+const fetchGoals = async () => {
+  try {
+    const response = await api.get("/auth/api/goals");
+    goals.value = response.data.data.slice(0, 4).map((goal, index) => ({
+      name: goal.goalName,
+      value: goal.totalAmount || 0,
+      total: goal.targetAmount,
+      percent: goal.goalRate || 0,
+      color: colors[index % colors.length]
+    }));
+  } catch (error) {
+    console.error('목표 데이터를 가져오는데 실패했습니다:', error);
+  }
+};
 
 const setActiveTab = (tab) => {
   activeTab.value = tab;
 };
+
+onMounted(() => {
+  fetchGoals();
+});
 </script>

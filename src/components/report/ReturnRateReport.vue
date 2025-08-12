@@ -56,8 +56,6 @@ const chartOptions = computed(() => {
 
   const rates = sortedData.map((item) => item.rate);
 
-  console.log("수익률 데이터:", rates);
-
   return {
     tooltip: {
       trigger: "axis",
