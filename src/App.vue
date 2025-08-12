@@ -8,11 +8,11 @@
 
 <script setup>
 import { RouterView, useRouter } from "vue-router";
-import { useUserStore } from "@/stores/user";
+import { useAuthStore } from "@/stores/auth";
 
-const userStore = useUserStore();
+const auth = useAuthStore();
 
-if (userStore.isLoggedIn) {
+if (auth.isLogin) {
   const router = useRouter();
   router.push({ name: "main" });
 }

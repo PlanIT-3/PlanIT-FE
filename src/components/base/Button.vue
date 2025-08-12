@@ -13,6 +13,10 @@ const props = defineProps({
     type: String,
     default: "#3a3376",
   },
+  type: {
+    type: String,
+    default: "button", // 기본은 button 타입
+  },
 });
 
 function handleMouseOver(event) {
@@ -33,7 +37,7 @@ function handleMouseLeave(event) {
       @mouseover="!props.disabled && handleMouseOver"
       @mouseleave="!props.disabled && handleMouseLeave"
       @click="!props.disabled && $emit('click')"
-      type="button"
+      :type="props.type"
     >
       {{ props.label }}
     </button>

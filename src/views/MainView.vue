@@ -77,9 +77,10 @@ import { PieChart, LineChart } from "echarts/charts";
 import { TitleComponent, TooltipComponent, LegendComponent, GridComponent } from "echarts/components";
 import VChart from "vue-echarts";
 import { onMounted } from "vue";
-
 import MainLayout from "@/components/layouts/MainLayout.vue";
 import GoalSliderCard from "@/components/goal/GoalSliderCard.vue";
+import Api from "@/api/mainApi";
+import mainApi from "@/api/mainApi";
 
 use([CanvasRenderer, PieChart, LineChart, TitleComponent, TooltipComponent, LegendComponent, GridComponent]);
 
@@ -98,10 +99,9 @@ const totalBalance = ref(0);
 // 일자 버튼 클릭 시 API 호출
 const fetchDailyData = async () => {
   try {
-    const response = await fetch("http://localhost:8080/auth/api/account/day");
-    const json = await response.json();
-    if (json.status === "OK" && json.data && json.data.balanceResList) {
-      dailyData.value = json.data.balanceResList;
+    const data = await mainApi.getPeriod("day");
+    if (data.status === "OK" && data.data && data.data.balanceResList) {
+      dailyData.value = data.data.balanceResList;
       updateInvestmentChart();
     }
   } catch (error) {
@@ -112,10 +112,9 @@ const fetchDailyData = async () => {
 // 주 버튼 클릭 시 API 호출
 const fetchWeeklyData = async () => {
   try {
-    const response = await fetch("http://localhost:8080/auth/api/account/week");
-    const json = await response.json();
-    if (json.status === "OK" && json.data && json.data.balanceResList) {
-      weeklyData.value = json.data.balanceResList;
+    const data = await mainApi.getPeriod("week");
+    if (data.status === "OK" && data.data && data.data.balanceResList) {
+      weeklyData.value = data.data.balanceResList;
       updateInvestmentChart();
     }
   } catch (error) {
@@ -126,10 +125,9 @@ const fetchWeeklyData = async () => {
 // 월 버튼 클릭 시 API 호출
 const fetchMonthlyData = async () => {
   try {
-    const response = await fetch("http://localhost:8080/auth/api/account/month");
-    const json = await response.json();
-    if (json.status === "OK" && json.data && json.data.balanceResList) {
-      monthlyData.value = json.data.balanceResList;
+    const data = await mainApi.getPeriod("month");
+    if (data.status === "OK" && data.data && data.data.balanceResList) {
+      monthlyData.value = data.data.balanceResList;
       updateInvestmentChart();
     }
   } catch (error) {
@@ -140,11 +138,10 @@ const fetchMonthlyData = async () => {
 // 목표 비율 데이터 API 호출
 const fetchGoalRatioData = async () => {
   try {
-    const response = await fetch("http://localhost:8080/auth/api/account/goal-ratio");
-    const json = await response.json();
-    if (json.status === "OK" && json.data) {
-      totalBalance.value = json.data.totalBalance;
-      goalRatioData.value = json.data.goalRatios;
+    const data = await mainApi.getGoalRatio();
+    if (data.status === "OK" && data.data) {
+      totalBalance.value = data.data.totalBalance;
+      goalRatioData.value = data.data.goalRatios;
       updateChartOption();
     }
   } catch (error) {

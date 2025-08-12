@@ -37,6 +37,7 @@ import { useRouter } from "vue-router";
 import Button from "@/components/base/Button.vue";
 import goBackButton from "@/components/base/GoBackButton.vue";
 import BaseTextInput from "@/components/base/BaseTextInput.vue";
+import authApi from "@/api/authApi";
 
 import { useUserStore } from "@/stores/user";
 
@@ -50,14 +51,6 @@ const formData = reactive({
   confirmPassword: "",
 });
 
-const redirectToKakao = () => {
-  window.location.href = "http://localhost:8080/oauth2/authorization/kakao";
-};
-
-const redirectToNaver = () => {
-  window.location.href = "http://localhost:8080/oauth2/authorization/naver";
-};
-
 const handleRegister = async () => {
   if (!formData.username || !formData.email || !formData.password) {
     alert("모든 필드를 입력해주세요.");
@@ -69,10 +62,10 @@ const handleRegister = async () => {
   }
 
   try {
-    await auth.signup({
-      username: formData.username,
+    await authApi.signup({
       email: formData.email,
       password: formData.password,
+      nickname: formData.username,
     });
     alert("회원가입이 완료되었습니다!");
     router.push("/login");
