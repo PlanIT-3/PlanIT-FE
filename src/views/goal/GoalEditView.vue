@@ -119,7 +119,7 @@ const saveGoalAndOpenModal = async () => {
   };
 
   try {
-    const response = await Api(goalData);
+    const response = await Api.createNewGoal(goalData);
     console.log(response);
     if (response.status === 200) {
       const createdGoal = response.data.data;

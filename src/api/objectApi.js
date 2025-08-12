@@ -5,8 +5,7 @@ const BASE_URL = "/auth/api/goals";
 export default {
   //목표 생성
   async createNewGoal(goalData) {
-    const { data } = await api.post(BASE_URL, goalData);
-    return data;
+    return api.post(BASE_URL, goalData);
   },
 
   //목표 리스트
@@ -41,5 +40,18 @@ export default {
       name: item.bankName,
       value: item.progressRate,
     }));
+  },
+
+  // 목표에 할당된 계좌목록 조회
+  async getGoalAccounts(goalId) {
+    const { data } = await api.get(`${BASE_URL}/${goalId}/accounts`);
+    console.log("API 계좌 목록 응답데이터 :", data);
+    return data.data;
+  },
+
+  // 해당 목표 targetamount 조회
+  async getGoalAmount(goalId) {
+    const { data } = await api.get(`${BASE_URL}/${goalId}/goal-amount`);
+    return data;
   },
 };
