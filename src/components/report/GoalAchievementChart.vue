@@ -33,14 +33,14 @@ import CircleProgress from "@/components/report/CircleProgress.vue";
 const props = defineProps({
   goals: {
     type: Array,
-    default: () => []
-  }
+    default: () => [],
+  },
 });
 
 const formatCurrency = (value) => {
   if (value >= 10000) {
-    return (value / 10000).toFixed(0) + '만원';
+    return (value / 10000).toFixed(0) + "만원";
   }
-  return value.toLocaleString() + '원';
+  return value.toLocaleString() + "원";
 };
 </script>

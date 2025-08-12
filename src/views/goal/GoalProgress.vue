@@ -1,5 +1,5 @@
 <template>
-  <div class="chart-container">
+  <div class="chart-container -mt-2">
     <VChart :option="chartOption" autoresize class="progress-chart" />
   </div>
 </template>
@@ -27,35 +27,46 @@ const chartOption = ref({});
 watch(
   () => props.progressData,
   (newVal) => {
-    if (!newVal || newVal.length === 0) {
+    console.log("GoalProgress received data:", newVal);
+
+    if (!newVal) {
       chartOption.value = {};
       return;
     }
 
-    const rawData = newVal;
+    // API 응답 구조에 따라 데이터 추출
+    let rawData = [];
+    if (Array.isArray(newVal)) {
+      rawData = newVal;
+    } else if (newVal.data && Array.isArray(newVal.data)) {
+      rawData = newVal.data;
+    } else {
+      console.log("No valid data found");
+      chartOption.value = {};
+      return;
+    }
+
+    console.log("Raw data for chart:", rawData);
+
+    if (rawData.length === 0) {
+      chartOption.value = {};
+      return;
+    }
 
     const dates = rawData
       .map((item) => {
         if (!item.progressDate) return null;
         const [y, m, d] = item.progressDate;
-        return `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+        return `${String(m).padStart(2, "0")}/${String(d).padStart(2, "0")}`;
       })
       .filter(Boolean);
 
-    const depositData = rawData.filter((item) => item.progressDate).map((item) => item.depositProgress);
+    const depositData = rawData.map((item) => item.depositProgress || 0);
+    const isaData = rawData.map((item) => item.isaProgress || 0);
 
-    const isaData = rawData.filter((item) => item.progressDate).map((item) => item.isaProgress);
+    console.log("Chart data - dates:", dates, "deposit:", depositData, "isa:", isaData);
 
     chartOption.value = {
-      title: {
-        text: "투자 진행 현황",
-        left: "center",
-        textStyle: {
-          fontSize: 18,
-          fontWeight: "600",
-          color: "#1f2937",
-        },
-      },
       tooltip: {
         trigger: "axis",
         backgroundColor: "rgba(255, 255, 255, 0.95)",
@@ -67,34 +78,27 @@ watch(
         formatter: function (params) {
           let result = `<div style="font-weight: 600; margin-bottom: 8px;">${params[0].axisValue}</div>`;
           params.forEach((param) => {
-            const displayName = param.seriesName === "depositProgress" ? "적금 진행률" : "ISA 진행률";
             result += `<div style="margin: 4px 0;">
               <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: ${param.color}; margin-right: 8px;"></span>
-              ${displayName}: <strong>${param.value}%</strong>
+              ${param.seriesName}: <strong>${param.value}%</strong>
             </div>`;
           });
           return result;
         },
       },
       legend: {
-        data: [
-          { name: "depositProgress", icon: "circle" },
-          { name: "isaProgress", icon: "circle" },
-        ],
-        top: 40,
+        data: ["적금 진행률", "ISA 진행률"],
+        bottom: -5,
         textStyle: {
           fontSize: 13,
           color: "#6b7280",
-        },
-        formatter: function (name) {
-          return name === "depositProgress" ? "적금 진행률" : "ISA 진행률";
         },
       },
       grid: {
         left: "5%",
         right: "5%",
-        bottom: "10%",
-        top: "25%",
+        bottom: "15%",
+        top: "15%",
         containLabel: true,
       },
       xAxis: {
@@ -143,88 +147,38 @@ watch(
       },
       series: [
         {
-          name: "depositProgress",
+          name: "적금 진행률",
           type: "line",
           data: depositData,
           smooth: true,
           lineStyle: {
-            width: 4,
-            color: {
-              type: "linear",
-              x: 0,
-              y: 0,
-              x2: 1,
-              y2: 0,
-              colorStops: [
-                { offset: 0, color: "#3b82f6" },
-                { offset: 1, color: "#1d4ed8" },
-              ],
-            },
+            width: 3,
+            color: "#3b82f6",
           },
           itemStyle: {
             color: "#3b82f6",
-            borderWidth: 3,
+            borderWidth: 2,
             borderColor: "#ffffff",
-            shadowBlur: 8,
-            shadowColor: "rgba(59, 130, 246, 0.3)",
           },
           symbol: "circle",
-          symbolSize: 8,
-          areaStyle: {
-            color: {
-              type: "linear",
-              x: 0,
-              y: 0,
-              x2: 0,
-              y2: 1,
-              colorStops: [
-                { offset: 0, color: "rgba(59, 130, 246, 0.3)" },
-                { offset: 1, color: "rgba(59, 130, 246, 0.05)" },
-              ],
-            },
-          },
+          symbolSize: 6,
         },
         {
-          name: "isaProgress",
+          name: "ISA 진행률",
           type: "line",
           data: isaData,
           smooth: true,
           lineStyle: {
-            width: 4,
-            color: {
-              type: "linear",
-              x: 0,
-              y: 0,
-              x2: 1,
-              y2: 0,
-              colorStops: [
-                { offset: 0, color: "#10b981" },
-                { offset: 1, color: "#047857" },
-              ],
-            },
+            width: 3,
+            color: "#ef4444",
           },
           itemStyle: {
-            color: "#10b981",
-            borderWidth: 3,
+            color: "#ef4444",
+            borderWidth: 2,
             borderColor: "#ffffff",
-            shadowBlur: 8,
-            shadowColor: "rgba(16, 185, 129, 0.3)",
           },
           symbol: "circle",
-          symbolSize: 8,
-          areaStyle: {
-            color: {
-              type: "linear",
-              x: 0,
-              y: 0,
-              x2: 0,
-              y2: 1,
-              colorStops: [
-                { offset: 0, color: "rgba(16, 185, 129, 0.3)" },
-                { offset: 1, color: "rgba(16, 185, 129, 0.05)" },
-              ],
-            },
-          },
+          symbolSize: 6,
         },
       ],
     };
@@ -236,30 +190,15 @@ watch(
 <style scoped>
 .chart-container {
   width: 100%;
-  height: 350px;
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-  border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  height: 280px;
+  padding: 0px;
   position: relative;
   overflow: hidden;
-}
-
-.chart-container::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
 }
 
 .progress-chart {
   width: 100%;
   height: 100%;
-  border-radius: 12px;
 }
 
 @media (max-width: 768px) {

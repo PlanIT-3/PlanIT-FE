@@ -2,7 +2,7 @@
   <DefaultLayout>
     <div class="flex flex-col w-full">
       <!-- 투자 리포트 박스: 흰배경, 둥근 모서리, 회색 테두리 -->
-      <div class="bg-white rounded-2xl border border-gray-200 p-6 mb-4">
+      <div class="bg-white mb-4">
         <div class="flex flex-col items-center">
           <div class="flex items-center mb-2">
             <span class="inline-block w-6 h-6 mr-2">
@@ -13,7 +13,9 @@
           <div class="text-gray-400 text-sm mb-4">2025년 7월 기준 · 개인 투자 현황 분석</div>
         </div>
         <!-- 목표별 달성률 영역 -->
-        <GoalAchievementChart :goals="goals" />
+        <div class="w-full p-6 border border-gray-200 rounded-2xl">
+          <GoalAchievementChart :goals="goals" />
+        </div>
       </div>
 
       <!-- 탭 버튼 -->
@@ -48,13 +50,7 @@
       <InvestmentReport />
     </div>
     <div v-else-if="activeTab === 'isa'">
-      <!-- ISA 리포트 내용 -->
-      <div class="w-full max-w-xl flex flex-col gap-4">
-        <div class="bg-white rounded-2xl border border-gray-200 p-6">
-          <h3 class="text-lg font-semibold mb-4">ISA 계좌 현황</h3>
-          <p class="text-gray-600">ISA 리포트 내용이 여기에 표시됩니다.</p>
-        </div>
-      </div>
+      <IsaReport />
     </div>
   </DefaultLayout>
 </template>
@@ -64,12 +60,13 @@ import DefaultLayout from "@/components/layouts/DefaultLayout.vue";
 import CircleProgress from "@/components/report/CircleProgress.vue";
 import InvestmentReport from "@/components/report/InvestmentReport.vue";
 import GoalAchievementChart from "@/components/report/GoalAchievementChart.vue";
+import IsaReport from "@/components/report/IsaReport.vue";
 import { ref, onMounted } from "vue";
 import api from "@/api";
 
 const activeTab = ref("investment");
 const goals = ref([]);
-const colors = ['#3B82F6', '#EF4444', '#10B981', '#F59E0B', '#8B5CF6', '#F97316'];
+const colors = ["#3B82F6", "#EF4444", "#10B981", "#F59E0B", "#8B5CF6", "#F97316"];
 
 const fetchGoals = async () => {
   try {
@@ -79,10 +76,10 @@ const fetchGoals = async () => {
       value: goal.totalAmount || 0,
       total: goal.targetAmount,
       percent: goal.goalRate || 0,
-      color: colors[index % colors.length]
+      color: colors[index % colors.length],
     }));
   } catch (error) {
-    console.error('목표 데이터를 가져오는데 실패했습니다:', error);
+    console.error("목표 데이터를 가져오는데 실패했습니다:", error);
   }
 };
 
