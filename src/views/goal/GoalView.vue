@@ -1,21 +1,69 @@
-<!-- 목표 뷰 페이지 -->
 <template>
   <DefaultLayout>
     <div class="flex flex-col items-start w-full px-0 gap-2">
-      <h1 class="text-l font-semibold m-0">목표 리스트</h1>
+      <div class="flex items-center">
+        <div class="text-indigo-600 mr-2">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5 text-blue-600"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <h3 class="text-base font-semibold text-gray-800 whitespace-nowrap">목표 리스트</h3>
+      </div>
     </div>
-    <GoalCard title="자가용 구매하기" statusText="목표 달성!" badge-text="목표달성" :showLegend="false"></GoalCard>
+
+    <!-- 데이터 길이 체크 -->
+    <div v-if="list.length > 0">
+      <div v-for="item in list" :key="item.goalId" @click="goDetail(item.goalId)" class="cursor-pointer">
+        <GoalCard
+          :title="item.goalName || ''"
+          :rate="item.goalRate"
+          :showLegend="false"
+          :barChartData="[{ name: '진행', value: item.goalRate }]"
+          :totalAmount="item.totalAmount"
+          :targetAmount="item.targetAmount"
+        />
+      </div>
+    </div>
+
+    <!-- 로딩 또는 빈 리스트 -->
+    <div v-else>
+      <div class="flex justify-center items-center h-24">
+        <div class="w-6 h-6 border-3 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    </div>
   </DefaultLayout>
 </template>
 
 <script setup>
 import GoalCard from "@/components/goal/GoalCard.vue";
 import DefaultLayout from "@/components/layouts/DefaultLayout.vue";
-</script>
+import api from "@/api/GoalApi";
+import { useRouter } from "vue-router";
+import { ref, onMounted } from "vue";
 
-<style scoped>
-.goal-view {
-  /* 목표 뷰 스타일 */
-}
-</style>
-<!-- <GoalCard title="자가용 구매하기" statusText="목표 달성!" badge-text="목표달성" :showLegend="false"></GoalCard> -->
+const list = ref([]);
+const router = useRouter();
+
+const load = async () => {
+  try {
+    const res = await api.getGoalList();
+    // res.data 가 배열일 경우
+    list.value = res.data || [];
+  } catch (err) {
+    console.log("GoalList API 호출 실패", err);
+  }
+};
+
+const goDetail = (id) => {
+  router.push(`/goal/detail/${id}`);
+};
+
+onMounted(load);
+</script>

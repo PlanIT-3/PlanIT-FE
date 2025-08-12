@@ -1,6 +1,5 @@
 <script setup>
-import { computed } from "vue";
-import { defineProps } from "vue";
+import { computed, defineProps } from "vue";
 
 import VChart from "vue-echarts";
 import { use } from "echarts/core";
@@ -11,42 +10,40 @@ import { GridComponent, TooltipComponent, LegendComponent } from "echarts/compon
 use([CanvasRenderer, BarChart, GridComponent, TooltipComponent, LegendComponent]);
 
 const props = defineProps({
-  data: {
-    type: Array,
-    required: true,
-    default: () => [],
-  },
-  showLegend: {
-    type: Boolean,
-    default: true, // 기본값은 범례 표시
-  },
+  data: { type: Array, required: true },
+  labelValues: { type: Array, default: () => [] }, // 내가 표시할 라벨 값 배열
+  showLegend: { type: Boolean, default: false },
 });
+
+const cappedData = computed(() =>
+  props.data.map((item) => ({
+    ...item,
+    cappedValue: Math.min(item.value, 100),
+  }))
+);
 
 const options = computed(() => ({
   tooltip: {
     trigger: "axis",
     triggerOn: "click",
-    axisPointer: {
-      type: "shadow",
-    },
+    axisPointer: { type: "shadow" },
   },
   legend: {
     show: props.showLegend,
     top: 10,
     left: "center",
-    textStyle: {
-      fontSize: 8,
-    },
+    textStyle: { fontSize: 8 },
     selectedMode: true,
   },
   grid: {
-    left: "",
+    left: "2%",
     right: "2%",
     bottom: "3%",
     containLabel: true,
   },
   xAxis: {
     type: "value",
+    max: 100,
     show: false,
   },
   yAxis: {
@@ -54,16 +51,27 @@ const options = computed(() => ({
     data: [""],
     show: false,
   },
-  series: props.data.map((item, index) => {
+  series: cappedData.value.map((item, index) => {
     const isFirst = index === 0;
-    const isLast = index === props.data.length - 1;
+    const isLast = index === cappedData.value.length - 1;
+
     return {
       name: item.name,
       type: "bar",
       stack: "total",
-      data: [item.value],
+      data: [item.cappedValue],
       itemStyle: {
         borderRadius: isFirst ? [6, 0, 0, 6] : isLast ? [0, 6, 6, 0] : 0,
+      },
+      label: {
+        show: true,
+        position: "insideRight",
+        formatter: () => {
+          // labelValues 배열에 값이 있으면 사용, 없으면 기본값 %
+          return props.labelValues[index] !== undefined ? props.labelValues[index] : item.cappedValue + "%";
+        },
+        color: "#fff",
+        fontSize: 10,
       },
     };
   }),
