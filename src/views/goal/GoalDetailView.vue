@@ -24,23 +24,14 @@
           </button>
         </div>
 
-        <div class="mb-4">
-          <h2 class="text-lg font-semibold text-gray-800 mb-1">{{ goalTitle }}</h2>
-          <div class="flex items-center">
-            <div class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
-              {{ progressPercentage }}%
-            </div>
-            <span class="ml-2 text-sm text-gray-600">목표 달성까지 {{ remainingAmount }}만원</span>
-          </div>
-        </div>
-
-        <div class="mb-4">
-          <div class="flex justify-between text-sm text-gray-600 mb-2">
-            <span>{{ currentAmount }}만원</span>
-            <span>{{ targetAmount }}만원</span>
-          </div>
-          <BarChart />
-        </div>
+        <GoalCard
+          :title="goalDetail.goalName ?? ''"
+          :rate="goalDetail.goalRate ?? 0"
+          :showLegend="false"
+          :barChartData="rateList"
+          :totalAmount="goalDetail.totalAmount ?? 0"
+          :targetAmount="goalDetail.targetAmount ?? 0"
+        />
       </div>
 
       <!-- 목표에 할당된 계좌 섹션 -->
@@ -101,22 +92,34 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import BarChart from "@/components/graph/BarChart.vue";
 import GoalAssignedCard from "@/components/manageGoal/GoalAssignedCard.vue";
 import SummaryCard from "@/components/common/SummaryCard.vue";
 import DefaultLayout from "@/components/layouts/DefaultLayout.vue";
 import { useAuthStore } from "@/stores/auth";
 import { useRoute, useRouter } from "vue-router";
+import api from "@/api/GoalApi";
+import GoalCard from "@/components/goal/GoalCard.vue";
 
 const auth = useAuthStore();
 const cr = useRoute();
 const router = useRouter();
 
-const no = cr.params.no; //라우터 경로 변수
+const id = cr.params.id; //라우터 경로 변수
+
+const goalDetail = ref({});
+const rateList = ref();
+const load = async () => {
+  try {
+    goalDetail.value = (await api.getGoal(id)).data;
+    rateList.value = await api.getGoalAccountRates(id);
+  } catch (err) {
+    console.log("Goal API 호출 실패", err);
+  }
+};
 
 // Props (나중에 외부에서 넘기도록 할 수 있음)
-const goalTitle = ref("자가용 구매하기");
 const targetAmount = ref(5000);
 
 const accounts = ref([
@@ -131,4 +134,6 @@ const currentAmount = computed(() => {
 
 const remainingAmount = computed(() => targetAmount.value - currentAmount.value);
 const progressPercentage = computed(() => Math.round((currentAmount.value / targetAmount.value) * 100));
+
+onMounted(load);
 </script>

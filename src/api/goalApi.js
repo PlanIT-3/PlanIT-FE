@@ -9,6 +9,14 @@ export default {
     console.log("GET GOAL List", data);
     return data;
   },
+
+  //목표 세부
+  async getGoal(goalId) {
+    const { data } = await api.get(`${BASE_URL}/${goalId}`);
+    console.log("GET GOAL", data);
+    return data;
+  },
+
   // 목표 진행 추이 조회
   async getGoalProgress(goalId) {
     const { data } = await api.get(`${BASE_URL}/${goalId}/progress`);
