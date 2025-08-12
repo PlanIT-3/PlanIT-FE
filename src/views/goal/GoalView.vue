@@ -25,7 +25,10 @@
           :title="item.goalName || ''"
           :rate="item.goalRate"
           :showLegend="false"
-          :barChartData="[{ name: '진행', value: item.goalRate }]"
+          :barChartData="[
+            { name: '진행', value: item.goalRate },
+            { name: '남음', value: 100 - item.goalRate },
+          ]"
           :totalAmount="item.totalAmount"
           :targetAmount="item.targetAmount"
         />
