@@ -54,24 +54,24 @@ const adviceList = computed(() => {
 
   // \n으로 구분된 텍스트를 배열로 분리
   return adviceData.value.goalProgressAdvice
-    .split('\n')
-    .map(advice => advice.trim())
-    .filter(advice => advice.length > 0);
+    .split("\n")
+    .map((advice) => advice.trim())
+    .filter((advice) => advice.length > 0);
 });
 
 const fetchAdvice = async () => {
   loading.value = true;
   error.value = false;
 
-  try {
-    const response = await api.get(`/api/openai/${props.goalId}/goal-progress`);
-    adviceData.value = response.data;
-  } catch (err) {
-    console.error("목표 진행 분석 가져오기 실패:", err);
-    error.value = true;
-  } finally {
-    loading.value = false;
-  }
+  // try {
+  //   const response = await api.get(`/api/openai/${props.goalId}/goal-progress`);
+  //   adviceData.value = response.data;
+  // } catch (err) {
+  //   console.error("목표 진행 분석 가져오기 실패:", err);
+  //   error.value = true;
+  // } finally {
+  //   loading.value = false;
+  // }
 };
 
 onMounted(() => {
