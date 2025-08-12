@@ -142,7 +142,7 @@ const route = useRoute();
 
 const tabRoutes = {
   home: "/main",
-  goals: "/goal/detail",
+  goals: "/goal",
   invest: "/recommend",
   reward: "/report",
   add: "/goal/edit",

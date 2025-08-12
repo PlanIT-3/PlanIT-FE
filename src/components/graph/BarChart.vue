@@ -18,9 +18,11 @@ const props = defineProps({
   },
   showLegend: {
     type: Boolean,
-    default: true, // 기본값은 범례 표시
+    default: false, // 기본값은 범례 표시
   },
 });
+
+const colors = ["#4a90e2", "#7ed6df", "#f6b93b"]; // 원하는 색상 배열
 
 const options = computed(() => ({
   tooltip: {
@@ -63,6 +65,7 @@ const options = computed(() => ({
       stack: "total",
       data: [item.value],
       itemStyle: {
+        color: colors[index % colors.length], // 색상 지정
         borderRadius: isFirst ? [6, 0, 0, 6] : isLast ? [0, 6, 6, 0] : 0,
       },
     };

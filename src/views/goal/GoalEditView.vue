@@ -88,7 +88,7 @@
 import { ref, computed, resolveDirective } from "vue";
 import DefaultLayout from "@/components/layouts/DefaultLayout.vue";
 import AddRegisterModal from "./AddRegisterModal.vue";
-import { createNewGoal } from "@/api/goalApi";
+import Api from "@/api/objectApi";
 
 // v-model 변수
 const showModal = ref(false);
@@ -119,7 +119,7 @@ const saveGoalAndOpenModal = async () => {
   };
 
   try {
-    const response = await createNewGoal(goalData);
+    const response = await Api(goalData);
     console.log(response);
     if (response.status === 200) {
       const createdGoal = response.data.data;
