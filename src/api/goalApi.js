@@ -24,7 +24,7 @@ export default {
     return data;
   },
 
-  // 목표 대비 계좌별 진행률 조회
+  // (목표 대비 계좌별 진행률 조회)
   // 목표 대비 계좌별 진행률 조회 (차트용 변환)
   async getGoalAccountRates(goalId) {
     const { data } = await api.get(`${BASE_URL}/${goalId}/rate`);

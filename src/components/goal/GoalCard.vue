@@ -15,12 +15,6 @@ const props = defineProps({
 
   barChartData: {
     type: Array,
-    default: () => [
-      { name: "식비", value: 40 },
-      { name: "교통비", value: 30 },
-      { name: "여가", value: 20 },
-      { name: "기타", value: 10 },
-    ],
     required: true,
   },
   labelValues: { type: Array },
