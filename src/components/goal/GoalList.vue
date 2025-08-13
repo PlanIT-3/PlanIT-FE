@@ -47,17 +47,17 @@ const badgeBgColorComputed = computed(() => {
   <div class="flex flex-col p-2 my-3 border-b border-gray-200 hover:bg-gray-50 transition" :class="[bgColor]">
     <!-- 상단 제목 + 진행률 -->
     <div class="flex justify-between items-center mb-0.5">
-      <div class="flex items-center gap-1.5">
+      <div class="flex items-center">
         <component :is="icon" class="h-4 w-4" :class="iconColor" />
-        <span class="text-xs font-semibold text-gray-800 truncate">{{ title }}</span>
+        <span class="text-sm font-semibold text-gray-800 truncate">📌 {{ title }}</span>
       </div>
       <span :class="badgeBgColorComputed + ' text-white text-xs px-2 py-0.5 rounded-full font-medium'">
-        {{ badgeText }}
+        {{ badgeText }} 달성
       </span>
     </div>
 
     <!-- 상태 텍스트 -->
-    <div v-if="statusText" class="text-[10px] text-gray-500 mb-0.5">
+    <div v-if="statusText" class="text-xs text-gray-600 mb-0.5">
       {{ statusText }}
     </div>
 
@@ -70,7 +70,7 @@ const badgeBgColorComputed = computed(() => {
     </div>
 
     <!-- 금액 정보 -->
-    <div class="flex justify-between text-[10px] text-gray-600 mt-[-10px] mb-3">
+    <div class="flex justify-between text-xs text-gray-600 mt-[-10px] mb-3">
       <span>{{ totalAmount?.toLocaleString() }}</span>
       <span>{{ targetAmount?.toLocaleString() }}</span>
     </div>

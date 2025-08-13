@@ -85,11 +85,9 @@
       </div>
 
       <!-- 목표 진행 요약 및 차트 -->
-      <div>
+      <div class="w-full">
         <h3 class="text-lg font-semibold text-gray-800">목표 진행 추이</h3>
-        <div class="bg-white rounded-2xl mb-4 p-5 h-90">
-          <GoalProgress :progressData="goalProgress"></GoalProgress>
-        </div>
+        <GoalProgress :progressData="goalProgress"></GoalProgress>
       </div>
       <!-- <GoalProgressAdvice :goalId="id" /> -->
     </div>
