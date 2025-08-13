@@ -5,7 +5,7 @@
       @click="onClickSurvey"
     >
       <div class="flex flex-row items-center hover:bg-gray-100 transition-colors duration-300 rounded-2xl mt-1 mb-2">
-        <span class="text-sm font-bold text-[#560bad]">투자 성향 검사 다시 하기</span>
+        <span class="text-sm font-medium text-[#560bad]">투자 성향 검사 다시 하기</span>
         <svg
           class="text-sm font-bold text-[#560bad] size-4"
           xmlns="http://www.w3.org/2000/svg"
@@ -27,8 +27,8 @@
       </div>
     </div>
     <div class="mt-2 text-lg">
-      <span class="font-bold text-[#560bad]">루나</span>
-      <span class="font-semibold text-black"> 추천상품</span>
+      <span class="font-semibold text-[#560bad]">루나</span>
+      <span class="font-medium text-black"> 추천상품</span>
     </div>
   </div>
 </template>
