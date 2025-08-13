@@ -28,7 +28,7 @@ const goToSavings = () => {
     path: "/goal/deposit",
     query: { goalId: goalId, amount: props.depositAmount },
   });
-  emit("close"); // 페이지 이동 후 모달을 닫습니다.
+  emit("close");
 };
 </script>
 

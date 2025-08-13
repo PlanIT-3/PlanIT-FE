@@ -8,6 +8,11 @@ export default {
     return api.post(BASE_URL, goalData);
   },
 
+  //목표 저장
+  async saveGoal(goalId, goalData) {
+    return api.put(`${BASE_URL}/${goalId}`, goalData);
+  },
+
   //목표 리스트
   async getGoalList() {
     const { data } = await api.get(`${BASE_URL}`);
@@ -16,8 +21,8 @@ export default {
   },
 
   //목표 세부
-  async getGoal(goalId) {
-    const { data } = await api.get(`${BASE_URL}/${goalId}`);
+  async getGoal(goalId, payload) {
+    const { data } = await api.get(`${BASE_URL}/${goalId}`, payload);
     console.log("GET GOAL", data);
     return data;
   },
