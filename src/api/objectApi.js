@@ -3,7 +3,6 @@ import api from "@/api";
 const BASE_URL = "/auth/api/goals";
 
 export default {
-
   //목표 생성
   async createNewGoal(goalData) {
     return api.post(BASE_URL, goalData);
@@ -42,10 +41,9 @@ export default {
     const { data } = await api.get(`${BASE_URL}/${goalId}/rate`);
     console.log("RAW RESPONSE", data);
 
-    // data.data 배열을 차트 데이터 형식으로 변환
     return data.data.map((item) => ({
       name: item.bankName,
-      value: item.progressRate,
+      value: Number(item.progressRate.toFixed(2)),
     }));
   },
 
@@ -61,5 +59,4 @@ export default {
     const { data } = await api.get(`${BASE_URL}/${goalId}/goal-amount`);
     return data;
   },
-
 };
