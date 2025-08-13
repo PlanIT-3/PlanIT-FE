@@ -68,23 +68,24 @@ const setDummyData = () => {
 // ISA 절세 데이터 로딩
 const fetchTaxSavingsData = async () => {
   try {
-    const response = await api.get("/auth/api/account/isa/tax");
+    const response = await api.get("/api/isa/reports/cumulative-tax-saving");
 
     console.log("📡 API 응답 전체:", response);
     console.log("📊 응답 데이터:", response.data);
 
-    if (response.data.status === "OK" && response.data.data) {
-      const totalSavings = response.data.data.taxSavedAmount;
+    if (response.data.status === "OK" && response.data.data && Array.isArray(response.data.data)) {
+      const cumulativeData = response.data.data;
 
-      // 데이터가 있고 0보다 큰 경우만 실제 데이터 사용
-      if (totalSavings && totalSavings > 0) {
-        latestSavings.value = totalSavings;
+      // 데이터가 있는 경우 실제 API 데이터 사용
+      if (cumulativeData.length > 0) {
+        // 마지막 분기의 누적 절세액을 최신 절세액으로 설정
+        const lastQuarterData = cumulativeData[cumulativeData.length - 1];
+        latestSavings.value = lastQuarterData.cumulativeTaxSaved;
 
-        // 총 절세 금액을 기반으로 시계열 데이터 생성 (비례 분배)
-        const baseRatios = [0.1, 0.25, 0.42, 0.65, 1.0]; // 누적 비율
-        taxSavingsData.value = baseRatios.map((ratio, index) => ({
-          period: `${index + 1}분기`,
-          amount: Math.round((totalSavings / 10000) * ratio), // 만원 단위로 변환
+        // API 데이터를 차트 형식으로 변환
+        taxSavingsData.value = cumulativeData.map((item) => ({
+          period: item.quarter,
+          amount: Math.round(item.cumulativeTaxSaved / 10000), // 만원 단위로 변환
         }));
       } else {
         setDummyData();
@@ -93,6 +94,7 @@ const fetchTaxSavingsData = async () => {
       setDummyData();
     }
   } catch (error) {
+    console.error("누적 절세 데이터 로딩 실패:", error);
     // API 실패 시 더미 데이터 설정
     setDummyData();
   } finally {
