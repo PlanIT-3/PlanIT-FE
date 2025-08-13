@@ -1,9 +1,11 @@
 <template>
   <DefaultLayout>
-    <div class="flex flex-col relative">
+    <!-- 메인 콘텐츠 -->
+    <div v-if="!isLoading" class="flex flex-col relative gap-4">
       <!-- 목표 헤더 섹션 -->
       <div class="w-full">
         <div class="flex items-center justify-between mb-4">
+<<<<<<< HEAD
           <h1 class="text-xl font-bold text-gray-900">나의 목표</h1>
           <button
             class="p-2 rounded-lg hover:bg-gray-100"
@@ -14,6 +16,10 @@
               })
             "
           >
+=======
+          <h1 class="text-lg font-semibold text-gray-900">나의 목표</h1>
+          <button class="p-2 rounded-lg hover:bg-gray-100">
+>>>>>>> 3d4c87a (feat: 목표 관리 페이지 수정)
             <svg
               xmlns="http://www.w3.org/2000/svg"
               class="h-5 w-5 text-gray-600"
@@ -43,45 +49,56 @@
       </div>
 
       <!-- 목표에 할당된 계좌 섹션 -->
-      <div class="bg-white rounded-2xl shadow-sm mb-4 p-5">
-        <h3 class="text-lg font-semibold text-gray-800 mb-4">목표에 할당된 계좌</h3>
-        <GoalAssignedCard
-          v-for="(account, index) in accounts"
-          :key="index"
-          :bank-name="account.bankName"
-          :product-name="account.productName"
-          :percent="account.percent"
-          :amount="account.amount"
-          class="mb-3"
-        />
-      </div>
-
-      <!-- 목표 금액 및 저축액 요약 -->
-      <div class="bg-white rounded-2xl shadow-sm mb-4 p-5">
-        <div class="flex justify-between items-center mb-4">
-          <div>
-            <p class="text-sm text-gray-600">목표 금액</p>
-            <p class="text-2xl font-bold text-gray-800">{{ targetAmount }}만원</p>
-          </div>
-          <div class="text-right">
-            <p class="text-sm text-gray-600">현재 저축액</p>
-            <p class="text-2xl font-bold text-green-600">{{ currentAmount }}만원</p>
-          </div>
+      <div>
+        <div class="w-full">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4">목표에 할당된 계좌</h3>
+          <GoalAssignedCard
+            v-for="(account, index) in accounts"
+            :key="index"
+            :bank-name="account.bankName"
+            :product-name="account.productName"
+            :percent="account.percent"
+            :amount="account.amount.toLocaleString()"
+            class="mb-3"
+          />
         </div>
-        <div class="border-t pt-4">
-          <div class="flex justify-between items-center">
-            <p class="text-sm font-medium text-gray-700">목표 금액까지</p>
-            <p class="text-xl font-bold text-blue-600">{{ remainingAmount }}만원</p>
+
+        <!-- 목표 금액 및 저축액 요약 -->
+        <div class="bg-white rounded-2xl p-5">
+          <div class="flex justify-between items-center mb-2">
+            <div>
+              <p class="text-xs text-gray-600">목표 금액</p>
+              <p class="text-lg font-semibold text-gray-800">{{ goalDetail.targetAmount?.toLocaleString() }}원</p>
+            </div>
+            <div class="text-right">
+              <p class="text-xs text-gray-600">현재 저축액</p>
+              <p class="text-lg font-semibold text-green-600">{{ currentAmount.toLocaleString() }}원</p>
+            </div>
+          </div>
+          <div class="border-t border-gray-300 pt-2 w-full">
+            <div class="flex justify-between items-center">
+              <p class="text-xs font-medium text-gray-700">목표 금액까지</p>
+              <p class="text-lg font-semibold text-blue-600">{{ remainingAmount?.toLocaleString() }}원</p>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- 목표 진행 요약 및 차트 -->
-      <div class="bg-white rounded-2xl shadow-sm mb-4 p-5 h-90">
-        <h3 class="text-lg font-semibold text-gray-800 mb-4">목표 진행 추이</h3>
-        <GoalProgress :progressData="goalProgress"></GoalProgress>
+      <div>
+        <h3 class="text-lg font-semibold text-gray-800">목표 진행 추이</h3>
+        <div class="bg-white rounded-2xl mb-4 p-5 h-90">
+          <GoalProgress :progressData="goalProgress"></GoalProgress>
+        </div>
       </div>
       <!-- <GoalProgressAdvice :goalId="id" /> -->
+    </div>
+
+    <!-- 로딩 -->
+    <div v-else>
+      <div class="flex justify-center items-center h-24">
+        <div class="w-6 h-6 border-3 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+      </div>
     </div>
   </DefaultLayout>
 </template>
@@ -107,36 +124,37 @@ const id = cr.params.id; //라우터 경로 변수
 
 const goalDetail = ref({});
 const rateList = ref();
-
 const goalProgress = ref([]); // api 응답 데이터 배열
+const accounts = ref([]);
+const isLoading = ref(true); // 로딩 상태
 
 const investmentChartOption = ref({}); // 차트 옵션 빈 객체 초기화
 
 const load = async () => {
   try {
+    isLoading.value = true;
+
     goalDetail.value = (await api.getGoal(id)).data;
     rateList.value = await api.getGoalAccountRates(id);
     goalProgress.value = await api.getGoalProgress(id);
+    accounts.value = await api.getGoalAccounts(id);
+
     console.log("Goal Progress Response:", goalProgress.value);
+    console.log("Accounts Data:", accounts.value);
   } catch (err) {
     console.log("Goal API 호출 실패", err);
+  } finally {
+    isLoading.value = false;
   }
 };
 
 // Props (나중에 외부에서 넘기도록 할 수 있음)
-const targetAmount = ref(5000);
-
-const accounts = ref([
-  { bankName: "토스", productName: "예금 · 주택청약", percent: 15, amount: 675 },
-  { bankName: "KB", productName: "적금 · 주택청약", percent: 60, amount: 2700 },
-  { bankName: "카카오뱅크", productName: "자유적금", percent: 25, amount: 1125 },
-]);
 
 const currentAmount = computed(() => {
   return accounts.value.reduce((sum, acc) => sum + acc.amount, 0);
 });
 
-const remainingAmount = computed(() => targetAmount.value - currentAmount.value);
+const remainingAmount = computed(() => (goalDetail.value?.targetAmount || 0) - currentAmount.value);
 
 onMounted(load);
 </script>

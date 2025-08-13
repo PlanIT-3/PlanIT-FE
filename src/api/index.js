@@ -41,24 +41,43 @@ apiClient.interceptors.response.use(
     const auth = useAuthStore();
     const originalRequest = error.config;
 
+    console.log("🔍 API Error interceptor:", {
+      status: error.response?.status,
+      url: originalRequest?.url,
+      retry: originalRequest?._retry
+    });
+
     //에러 응답인 경우 (401, 403, 305, 500)
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
+      
+      console.log("🔄 Attempting token refresh...");
 
       try {
         const refreshToken = auth.getrefreshToken();
+        console.log("🔑 RefreshToken exists:", !!refreshToken);
+        
         if (refreshToken) {
+          console.log("📤 Sending reissue request...");
           const response = await axios.post(`${API_BASE_URL}/api/reissue`, {
             refreshToken,
           });
 
+          console.log("✅ Token refresh successful:", response.data);
           const { accessToken } = response.data;
           auth.setToken(accessToken);
+          
           // 원래 요청 재시도
           originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+          console.log("🔄 Retrying original request...");
           return apiClient(originalRequest);
+        } else {
+          console.log("❌ No refresh token available");
+          localStorage.removeItem("auth");
+          window.location.href = "/login";
         }
       } catch (refreshError) {
+        console.error("❌ Token refresh failed:", refreshError);
         // 리프레시 토큰도 만료된 경우 로그아웃
         localStorage.removeItem("auth");
         window.location.href = "/login";

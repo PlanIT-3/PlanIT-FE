@@ -2,6 +2,7 @@
   <MainLayout :chart-option="chartOption" :total-balance="totalBalance" :goal-count="goalRatioData.length">
     <div>
       <GoalSliderCard :goal-list="goalListData" />
+      <InvestmentStatusChart />
 
       <!-- Investment Status Section -->
       <div class="w-full bg-white rounded-2xl shadow-lg p-5">
@@ -70,29 +71,19 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { use } from "echarts/core";
 import { CanvasRenderer } from "echarts/renderers";
-import { PieChart, LineChart } from "echarts/charts";
-import { TitleComponent, TooltipComponent, LegendComponent, GridComponent } from "echarts/components";
-import VChart from "vue-echarts";
-import { onMounted } from "vue";
+import { PieChart } from "echarts/charts";
+import { TitleComponent, TooltipComponent, LegendComponent } from "echarts/components";
 import MainLayout from "@/components/layouts/MainLayout.vue";
 import GoalSliderCard from "@/components/goal/GoalSliderCard.vue";
-import Api from "@/api/mainApi";
+import InvestmentStatusChart from "@/components/investment/InvestmentStatusChart.vue";
 import mainApi from "@/api/mainApi";
 import goalApi from "@/api/objectApi";
 
-use([CanvasRenderer, PieChart, LineChart, TitleComponent, TooltipComponent, LegendComponent, GridComponent]);
+use([CanvasRenderer, PieChart, TitleComponent, TooltipComponent, LegendComponent]);
 
-const selectedPeriod = ref("daily");
-
-// API에서 받아온 daily 데이터
-const dailyData = ref([]);
-// API에서 받아온 weekly 데이터
-const weeklyData = ref([]);
-// API에서 받아온 monthly 데이터
-const monthlyData = ref([]);
 // API에서 받아온 목표 비율 데이터
 const goalRatioData = ref([]);
 const totalBalance = ref(0);
@@ -171,157 +162,6 @@ onMounted(() => {
   fetchGoalRatioData();
 });
 
-const investmentData = {
-  daily: {
-    labels: ["-6일", "-5일", "-4일", "-3일", "-2일", "-1일", "오늘"],
-    returns: [7.5, 7.8, 8.0, 7.9, 8.2, 8.1, 8.2],
-    avgReturns: [7.6, 7.7, 7.8, 7.9, 8.0, 8.1, 8.15],
-  },
-  weekly: {
-    labels: ["-6주", "-5주", "-4주", "-3주", "-2주", "-1주", "이번주"],
-    returns: [5.5, 6.2, 6.8, 7.0, 7.5, 8.0, 8.2],
-    avgReturns: [5.8, 6.0, 6.5, 6.8, 7.2, 7.6, 7.9],
-  },
-  monthly: {
-    labels: ["-6달", "-5달", "-4달", "-3달", "-2달", "-1달", "이번달"],
-    returns: [2.1, 3.5, 4.0, 5.8, 6.5, 7.2, 8.2],
-    avgReturns: [2.5, 3.0, 3.8, 4.9, 5.8, 6.8, 7.5],
-  },
-};
-
-const investmentChartOption = ref({});
-
-const selectPeriod = (period) => {
-  selectedPeriod.value = period;
-  if (period === "daily") {
-    fetchDailyData();
-  } else if (period === "weekly") {
-    fetchWeeklyData();
-  } else if (period === "monthly") {
-    fetchMonthlyData();
-  } else {
-    updateInvestmentChart();
-  }
-};
-
-const updateInvestmentChart = () => {
-  let data;
-
-  if (selectedPeriod.value === "daily" && dailyData.value.length > 0) {
-    // API에서 받아온 daily 데이터 사용
-    const labels = dailyData.value.map((item) => {
-      const date = new Date(item.createdAt);
-      return `${date.getMonth() + 1}/${date.getDate()}`;
-    });
-    const amounts = dailyData.value.map((item) => Math.round(item.amount / 10000)); // 만원 단위로 변환
-
-    data = {
-      labels: labels,
-      returns: amounts,
-    };
-  } else if (selectedPeriod.value === "weekly" && weeklyData.value.length > 0) {
-    // API에서 받아온 weekly 데이터 사용
-    const labels = weeklyData.value.map((item) => {
-      const date = new Date(item.createdAt);
-      return `${date.getMonth() + 1}/${date.getDate()}`;
-    });
-    const amounts = weeklyData.value.map((item) => Math.round(item.amount / 10000)); // 만원 단위로 변환
-
-    data = {
-      labels: labels,
-      returns: amounts,
-    };
-  } else if (selectedPeriod.value === "monthly" && monthlyData.value.length > 0) {
-    // API에서 받아온 monthly 데이터 사용
-    const labels = monthlyData.value.map((item) => {
-      const date = new Date(item.createdAt);
-      return `${date.getMonth() + 1}/${date.getDate()}`;
-    });
-    const amounts = monthlyData.value.map((item) => Math.round(item.amount / 10000)); // 만원 단위로 변환
-
-    data = {
-      labels: labels,
-      returns: amounts,
-    };
-  } else {
-    // 기존 mock 데이터 사용
-    data = investmentData[selectedPeriod.value];
-  }
-
-  investmentChartOption.value = {
-    tooltip: {
-      trigger: "item",
-      formatter: (params) => {
-        const date = params.name || params.axisValue;
-        const value = params.value;
-        let tooltip = `<div style="font-weight: bold; margin-bottom: 5px;">${date}</div>`;
-        if (
-          selectedPeriod.value === "daily" ||
-          selectedPeriod.value === "weekly" ||
-          selectedPeriod.value === "monthly"
-        ) {
-          tooltip += `<div style="margin: 2px 0;">잔고: <span style="color: #3b82f6; font-weight: bold;">${value.toLocaleString()}만원</span></div>`;
-        } else {
-          tooltip += `<div style="margin: 2px 0;">수익률: <span style="color: #3b82f6; font-weight: bold;">${value}%</span></div>`;
-        }
-        return tooltip;
-      },
-      backgroundColor: "rgba(255,255,255,0.95)",
-      borderColor: "#3b82f6",
-      borderWidth: 2,
-      textStyle: { color: "#333", fontSize: 13 },
-      padding: [8, 12],
-    },
-    grid: { left: "3%", right: "4%", bottom: "3%", containLabel: true },
-    xAxis: {
-      type: "category",
-      boundaryGap: false,
-      data: data.labels,
-      axisLabel: { fontSize: 10 },
-    },
-    yAxis: {
-      type: "value",
-      axisLabel: {
-        formatter:
-          selectedPeriod.value === "daily" || selectedPeriod.value === "weekly" || selectedPeriod.value === "monthly"
-            ? "{value}만원"
-            : "{value}%",
-        fontSize: 10,
-      },
-      splitLine: { lineStyle: { type: "dashed", color: "#eee" } },
-    },
-    series: [
-      {
-        name:
-          selectedPeriod.value === "daily" || selectedPeriod.value === "weekly" || selectedPeriod.value === "monthly"
-            ? "잔고"
-            : "수익률",
-        type: "line",
-        smooth: true,
-        data: data.returns,
-        itemStyle: { color: "#3b82f6" },
-        symbol: "circle",
-        symbolSize: 6,
-        areaStyle: {
-          color: {
-            type: "linear",
-            x: 0,
-            y: 0,
-            x2: 0,
-            y2: 1,
-            colorStops: [
-              { offset: 0, color: "rgba(59, 130, 246, 0.3)" },
-              { offset: 1, color: "rgba(59, 130, 246, 0)" },
-            ],
-          },
-        },
-      },
-    ],
-  };
-};
-
-updateInvestmentChart();
-
 const chartOption = ref({
   tooltip: {
     trigger: "item",
@@ -361,13 +201,13 @@ const chartOption = ref({
 const updateChartOption = () => {
   if (goalRatioData.value.length > 0) {
     const chartColors = [
+      "#8b5cf6", // 보라
       "#10b981", // 초록
+      "#eab308", // 노랑
+      "#f59e0b", // 주황
       "#059669", // 진한 초록
       "#3b82f6", // 파랑
       "#06b6d4", // 청록
-      "#8b5cf6", // 보라
-      "#f59e0b", // 주황
-      "#eab308", // 노랑
       "#ef4444", // 빨강
       "#f97316", // 주황
       "#84cc16", // 연두
