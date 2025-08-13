@@ -4,7 +4,9 @@
 
     <GraphBoxNonPeriod title="ISA vs 일반 계좌 세금 비교"> 그래프 내용 </GraphBoxNonPeriod>
 
-    <GraphBoxNonPeriod title="누적 절세 효과"> 그래프 내용 </GraphBoxNonPeriod>
+    <GraphBoxNonPeriod title="누적 절세 효과">
+      <CumulativeTaxSavingsChart />
+    </GraphBoxNonPeriod>
   </div>
 </template>
 
@@ -13,6 +15,7 @@ import api from "@/api";
 import GraphBox from "./GraphBox.vue";
 import GraphBoxNonPeriod from "./GraphBoxNonPeriod.vue";
 import IsaTaxSavingStatus from "./IsaTaxSavingStatus.vue";
+import CumulativeTaxSavingsChart from "./CumulativeTaxSavingsChart.vue";
 </script>
 
 <style scoped></style>
