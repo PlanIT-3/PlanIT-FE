@@ -4,6 +4,8 @@ import { useRouter, useRoute } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import Button from "@/components/base/Button.vue";
 import GoBackButton from "@/components/base/GoBackButton.vue";
+import OnboardingProgress from "@/components/onBoarding/OnboardingProgress.vue";
+import BankLoginProgress from "@/components/onBoarding/BankLoginProgress.vue";
 import { registerMultipleAccounts } from "@/api/accountApi.js";
 
 // SVG 아이콘들을 직접 import (실제로 존재하는 파일들만)
@@ -98,26 +100,29 @@ function getBankOrganizationId(bankName) {
   const bankOrgMap = {
     신한은행: "0088",
     KB국민은행: "0004",
-    하나은행: "0004", // 기본값
-    우리은행: "0004", // 기본값
+    하나은행: "0081", // KEB하나은행
+    우리은행: "0020",
     카카오뱅크: "0004", // 기본값
     케이뱅크: "0004", // 기본값
-    IBK기업은행: "0004", // 기본값
-    NH농협은행: "0004", // 기본값
-    SC제일은행: "0004", // 기본값
-    BNK부산은행: "0004", // 기본값
-    BNK경남은행: "0004", // 기본값
-    광주은행: "0004", // 기본값
-    제주은행: "0004", // 기본값
-    새마을금고: "0004", // 기본값
-    씨티은행: "0004", // 기본값
-    지역농협: "0004", // 기본값
+    IBK기업은행: "0003",
+    NH농협은행: "0011",
+    SC제일은행: "0023",
+    BNK부산은행: "0032",
+    BNK경남은행: "0039",
+    광주은행: "0034",
+    제주은행: "0035",
+    새마을금고: "0045",
+    씨티은행: "0027",
+    지역농협: "0011",
     iM뱅크: "0004", // 기본값
-    전북은행: "0004", // 기본값
-    우체국: "0004", // 기본값
-    SH수협은행: "0004", // 기본값
+    전북은행: "0037",
+    우체국: "0071",
+    SH수협은행: "0007",
     토스뱅크: "0004", // 기본값
-    한국산업은행: "0004", // 기본값
+    한국산업은행: "0002",
+    신협: "0048",
+    대구은행: "0031",
+    수협은행: "0007",
   };
 
   return bankOrgMap[bankName] || "0004"; // 기본값으로 0004
@@ -308,16 +313,26 @@ async function login() {
       completedBanks.value.push(currentBankName.value);
 
       if (isLastBank.value) {
-        // 마지막 은행이면 계좌 연동 완료 페이지로 이동
-        const bankList = selectedBanks.value.join(", ");
-        const securityList = selectedSecurities.value.length > 0 ? selectedSecurities.value.join(", ") : "없음";
-
-        alert(`모든 계정 등록 완료!\n선택된 은행: ${bankList}\n선택된 증권사: ${securityList}`);
-        router.push("/account-link-complete");
+        // 마지막 은행이면 증권사 연동 여부 확인
+        if (selectedSecurities.value.length > 0) {
+          // 증권사가 선택되어 있으면 증권사 연동 페이지로 이동
+          router.push({
+            path: "/certificate-login",
+            query: {
+              selectedBanks: JSON.stringify(selectedBanks.value),
+              selectedSecurities: JSON.stringify(selectedSecurities.value),
+              completedBanks: JSON.stringify(completedBanks.value),
+            },
+          });
+        } else {
+          // 증권사가 선택되지 않았으면 계좌 연동 완료 페이지로 이동
+          const bankList = selectedBanks.value.join(", ");
+          alert(`모든 계정 등록 완료!\n선택된 은행: ${bankList}\n선택된 증권사: 없음`);
+          router.push("/account-link-complete");
+        }
       } else {
         // 다음 은행이 있으면 다음 은행 로그인 페이지로 이동
         currentBankIndex.value++;
-        alert(`${currentBankName.value} 연동 완료! 다음 은행으로 이동합니다.`);
 
         // 다음 은행 정보와 함께 같은 페이지로 이동 (새로운 요청)
         router.push({
@@ -331,7 +346,9 @@ async function login() {
         });
       }
     } else {
-      alert(`${currentBankName.value} 연동에 실패했습니다. 다시 시도해주세요.`);
+      alert(
+        `❌ ${currentBankName.value} 연동에 실패했습니다.\n(${currentBankIndex.value + 1}/${selectedBanks.value.length}) 다시 시도해주세요.`
+      );
     }
   } catch (error) {
     console.error("로그인 에러:", error);
@@ -350,7 +367,7 @@ async function login() {
 
     <div class="h-10"></div>
     <h2 class="text-2xl font-semibold text-center mb-3 mt-6">은행 로그인</h2>
-    <span class="text-sm text-center mb-6">실제 은행 이메일과 비밀번호를 입력하세요.</span>
+    <span class="text-sm text-center mb-6">실제 은행 아이디와 비밀번호를 입력하세요.</span>
 
     <!-- 동적 은행 로고 -->
     <div v-if="!imageLoadError" class="w-24 h-24 mx-auto mb-8">
@@ -424,52 +441,12 @@ async function login() {
       </div>
     </div>
     <Button label="Login" @click="login" class="w-full max-w-md mb-10" />
-    <!-- 하단 프로그레스 -->
-    <div class="flex items-center justify-center w-full max-w-md mt-auto py-16">
-      <div class="flex-1 flex items-center">
-        <div class="w-6 h-6 rounded-full bg-[#433D8B] flex items-center justify-center text-white">
-          <svg
-            width="16"
-            height="16"
-            fill="none"
-            stroke="white"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <polyline points="4 8 7 11 12 5" />
-          </svg>
-        </div>
-        <div class="h-0.5 bg-[#433D8B] flex-1"></div>
-        <div class="w-6 h-6 rounded-full bg-[#433D8B] flex items-center justify-center text-white">
-          <svg
-            width="16"
-            height="16"
-            fill="none"
-            stroke="white"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <polyline points="4 8 7 11 12 5" />
-          </svg>
-        </div>
-        <div class="h-0.5 bg-gray-300 flex-1"></div>
-        <div class="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-gray-400">
-          <svg
-            width="16"
-            height="16"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <circle cx="8" cy="8" r="6" />
-          </svg>
-        </div>
-      </div>
-    </div>
+
+    <!-- 하단 프로그래스 바 -->
+    <BankLoginProgress
+      :total-steps="selectedBanks.length + selectedSecurities.length"
+      :completed-steps="completedBanks.length"
+    />
   </div>
 </template>
 

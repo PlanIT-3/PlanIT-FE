@@ -18,6 +18,12 @@ export default [
     meta: { layout: "noHeader", requiresAuth: true },
   },
   {
+    path: "/certificate-login",
+    name: "certificateLogin",
+    component: () => import("../views/onBoarding/CertificateLoginView.vue"),
+    meta: { layout: "noHeader", requiresAuth: true },
+  },
+  {
     path: "/account-link-complete",
     name: "accountLinkComplete",
     component: () => import("../views/onBoarding/AccountLinkCompleteView.vue"),
@@ -57,6 +63,12 @@ export default [
     path: "/survey-loading",
     name: "surveyLoading",
     component: () => import("../views/onBoarding/SurveyLoadingView.vue"),
+    meta: { layout: "noHeader", requiresAuth: true },
+  },
+  {
+    path: "/survey-result",
+    name: "surveyResult",
+    component: () => import("../views/onBoarding/InvestmentSurveyResult.vue"),
     meta: { layout: "noHeader", requiresAuth: true },
   },
 ];

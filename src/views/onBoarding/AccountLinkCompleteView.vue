@@ -2,7 +2,10 @@
   <div class="flex flex-col min-h-screen bg-white items-center justify-center relative px-6">
     <!-- 상단 뒤로가기 -->
     <div class="absolute top-6 left-6">
-      <button @click="goBack" class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+      <button
+        @click="goBack"
+        class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
+      >
         <svg
           width="20"
           height="20"
@@ -20,27 +23,31 @@
     <!-- 메인 콘텐츠 -->
     <div class="flex flex-col items-center justify-center flex-1">
       <!-- 체크 표시가 있는 원 -->
-      <div class="w-24 h-24 rounded-full border-2 border-black flex items-center justify-center mb-6">
+      <div class="w-24 h-24 rounded-full border-2 border-black flex items-center justify-center mb-8">
         <svg
-          width="32"
-          height="32"
+          width="48"
+          height="48"
           fill="none"
-          stroke="currentColor"
-          stroke-width="2"
+          stroke="black"
+          stroke-width="1.5"
           stroke-linecap="round"
           stroke-linejoin="round"
+          viewBox="0 0 24 24"
         >
-          <polyline points="4 8 7 11 12 5" />
+          <path d="M5 12l5 5 9-9" />
         </svg>
       </div>
 
       <!-- 완료 메시지 -->
-      <h1 class="text-2xl font-semibold text-black mb-8">계좌연동 완료</h1>
+      <h1 class="text-2xl font-bold text-black text-center">계좌연동 완료</h1>
     </div>
 
     <!-- 하단 버튼 -->
     <div class="w-full max-w-md mb-10">
-      <button @click="onComplete" class="w-full py-4 bg-[#433D8B] text-white rounded-lg font-semibold text-lg">
+      <button
+        @click="onComplete"
+        class="w-full py-4 bg-[#433D8B] text-white rounded-lg font-semibold text-lg hover:bg-[#433D8B]/90 transition-colors"
+      >
         완료
       </button>
     </div>
@@ -65,8 +72,6 @@ function onComplete() {
   // 인증 상태 확인
   const isAuthenticated = authStore.isLogin;
   const hasValidToken = authStore.getaccessToken();
-
-  //여긴 확인 완료
 
   if (!isAuthenticated || !hasValidToken) {
     console.warn("인증 상태가 유효하지 않습니다. 온보딩 시작 페이지로 이동합니다.");

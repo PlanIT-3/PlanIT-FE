@@ -1,24 +1,7 @@
-<script setup>
-import { defineProps } from "vue";
-
-const props = defineProps({
-  totalSteps: {
-    type: Number,
-    required: true,
-    default: 3,
-  },
-  completedSteps: {
-    type: Number,
-    required: true,
-    default: 0,
-  },
-});
-</script>
-
 <template>
   <div class="flex justify-center items-center py-4">
     <div class="flex items-center">
-      <div v-for="(step, index) in totalSteps" :key="index" class="flex items-center">
+      <div v-for="(step, index) in selectedBanks.length" :key="index" class="flex items-center">
         <!-- 점 -->
         <div
           class="w-3 h-3 rounded-full border-2 transition-all duration-300 relative z-10"
@@ -42,7 +25,7 @@ const props = defineProps({
 
         <!-- 연결선 (마지막 점이 아닌 경우에만) -->
         <div
-          v-if="index < totalSteps - 1"
+          v-if="index < selectedBanks.length - 1"
           class="w-8 h-0.5 mx-2 transition-all duration-300"
           :class="[
             index < completedSteps
@@ -54,6 +37,23 @@ const props = defineProps({
     </div>
   </div>
 </template>
+
+<script setup>
+import { defineProps } from "vue";
+
+const props = defineProps({
+  selectedBanks: {
+    type: Array,
+    required: true,
+    default: () => [],
+  },
+  completedSteps: {
+    type: Number,
+    required: true,
+    default: 0,
+  },
+});
+</script>
 
 <style scoped>
 /* 추가 스타일이 필요한 경우 여기에 작성 */

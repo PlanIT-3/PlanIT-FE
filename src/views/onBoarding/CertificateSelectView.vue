@@ -8,27 +8,26 @@ const selectedSecurities = ref([]);
 const selectedBanks = ref([]);
 
 const securities = [
-  { name: "키움증권", icon: "/src/assets/icons/securities/키움.svg" },
+  { name: "유안타증권", icon: "/src/assets/icons/securities/유안타.svg" },
+  { name: "KB증권", icon: "/src/assets/icons/securities/KB.svg" },
+  { name: "미래에셋증권", icon: "/src/assets/icons/securities/미래에셋.svg" },
+  { name: "삼성증권", icon: "/src/assets/icons/securities/삼성.svg" },
   { name: "한국투자증권", icon: "/src/assets/icons/securities/한국투자.svg" },
   { name: "NH투자증권", icon: "/src/assets/icons/securities/NH투자.svg" },
-  { name: "미래에셋증권", icon: "/src/assets/icons/securities/미래에셋.svg" },
-  { name: "대우증권", icon: "/src/assets/icons/securities/대우.svg" },
   { name: "교보증권", icon: "/src/assets/icons/securities/교보.svg" },
-  { name: "한화증권", icon: "/src/assets/icons/securities/한화.svg" },
-  { name: "신한투자증권", icon: "/src/assets/icons/securities/신한투자.svg" },
-  { name: "하나증권", icon: "/src/assets/icons/securities/하나.svg" },
-  { name: "우리투자증권", icon: "/src/assets/icons/securities/우리투자.svg" },
+  { name: "키움증권", icon: "/src/assets/icons/securities/키움.svg" },
+  { name: "LS증권", icon: "/src/assets/icons/securities/LS.svg" },
+  { name: "SK증권", icon: "/src/assets/icons/securities/SK.svg" },
+  { name: "대신증권", icon: "/src/assets/icons/securities/대신.svg" },
+  { name: "한화투자증권", icon: "/src/assets/icons/securities/한화.svg" },
+  { name: "하나금융투자", icon: "/src/assets/icons/securities/하나.svg" },
+  { name: "신한금융투자", icon: "/src/assets/icons/securities/신한투자.svg" },
+  { name: "DB금융투자", icon: "/src/assets/icons/securities/DB.svg" },
+  { name: "유진투자증권", icon: "/src/assets/icons/securities/유진.svg" },
+  { name: "메리츠종합금융증권", icon: "/src/assets/icons/securities/메리츠.svg" },
   { name: "IBK투자증권", icon: "/src/assets/icons/securities/IBK투자.svg" },
-  { name: "케이투자증권", icon: "/src/assets/icons/securities/케이투자.svg" },
-  { name: "카카오증권", icon: "/src/assets/icons/securities/카카오.svg" },
-  { name: "토스증권", icon: "/src/assets/icons/securities/토스.svg" },
-  { name: "KB증권", icon: "/src/assets/icons/securities/KB.svg" },
-  { name: "SC제일증권", icon: "/src/assets/icons/securities/SC제일.svg" },
-  { name: "BNK투자증권", icon: "/src/assets/icons/securities/BNK투자.svg" },
-  { name: "광주증권", icon: "/src/assets/icons/securities/광주.svg" },
-  { name: "제주증권", icon: "/src/assets/icons/securities/제주.svg" },
-  { name: "새마을증권", icon: "/src/assets/icons/securities/새마을.svg" },
-  { name: "씨티증권", icon: "/src/assets/icons/securities/씨티.svg" },
+  { name: "다올투자증권", icon: "/src/assets/icons/securities/다올.svg" },
+  { name: "하이투자증권", icon: "/src/assets/icons/securities/하이투자.svg" },
 ];
 
 onMounted(() => {
@@ -89,13 +88,11 @@ function onComplete() {
           v-for="security in securities"
           :key="security.name"
           @click="selectSecurity(security)"
-          class="flex items-center p-4 rounded-lg transition-all duration-200 cursor-pointer"
+          class="flex items-center px-6 py-4 rounded-lg transition-all duration-200 cursor-pointer"
           :class="selectedSecurities.includes(security.name) ? 'bg-[#433D8B]/5' : 'bg-white hover:bg-gray-50'"
         >
-          <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mr-4 flex-shrink-0">
-            <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-xs">
-              {{ security.name.charAt(0) }}
-            </div>
+          <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center mr-3 flex-shrink-0">
+            <img :src="security.icon" :alt="security.name" class="w-8 h-8" />
           </div>
           <span class="text-sm font-medium text-gray-900 whitespace-nowrap">{{ security.name }}</span>
         </div>

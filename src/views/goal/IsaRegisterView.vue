@@ -12,7 +12,7 @@
         <BaseTextInput
           :model-value="isaGoalAmount"
           type="number"
-          :placeholder="`${totalGoalAmount}만원`"
+          :placeholder="`${isaGoalAmount}만원`"
           class="w-full max-w-lg mb-3"
           disabled
         />
@@ -86,15 +86,23 @@ import { use } from "echarts/core";
 import { CanvasRenderer } from "echarts/renderers";
 import { PieChart } from "echarts/charts";
 import { TooltipComponent, LegendComponent } from "echarts/components";
-import { useRouter } from "vue-router";
-
+import { useRoute, useRouter } from "vue-router";
 use([CanvasRenderer, PieChart, TooltipComponent, LegendComponent]);
-// 전체 목표 금액(예: 3,000만원) - 실제로는 props로 받을 것
-const totalGoalAmount = 3000;
-// ISA 계좌 목표 금액 (전 페이지에서 넘어온 값, 원 단위 → 만원 단위로 변환)
-const isaGoalAmountRaw = Number(localStorage.getItem("isaTargetAmount")) || 0; // 원 단위
-const isaGoalAmount = ref(Math.round(isaGoalAmountRaw / 10000)); // 만원 단위
+
 const router = useRouter();
+const route = useRoute();
+
+const goalId = ref(null);
+const isaGoalAmountRaw = ref(0); // 원 단위
+const isaGoalAmount = computed(() => Math.round(isaGoalAmountRaw.value / 10000));
+
+onMounted(() => {
+  goalId.value = Number(route.query.goalId);
+  isaGoalAmountRaw.value = Number(route.query.amount);
+  fetchIsaProducts();
+  fetchTaxExemption();
+});
+
 // 상품 데이터 (API에서 받아옴)
 const products = ref([]);
 // 비과세 금액 (API에서 받아옴)
@@ -107,7 +115,24 @@ const selectedProductIds = ref([]);
 // 상품 API 호출 및 세팅
 async function fetchIsaProducts() {
   try {
-    const res = await fetch("http://localhost:8080/auth/api/account/isa");
+    let accessToken = "";
+    try {
+      const authStr = localStorage.getItem("auth");
+      accessToken = authStr ? (JSON.parse(authStr)?.token?.accessToken ?? "") : "";
+    } catch (_) {}
+    if (!accessToken) {
+      // 혹시 예전에 accessToken 단독으로 저장하던 로직이 있으면 폴백
+      accessToken = localStorage.getItem("accessToken") ?? "";
+    }
+    const authHeader = accessToken ? `Bearer ${accessToken}` : "";
+
+    const res = await fetch("http://localhost:8080/auth/api/account/isa", {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        ...(authHeader ? { Authorization: authHeader } : {}),
+      },
+    });
     const json = await res.json();
     if (json.status === "OK" && Array.isArray(json.data)) {
       products.value = json.data.map((item) => ({
@@ -129,20 +154,31 @@ async function fetchIsaProducts() {
 // 비과세 현황 API 호출
 async function fetchTaxExemption() {
   try {
-    const res = await fetch("http://localhost:8080/auth/api/account/isa/tax");
+    let accessToken = "";
+    try {
+      const authStr = localStorage.getItem("auth");
+      accessToken = authStr ? (JSON.parse(authStr)?.token?.accessToken ?? "") : "";
+    } catch (_) {}
+    if (!accessToken) {
+      accessToken = localStorage.getItem("accessToken") ?? "";
+    }
+    const authHeader = accessToken ? `Bearer ${accessToken}` : "";
+
+    const res = await fetch("http://localhost:8080/auth/api/account/isa/tax", {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        ...(authHeader ? { Authorization: authHeader } : {}),
+      },
+    });
     const json = await res.json();
     if (json.status === "OK") {
-      taxSavedAmount.value = Math.round(json.data.taxSavedAmount / 10000); // 만원 단위로 변환
+      taxSavedAmount.value = Math.round(json.data.taxSavedAmount / 10000);
     }
   } catch (e) {
     console.error("비과세 현황 불러오기 실패", e);
   }
 }
-
-onMounted(() => {
-  fetchIsaProducts();
-  fetchTaxExemption();
-});
 
 // 상품 필터링
 const filteredProducts = computed(() => {
@@ -163,7 +199,7 @@ const remainingAmount = computed(() => {
   const selectedSum = products.value
     .filter((item) => selectedProductIds.value.includes(item.id))
     .reduce((sum, item) => sum + item.presentAmount * item.quantity, 0);
-  return Math.round((isaGoalAmountRaw - selectedSum) / 10000);
+  return Math.round((isaGoalAmountRaw.value - selectedSum) / 10000);
 });
 
 // 도넛 차트 비율 (만원 단위 기준)
@@ -247,31 +283,44 @@ function isProductDisabled(item) {
 
 // ISA 계좌 할당 완료 버튼 클릭 시 API 호출
 async function handleIsaRegister() {
-  // goalId는 예시로 1로 고정(필요시 동적으로 변경)
-  const goalId = 1;
   const reqBody = {
-    isaAccountProductRegisterReqs: selectedProductIds.value.map((id) => {
-      return {
-        goalId,
-        memberProductId: id,
-        accountType: "ISA",
-      };
-    }),
+    isaAccountProductRegisterReqs: selectedProductIds.value.map((id) => ({
+      goalId: goalId.value,
+      memberProductId: id,
+      accountType: "ISA",
+    })),
   };
+
   try {
+    let accessToken = "";
+    try {
+      const authStr = localStorage.getItem("auth");
+      accessToken = authStr ? (JSON.parse(authStr)?.token?.accessToken ?? "") : "";
+    } catch (_) {}
+    if (!accessToken) {
+      accessToken = localStorage.getItem("accessToken") ?? "";
+    }
+    const authHeader = accessToken ? `Bearer ${accessToken}` : "";
+
     const res = await fetch("http://localhost:8080/auth/api/account/isa", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        ...(authHeader ? { Authorization: authHeader } : {}),
+      },
       body: JSON.stringify(reqBody),
     });
     const json = await res.json();
     if (json.status === "OK") {
       alert("ISA 계좌 할당이 완료되었습니다!");
-      // 완료 시 로컬 스토리지 정리 및 이동
-      localStorage.removeItem("goalId");
-      localStorage.removeItem("isaTargetAmount");
-      router.push("/goal/edit");
-      // 필요시 라우팅 등 추가
+      // localStorage.removeItem("currentGoalId");
+      localStorage.removeItem("amount");
+
+      router.push({
+        path: "/goal/edit",
+        query: { goalId: goalId.value },
+      });
     } else {
       alert("오류: " + (json.message || "알 수 없는 오류"));
     }
