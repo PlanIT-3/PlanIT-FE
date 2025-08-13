@@ -52,6 +52,9 @@
     <div v-else-if="activeTab === 'isa'">
       <IsaReport />
     </div>
+    <div v-if="activeTab === 'isa'" class="mt-2">
+      <TaxSavingsSummary />
+    </div>
   </DefaultLayout>
 </template>
 
@@ -63,6 +66,7 @@ import GoalAchievementChart from "@/components/report/GoalAchievementChart.vue";
 import IsaReport from "@/components/report/IsaReport.vue";
 import { ref, onMounted } from "vue";
 import api from "@/api";
+import TaxSavingsSummary from "@/components/report/TaxSavingsSummary.vue";
 
 const activeTab = ref("investment");
 const goals = ref([]);
