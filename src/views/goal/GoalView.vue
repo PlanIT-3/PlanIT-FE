@@ -47,7 +47,7 @@
 <script setup>
 import GoalCard from "@/components/goal/GoalCard.vue";
 import DefaultLayout from "@/components/layouts/DefaultLayout.vue";
-import api from "@/api/GoalApi";
+import api from "@/api/goalApi";
 import { useRouter } from "vue-router";
 import { ref, onMounted } from "vue";
 

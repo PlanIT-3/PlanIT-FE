@@ -86,7 +86,7 @@ import GoalProgress from "./GoalProgress.vue";
 import GoalProgressAdvice from "@/components/goal/GoalProgressAdvice.vue";
 import { useAuthStore } from "@/stores/auth";
 import { useRoute, useRouter } from "vue-router";
-import api from "@/api/GoalApi";
+import api from "@/api/goalApi";
 import GoalCard from "@/components/goal/GoalCard.vue";
 import VChart from "vue-echarts";
 
