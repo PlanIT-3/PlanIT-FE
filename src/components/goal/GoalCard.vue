@@ -60,10 +60,10 @@ const statusTextColorComputed = computed(() => {
 </script>
 
 <template>
-  <div class="w-full p-3 my-2 relative rounded-xl" :class="bgColor">
+  <div class="w-full p-3 my-2 relative rounded-xl shadow" :class="[bgColor]">
     <!-- 상단 제목 + 아이콘 -->
     <div class="absolute left-4 top-4 w-[250px]">
-      <div class="flex items-center text-black text-xs font-semibold">
+      <div class="flex items-center text-black text-medium font-semibold">
         <component :is="icon" class="h-4 w-4 mr-2" :class="iconColor" />
         {{ title }}
       </div>

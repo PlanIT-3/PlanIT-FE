@@ -29,4 +29,9 @@ export default [
     component: () => import("@/views/mypage/EditAccount.vue"),
     meta: { requiresAuth: true },
   },
+  {
+    path: "/mypage/change-password",
+    name: "ChangePassword",
+    component: () => import("@/views/mypage/ChangePassword.vue"),
+  },
 ];

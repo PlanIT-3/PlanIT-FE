@@ -52,7 +52,7 @@ export const useAuthStore = defineStore("auth", () => {
       state.value.user = {
         email: data.email,
         username: data.username || "",
-        roles: data.roles || [],
+        role: data.role || [],
       };
 
       localStorage.setItem("auth", JSON.stringify(state.value));

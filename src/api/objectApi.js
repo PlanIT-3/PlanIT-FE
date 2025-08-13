@@ -3,6 +3,7 @@ import api from "@/api";
 const BASE_URL = "/auth/api/goals";
 
 export default {
+
   //목표 생성
   async createNewGoal(goalData) {
     return api.post(BASE_URL, goalData);
@@ -23,6 +24,7 @@ export default {
   //목표 세부
   async getGoal(goalId, payload) {
     const { data } = await api.get(`${BASE_URL}/${goalId}`, payload);
+
     console.log("GET GOAL", data);
     return data;
   },
@@ -59,4 +61,5 @@ export default {
     const { data } = await api.get(`${BASE_URL}/${goalId}/goal-amount`);
     return data;
   },
+
 };

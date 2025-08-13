@@ -48,6 +48,7 @@
 import GoalCard from "@/components/goal/GoalCard.vue";
 import DefaultLayout from "@/components/layouts/DefaultLayout.vue";
 import api from "@/api/objectApi";
+
 import { useRouter } from "vue-router";
 import { ref, onMounted } from "vue";
 
@@ -65,6 +66,8 @@ const load = async () => {
 };
 
 const goDetail = (id) => {
+  console.log("목표 상세로 이동", id);
+
   router.push(`/goal/detail/${id}`);
 };
 
