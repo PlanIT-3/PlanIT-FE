@@ -1,5 +1,6 @@
 <template>
-  <div :class="['p-5 rounded-xl shadow-md w-full', bgColor]">
+  <div :class="['p-5 rounded-xl shadow-sm w-full', bgColor]">
+    <!-- shadow-md → shadow-sm -->
     <div class="space-y-2">
       <div v-if="title" class="text-base font-semibold">{{ title }}</div>
       <div class="space-y-1 text-sm">
@@ -34,7 +35,6 @@ const props = defineProps({
   bgColor: { type: String, default: "bg-white" },
 });
 
-// 3자리마다 콤마 표시, undefined/null 안전 처리
 const formatNumber = (num) => {
   if (num == null || isNaN(num)) return "0";
   return num.toLocaleString("ko-KR");

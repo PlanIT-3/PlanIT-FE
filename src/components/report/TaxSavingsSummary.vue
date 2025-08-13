@@ -21,7 +21,8 @@
     </div>
 
     <!-- 절세율 요약 카드 -->
-    <div class="p-5 rounded-xl shadow-md w-full bg-blue-50">
+    <div class="p-5 rounded-xl shadow-sm w-full bg-blue-50">
+      <!-- shadow-md → shadow-sm -->
       <div class="text-base font-semibold mb-2">절세율 요약</div>
       <div class="flex justify-between text-sm">
         <span>절세 금액</span>
