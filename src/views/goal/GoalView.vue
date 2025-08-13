@@ -21,14 +21,11 @@
     <!-- 데이터 길이 체크 -->
     <div v-if="list.length > 0">
       <div v-for="item in list" :key="item.goalId" @click="goDetail(item.goalId)" class="cursor-pointer">
-        <GoalCard
+        <GoalList
           :title="item.goalName || ''"
           :rate="item.goalRate"
           :showLegend="false"
-          :barChartData="[
-            { name: '진행', value: item.goalRate },
-            { name: '남음', value: 100 - item.goalRate },
-          ]"
+          :barChartData="[{ name: '진행', value: item.goalRate }]"
           :totalAmount="item.totalAmount"
           :targetAmount="item.targetAmount"
         />
@@ -51,6 +48,7 @@ import api from "@/api/objectApi";
 
 import { useRouter } from "vue-router";
 import { ref, onMounted } from "vue";
+import GoalList from "@/components/goal/GoalList.vue";
 
 const list = ref([]);
 const router = useRouter();
