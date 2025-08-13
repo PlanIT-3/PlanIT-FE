@@ -10,7 +10,6 @@
         </div>
         <h3 class="text-sm font-semibold text-gray-800 whitespace-nowrap">계좌 총 잔고 추이</h3>
       </div>
-      <button class="text-xs text-indigo-600 font-medium whitespace-nowrap">전체보기</button>
     </div>
 
     <!-- Time Period Toggle Buttons -->
@@ -44,7 +43,10 @@
       </button>
     </div>
 
-    Investment Chart
+    <!-- Investment Chart -->
+    <div class="h-[170px]">
+      <VChart :option="investmentChartOption" autoresize />
+    </div>
   </div>
 </template>
 
