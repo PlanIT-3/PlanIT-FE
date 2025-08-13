@@ -3,6 +3,17 @@ import api from "@/api";
 const BASE_URL = "/auth/api/goals";
 
 export default {
+
+  //목표 생성
+  async createNewGoal(goalData) {
+    return api.post(BASE_URL, goalData);
+  },
+
+  //목표 저장
+  async saveGoal(goalId, goalData) {
+    return api.put(`${BASE_URL}/${goalId}`, goalData);
+  },
+
   //목표 리스트
   async getGoalList() {
     const { data } = await api.get(`${BASE_URL}`);
@@ -11,8 +22,9 @@ export default {
   },
 
   //목표 세부
-  async getGoal(goalId) {
-    const { data } = await api.get(`${BASE_URL}/${goalId}`);
+  async getGoal(goalId, payload) {
+    const { data } = await api.get(`${BASE_URL}/${goalId}`, payload);
+
     console.log("GET GOAL", data);
     return data;
   },
@@ -36,4 +48,18 @@ export default {
       value: item.progressRate,
     }));
   },
+
+  // 목표에 할당된 계좌목록 조회
+  async getGoalAccounts(goalId) {
+    const { data } = await api.get(`${BASE_URL}/${goalId}/accounts`);
+    console.log("API 계좌 목록 응답데이터 :", data);
+    return data.data;
+  },
+
+  // 해당 목표 targetamount 조회
+  async getGoalAmount(goalId) {
+    const { data } = await api.get(`${BASE_URL}/${goalId}/goal-amount`);
+    return data;
+  },
+
 };

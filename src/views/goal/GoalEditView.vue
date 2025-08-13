@@ -1,15 +1,17 @@
 <template>
   <DefaultLayout>
     <div class="flex flex-col w-full">
+      <!-- 목표명 -->
       <div class="w-full mb-4">
         <div class="font-bold text-gray-800 mb-1">목표명</div>
         <input
           type="text"
+          v-model="goalName"
           placeholder="목표명을 입력하세요."
           class="w-full bg-gray-50 rounded-lg px-4 py-3 text-sm outline-none border-none placeholder-gray-400"
         />
       </div>
-      <br />
+
       <!-- 목표 금액 -->
       <div class="w-full mb-4">
         <div class="font-bold text-gray-800 mb-1">목표 금액</div>
@@ -20,22 +22,30 @@
           class="w-full bg-gray-50 rounded-lg px-4 py-3 text-sm outline-none border-none placeholder-gray-400"
         />
       </div>
-      <br />
+
       <!-- 목표 기간 -->
       <div class="w-full mb-4">
         <div class="font-bold text-gray-800 mb-1">목표 기간</div>
         <div class="flex gap-2 items-center">
           <div class="flex flex-col items-start flex-1">
             <span class="text-xs text-gray-400 mb-1">start</span>
-            <input type="date" class="w-full bg-gray-50 rounded-lg px-3 py-2 text-sm outline-none border-none" />
+            <input
+              type="date"
+              v-model="startDate"
+              class="w-full bg-gray-50 rounded-lg px-3 py-2 text-sm outline-none border-none"
+            />
           </div>
           <div class="flex flex-col items-start flex-1">
             <span class="text-xs text-gray-400 mb-1">end</span>
-            <input type="date" class="w-full bg-gray-50 rounded-lg px-3 py-2 text-sm outline-none border-none" />
+            <input
+              type="date"
+              v-model="endDate"
+              class="w-full bg-gray-50 rounded-lg px-3 py-2 text-sm outline-none border-none"
+            />
           </div>
         </div>
       </div>
-      <br />
+
       <!-- 할당 비율 설정 -->
       <div class="w-full mb-4">
         <div class="font-bold text-gray-800 mb-1">할당 비율 설정</div>
@@ -49,40 +59,255 @@
           <span>{{ formattedIsaAmount }}원</span>
         </div>
       </div>
-      <br />
-      <!-- 합당할 자산 -->
+
+      <!-- 할당할 자산 -->
       <div class="w-full">
-        <div class="font-bold text-gray-800 mb-1">합당할 자산</div>
+        <div class="font-bold text-gray-800 mb-1">할당할 자산</div>
+
+        <!-- 배정 있음 -->
+        <div v-if="isaProducts.length || depositAccounts.length" class="space-y-3">
+          <!-- 예적금 카드 -->
+          <div v-if="depositAccounts.length" class="rounded-xl border border-blue-100 bg-blue-50 p-4">
+            <div class="flex items-center justify-between">
+              <div class="text-sm font-semibold text-blue-900">예적금 계좌 할당</div>
+              <div class="text-xs text-blue-700">합계 {{ formatWan(depositTotal) }}</div>
+            </div>
+            <ul class="mt-2 text-xs text-blue-800 space-y-1">
+              <li v-for="acc in depositAccounts" :key="acc.accountId" class="leading-5">
+                <span class="font-medium">{{ acc.accountName }}</span>
+                <span v-if="acc.bankName" class="text-blue-600"> · {{ acc.bankName }}</span>
+                <span class="ml-1">— {{ formatWan(acc.allocatedAmount ?? acc.amount ?? 0) }}</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- ISA 카드 -->
+          <div v-if="isaProducts.length" class="rounded-xl border border-blue-100 bg-blue-50 p-4">
+            <div class="flex items-center justify-between">
+              <div class="text-sm font-semibold text-blue-900">ISA 계좌 할당</div>
+              <div class="text-xs text-blue-700">합계 {{ formatWan(isaTotal) }}</div>
+            </div>
+            <ul class="mt-2 text-xs text-blue-800 space-y-1">
+              <li v-for="p in isaProducts" :key="p.memberProductId" class="leading-5">
+                <span class="font-medium">{{ p.itemName }}</span>
+                <span v-if="p.quantity"> × {{ p.quantity }}</span>
+                <span class="ml-1">— {{ formatWan((p.presentAmount ?? 0) * (p.quantity ?? 1)) }}</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- 추가 배정 버튼 -->
+          <div class="flex justify-center">
+            <button
+              @click="handleOpenModal"
+              class="mt-1 w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 bg-white text-2xl text-gray-400 hover:bg-gray-100"
+            >
+              +
+            </button>
+          </div>
+        </div>
+
+        <!-- 배정 없음(빈 상태) -->
         <div
+          v-else
           class="w-full h-32 flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded-xl bg-gray-50"
         >
-          <span class="text-gray-400 text-sm mb-2">합당할 자산이 없습니다.</span>
+          <span class="text-gray-400 text-sm mb-2">할당할 자산이 없습니다.</span>
           <button
-            @click="showModal = true"
+            @click="handleOpenModal"
             class="w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 bg-white text-2xl text-gray-400 hover:bg-gray-100"
           >
             +
           </button>
-          <AddRegisterModal :isOpen="showModal" @close="showModal = false" />
         </div>
+
+        <!-- 모달 -->
+        <AddRegisterModal
+          :isOpen="showModal"
+          @close="showModal = false"
+          :goalId="goalId"
+          :isaAmount="isaAmount"
+          :depositAmount="depositAmount"
+        />
+      </div>
+
+      <!-- 완료 버튼: goalId가 있을 때만 노출 -->
+      <div v-if="isEditMode" class="mt-6 pb-24">
+        <button
+          class="w-full bg-indigo-700 hover:bg-indigo-800 text-white py-3 rounded font-bold text-base disabled:opacity-50 disabled:cursor-not-allowed"
+          :disabled="!canComplete"
+          @click="handleCompleteGoal"
+        >
+          목표 설정 완료
+        </button>
       </div>
     </div>
   </DefaultLayout>
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import DefaultLayout from "@/components/layouts/DefaultLayout.vue";
 import AddRegisterModal from "./AddRegisterModal.vue";
+import Api from "@/api/objectApi";
+
+const route = useRoute();
+const router = useRouter();
 
 const showModal = ref(false);
+const goalId = ref(null);
+const goalName = ref("");
+const goalAmount = ref(0); // 원 단위
+const depositRatio = ref(50);
+const startDate = ref("");
+const endDate = ref("");
+const isaProducts = ref([]);
+const depositAccounts = ref([]);
 
-const goalAmount = ref(0); // 목표 금액
-const depositRatio = ref(50); // 예적금 비율 (0~100, 기본 50%)
-
+const isaRate = computed(() => 100 - depositRatio.value);
+// 분배 금액 - 원 단위
 const depositAmount = computed(() => Math.round(goalAmount.value * (depositRatio.value / 100)));
-const isaAmount = computed(() => Math.round(goalAmount.value * (1 - depositRatio.value / 100)));
-
+const isaAmount = computed(() => Math.round(goalAmount.value * (isaRate.value / 100)));
 const formattedDepositAmount = computed(() => depositAmount.value.toLocaleString());
 const formattedIsaAmount = computed(() => isaAmount.value.toLocaleString());
+
+// 편집 모드 여부
+const isEditMode = computed(() => !!goalId.value);
+
+// 합계(원 단위)
+const isaTotal = computed(() =>
+  isaProducts.value.reduce((sum, p) => sum + Number(p.presentAmount ?? 0) * Number(p.quantity ?? 1), 0)
+);
+const depositTotal = computed(() =>
+  depositAccounts.value.reduce((sum, acc) => sum + Number(acc.allocatedAmount ?? acc.amount ?? 0), 0)
+);
+
+// 원 → 만원(절삭) 함수 →
+const toWanFloor = (n) => Math.floor(Number(n ?? 0) / 10000);
+const formatWan = (n) => toWanFloor(n).toLocaleString("ko-KR") + "만원";
+
+// 완료 버튼 활성 조건 1
+const requiredFilled = computed(
+  () =>
+    String(goalName.value || "").trim().length > 0 &&
+    Number(goalAmount.value) > 0 &&
+    !!startDate.value &&
+    !!endDate.value
+);
+
+//완료 버튼 활성 조건 2
+const hasAnyAllocation = computed(
+  () => (isaProducts.value?.length || 0) > 0 || (depositAccounts.value?.length || 0) > 0
+);
+
+// 완료버튼 활성
+const canComplete = computed(() => requiredFilled.value && hasAnyAllocation.value);
+
+//ISA  할당 후 edit 페이지 돌아올 때 데이터받아오기
+const fetchGoalDetails = async (id) => {
+  try {
+    const res = await Api.getGoal(id);
+    const body = res && typeof res === "object" && "data" in res ? res.data : res;
+    const goalData = body?.data ?? body;
+    if (!goalData) return;
+
+    goalName.value = goalData.goalName;
+    // ?? goalData.objectName ?? "";
+    goalAmount.value = Number(goalData.targetAmount ?? 0);
+    depositRatio.value =
+      typeof goalData.depositRate === "number" ? goalData.depositRate : 100 - Number(goalData.isaRate ?? 50);
+
+    // 날짜 처리 (배열 또는 문자열 모두 대응)
+    if (Array.isArray(goalData.startDate)) {
+      const [year, month, day] = goalData.startDate;
+      startDate.value = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    } else {
+      startDate.value = (goalData.startDate ?? "").toString().slice(0, 10);
+    }
+
+    if (Array.isArray(goalData.endDate)) {
+      const [year, month, day] = goalData.endDate;
+      endDate.value = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    } else {
+      endDate.value = (goalData.endDate ?? "").toString().slice(0, 10);
+    }
+
+    ///////////
+    isaProducts.value = goalData.isaProducts ?? goalData.isaAllocations ?? [];
+    depositAccounts.value = goalData.depositAccounts ?? goalData.depositAllocations ?? [];
+  } catch (error) {
+    console.error("목표 상세 정보 불러오기 실패:", error);
+  }
+};
+
+// 라우터 쿼리 감지()
+watch(
+  () => route.query.goalId,
+  (newId) => {
+    const id = Number(newId ?? localStorage.getItem("currentGoalId"));
+    if (id && !Number.isNaN(id)) {
+      goalId.value = id;
+      fetchGoalDetails(id);
+    }
+  },
+  { immediate: true } //처음 마운트 될 때도 바로 한번 실행
+);
+
+// + 버튼: 생성 모드면 먼저 생성, 편집 모드면 모달만 오픈
+const handleOpenModal = async () => {
+  if (!isEditMode.value) {
+    const payload = {
+      goalName: goalName.value,
+      targetAmount: Number(goalAmount.value),
+      startDate: startDate.value,
+      endDate: endDate.value,
+      depositRate: Number(depositRatio.value),
+      isaRate: Number(100 - depositRatio.value),
+    };
+    try {
+      const response = await Api.createNewGoal(payload);
+      if (response?.status === 200 || response?.status === 201 || response?.data?.status === "OK") {
+        const createdGoalId = response.data?.data?.goalId ?? response.data?.goalId;
+        goalId.value = createdGoalId;
+        localStorage.setItem("currentGoalId", createdGoalId);
+        router.replace({ query: { goalId: createdGoalId } });
+        showModal.value = true;
+      }
+    } catch (e) {
+      console.error("목표 생성 실패:", e);
+      alert("목표 생성에 실패했습니다. 다시 시도해주세요.");
+    }
+  } else {
+    showModal.value = true;
+  }
+};
+
+// 완료 버튼: 기본 필드 업데이트 후 이동
+const handleCompleteGoal = async () => {
+  try {
+    const payload = {
+      goalName: goalName.value,
+      targetAmount: Number(goalAmount.value),
+      startDate: startDate.value,
+      endDate: endDate.value,
+      depositRate: Number(depositRatio.value),
+      isaRate: Number(100 - depositRatio.value),
+    };
+
+    const res = await Api.saveGoal(goalId.value, payload);
+    const ok = res?.status === 200 || res?.status === 201 || res?.data?.status === "OK";
+    if (ok) {
+      alert("목표가 저장되었습니다.");
+      localStorage.removeItem("currentGoalId");
+      router.push({ path: "/goal" });
+    } else {
+      console.warn("update 응답 확인:", res);
+      alert("저장 결과를 확인할 수 없습니다.");
+    }
+  } catch (e) {
+    console.error("목표 수정 실패:", e);
+    alert("목표 저장에 실패했습니다. 다시 시도해주세요.");
+  }
+};
 </script>

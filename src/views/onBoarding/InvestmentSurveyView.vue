@@ -1,54 +1,44 @@
 <template>
   <SubLayout>
-    <template v-if="!showResult">
-      <!-- Progress Bar -->
-      <div class="w-full mb-6">
-        <div class="flex justify-between items-center mb-2">
-          <span class="text-xs text-gray-400">진행률</span>
-          <span class="text-xs text-gray-400">{{ currentIndex + 1 }}/{{ questions.length }}</span>
-        </div>
-        <div class="w-full bg-gray-200 rounded-full h-2.5">
-          <div
-            class="bg-[#4B3C8A] h-2.5 rounded-full"
-            :style="{ width: ((currentIndex + 1) / questions.length) * 100 + '%' }"
-          ></div>
-        </div>
+    <!-- Progress Bar -->
+    <div class="w-full mb-6">
+      <div class="flex justify-between items-center mb-2">
+        <span class="text-xs text-gray-400">진행률</span>
+        <span class="text-xs text-gray-400">{{ currentIndex + 1 }}/{{ questions.length }}</span>
       </div>
-      <!-- 질문 -->
-      <div class="mb-6 font-bold text-gray-800 text-base w-full">
-        {{ questions[currentIndex].question }}
+      <div class="w-full bg-gray-200 rounded-full h-2.5">
+        <div
+          class="bg-[#4B3C8A] h-2.5 rounded-full"
+          :style="{ width: ((currentIndex + 1) / questions.length) * 100 + '%' }"
+        ></div>
       </div>
-      <!-- 체크리스트 -->
-      <form class="w-full">
-        <div class="flex flex-col gap-3 text-sm text-gray-700">
-          <label v-for="(choice, idx) in questions[currentIndex].choices" :key="idx" class="flex items-center gap-2">
-            <input type="radio" :name="'q' + currentIndex" :value="idx" v-model="selected" />
-            {{ choice.text }}
-          </label>
-        </div>
-      </form>
-      <!-- 다음/완료 버튼 -->
-      <button
-        class="w-full py-3 rounded-lg text-white font-semibold bg-[#B9AFFF] shadow-md disabled:bg-[#B9AFFF]/50 transition mt-8"
-        :disabled="selected === null"
-        @click="nextOrFinish"
-      >
-        {{ currentIndex === questions.length - 1 ? "완료" : "다음" }}
-      </button>
-    </template>
-    <template v-else>
-      <div class="w-full flex flex-col items-center justify-center h-full">
-        <div class="text-lg font-bold mb-4">당신의 투자 성향은?</div>
-        <div class="text-2xl font-extrabold text-[#4B3C8A] mb-2">{{ resultType }}</div>
-        <div class="text-gray-700">가장 높은 점수를 받은 성향입니다.</div>
-        <button class="mt-8 text-[#4B3C8A] underline" @click="resetSurvey">다시하기</button>
+    </div>
+    <!-- 질문 -->
+    <div class="mb-6 font-bold text-gray-800 text-base w-full">
+      {{ questions[currentIndex].question }}
+    </div>
+    <!-- 체크리스트 -->
+    <form class="w-full">
+      <div class="flex flex-col gap-3 text-sm text-gray-700">
+        <label v-for="(choice, idx) in questions[currentIndex].choices" :key="idx" class="flex items-center gap-2">
+          <input type="radio" :name="'q' + currentIndex" :value="idx" v-model="selected" />
+          {{ choice.text }}
+        </label>
       </div>
-    </template>
+    </form>
+    <!-- 다음/완료 버튼 -->
+    <button
+      class="w-full py-3 rounded-lg text-white font-semibold bg-[#B9AFFF] shadow-md disabled:bg-[#B9AFFF]/50 transition mt-8"
+      :disabled="selected === null"
+      @click="nextOrFinish"
+    >
+      {{ currentIndex === questions.length - 1 ? "완료" : "다음" }}
+    </button>
   </SubLayout>
 </template>
 
 <script setup>
-import { ref, computed, watch } from "vue";
+import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import SubLayout from "@/components/layouts/SubLayout.vue";
 
@@ -115,7 +105,6 @@ const currentIndex = ref(0);
 const selected = ref(null);
 const answers = ref([]); // 각 문항별 선택 인덱스
 const scores = ref([0, 0, 0, 0, 0]);
-const showResult = ref(false);
 
 const resultType = computed(() => {
   const max = Math.max(...scores.value);
@@ -125,39 +114,29 @@ const resultType = computed(() => {
 
 const router = useRouter();
 
-watch(showResult, (val) => {
-  if (val) {
-    router.push({
-      name: "InvestmentSurveyResult",
-      query: { type: resultType.value },
-    });
-  }
-});
-
 function nextOrFinish() {
   if (selected.value === null) return;
+
   // 선택값 저장
   answers.value[currentIndex.value] = selected.value;
+
   // 점수 누적
   const choiceScores = questions[currentIndex.value].choices[selected.value].scores;
   for (let i = 0; i < scores.value.length; i++) {
     scores.value[i] += choiceScores[i];
   }
-  // 다음 문항 or 결과
+
+  // 다음 문항 or 결과 페이지로 이동
   if (currentIndex.value < questions.length - 1) {
     currentIndex.value++;
     selected.value = answers.value[currentIndex.value] ?? null;
   } else {
-    showResult.value = true;
+    // 설문 완료 - 결과 페이지로 이동
+    router.push({
+      name: "investmentSurveyResult",
+      query: { type: resultType.value },
+    });
   }
-}
-
-function resetSurvey() {
-  currentIndex.value = 0;
-  selected.value = null;
-  answers.value = [];
-  scores.value = [0, 0, 0, 0, 0];
-  showResult.value = false;
 }
 </script>
 
