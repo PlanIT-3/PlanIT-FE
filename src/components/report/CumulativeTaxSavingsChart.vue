@@ -40,67 +40,55 @@ import { api } from "@/api";
 
 const chartCanvas = ref(null);
 
-// 누적 절세 데이터 (API에서 받아온 데이터 기반으로 생성)
-const taxSavingsData = ref([
-  { period: "1분기", amount: 8 }, // 8만원
-  { period: "2분기", amount: 16 }, // 16만원
-  { period: "3분기", amount: 32 }, // 32만원
-  { period: "4분기", amount: 56 }, // 56만원
-  { period: "5분기", amount: 80 }, // 80만원
-]);
+const taxSavingsData = ref([]);
 
-const latestSavings = ref(803000); // 80.3만원 (기본값 - 실제 절세액)
+const latestSavings = ref(803000);
 const isLoading = ref(true);
-const hoveredIndex = ref(-1); // 현재 hover된 데이터 포인트 인덱스
+const hoveredIndex = ref(-1);
 
-// 더미 데이터 설정 함수
-const setDummyData = () => {
-  latestSavings.value = 803000; // 80.3만원 절세액
-  taxSavingsData.value = [
-    { period: "1분기", amount: 8 }, // 8만원
-    { period: "2분기", amount: 16 }, // 16만원
-    { period: "3분기", amount: 32 }, // 32만원
-    { period: "4분기", amount: 56 }, // 56만원
-    { period: "5분기", amount: 80 }, // 80만원
-  ];
+// 기본 금액을 기반으로 8분기 차트 데이터 생성
+const generateChartData = (baseAmount) => {
+  latestSavings.value = baseAmount;
+  const baseRatios = [0.1, 0.2, 0.3, 0.45, 0.6, 0.75, 0.9, 1.0];
+  taxSavingsData.value = baseRatios.map((ratio, index) => ({
+    period: `${index + 1}분기`,
+    amount: Math.round((baseAmount / 10000) * ratio),
+  }));
 };
 
 // ISA 절세 데이터 로딩
 const fetchTaxSavingsData = async () => {
   try {
-    const response = await api.get("/api/isa/reports/cumulative-tax-saving");
-
-    console.log("📡 API 응답 전체:", response);
-    console.log("📊 응답 데이터:", response.data);
+    const response = await api.get("/auth/api/isa/reports/cumulative-tax-saving");
 
     if (response.data.status === "OK" && response.data.data && Array.isArray(response.data.data)) {
       const cumulativeData = response.data.data;
 
-      // 데이터가 있는 경우 실제 API 데이터 사용
-      if (cumulativeData.length > 0) {
-        // 마지막 분기의 누적 절세액을 최신 절세액으로 설정
+      // 데이터 개수에 따른 처리 로직
+      if (cumulativeData.length >= 2) {
+        // 실제 API 데이터로 차트 그리기
         const lastQuarterData = cumulativeData[cumulativeData.length - 1];
         latestSavings.value = lastQuarterData.cumulativeTaxSaved;
 
-        // API 데이터를 차트 형식으로 변환
         taxSavingsData.value = cumulativeData.map((item) => ({
           period: item.quarter,
           amount: Math.round(item.cumulativeTaxSaved / 10000), // 만원 단위로 변환
         }));
       } else {
-        setDummyData();
+        // 데이터가 1개 이하일 때: 기본 금액으로 8분기 데이터 생성
+        const baseAmount = cumulativeData.length === 1 ? cumulativeData[0].cumulativeTaxSaved : 803000;
+        generateChartData(baseAmount);
       }
     } else {
-      setDummyData();
+      // API 응답 형식이 올바르지 않을 때
+      generateChartData(803000);
     }
   } catch (error) {
     console.error("누적 절세 데이터 로딩 실패:", error);
-    // API 실패 시 더미 데이터 설정
-    setDummyData();
+    // API 실패 시
+    generateChartData(803000);
   } finally {
     isLoading.value = false;
-
-    // 차트 그리기
     setTimeout(() => {
       if (chartCanvas.value) {
         drawChart();
@@ -301,16 +289,8 @@ const handleMouseLeave = () => {
 onMounted(async () => {
   await nextTick();
 
-  // 기본 더미 데이터 설정 (API 실패에 대비)
-  setDummyData();
-
-  // ISA 절세 데이터 로딩 시도
+  // ISA 절세 데이터 로딩
   await fetchTaxSavingsData();
-
-  // 차트 그리기
-  setTimeout(() => {
-    drawChart();
-  }, 100);
 
   // 윈도우 리사이즈 시 차트 다시 그리기
   window.addEventListener("resize", () => {
