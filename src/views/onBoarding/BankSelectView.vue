@@ -1,92 +1,98 @@
 <script setup>
 import { ref } from "vue";
-import Button from "@/components/base/Button.vue";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
+const selectedBanks = ref([]);
 
-// 은행 목록
 const banks = [
-  { name: "BNK", file: "BNK.svg" },
-  { name: "IBK", file: "IBK.svg" },
-  { name: "KB국민", file: "KB.svg" },
-  { name: "MG새마을금고", file: "MG새마을금고.svg" },
-  { name: "SC제일", file: "SC제일.svg" },
-  { name: "Sh수협", file: "Sh수협.svg" },
-  { name: "광주", file: "광주.svg" },
-  { name: "농협", file: "농협.svg" },
-  { name: "신한", file: "신한.svg" },
-  { name: "신협", file: "신협.svg" },
-  { name: "씨티", file: "씨티.svg" },
-  { name: "우리", file: "우리.svg" },
-  { name: "우체국", file: "우체국.svg" },
-  { name: "카카오뱅크", file: "카카오뱅크.svg" },
-  { name: "케이뱅크", file: "케이뱅크.svg" },
-  { name: "토스", file: "토스.svg" },
-  { name: "하나", file: "하나.svg" },
-  { name: "한국투자", file: "한국투자.svg" },
+  { name: "KB국민은행", icon: "/src/assets/icons/bank/KB.svg" },
+  { name: "신한은행", icon: "/src/assets/icons/bank/신한.svg" },
+  { name: "하나은행", icon: "/src/assets/icons/bank/하나.svg" },
+  { name: "우리은행", icon: "/src/assets/icons/bank/우리.svg" },
+  { name: "카카오뱅크", icon: "/src/assets/icons/bank/카카오뱅크.svg" },
+  { name: "케이뱅크", icon: "/src/assets/icons/bank/케이뱅크.svg" },
+  { name: "IBK기업은행", icon: "/src/assets/icons/bank/IBK.svg" },
+  { name: "NH농협은행", icon: "/src/assets/icons/bank/농협.svg" },
+  { name: "SC제일은행", icon: "/src/assets/icons/bank/SC제일.svg" },
+  { name: "BNK부산은행", icon: "/src/assets/icons/bank/BNK.svg" },
+  { name: "BNK경남은행", icon: "/src/assets/icons/bank/BNK.svg" },
+  { name: "광주은행", icon: "/src/assets/icons/bank/광주.svg" },
+  { name: "제주은행", icon: "/src/assets/icons/bank/제주.svg" },
+  { name: "새마을금고", icon: "/src/assets/icons/bank/MG새마을금고.svg" },
+  { name: "씨티은행", icon: "/src/assets/icons/bank/씨티.svg" },
+  { name: "지역농협", icon: "/src/assets/icons/bank/농협.svg" },
+  { name: "iM뱅크", icon: "/src/assets/icons/bank/iM.svg" },
+  { name: "전북은행", icon: "/src/assets/icons/bank/전북.svg" },
+  { name: "우체국", icon: "/src/assets/icons/bank/우체국.svg" },
+  { name: "SH수협은행", icon: "/src/assets/icons/bank/Sh수협.svg" },
+  { name: "토스뱅크", icon: "/src/assets/icons/bank/토스.svg" },
+  { name: "한국산업은행", icon: "/src/assets/icons/bank/한국투자.svg" },
 ];
 
-// 모든 SVG를 한 번에 import
-const svgModules = import.meta.glob("@/assets/icons/bank/*.svg", { eager: true, as: "url" });
-
-// 파일명 → URL 매핑
-const bankIcons = {};
-for (const path in svgModules) {
-  const file = path.split("/").pop();
-  bankIcons[file] = svgModules[path];
-}
-
-const selectedBanks = ref([]);
 function selectBank(bank) {
-  const idx = selectedBanks.value.findIndex((b) => b.name === bank.name);
+  const idx = selectedBanks.value.findIndex((b) => b === bank.name);
   if (idx === -1) {
-    selectedBanks.value.push(bank);
+    selectedBanks.value.push(bank.name);
   } else {
     selectedBanks.value.splice(idx, 1);
   }
 }
-function onComplete() {
+
+function onNext() {
   if (selectedBanks.value.length === 0) {
     alert("은행을 선택하세요.");
     return;
   }
-  alert(selectedBanks.value.map((b) => b.name).join(", ") + "이(가) 선택되었습니다.");
-  router.push("/bank-login");
+  router.push({
+    path: "/certificate-select",
+    query: {
+      selectedBanks: JSON.stringify(selectedBanks.value),
+    },
+  });
 }
 </script>
 
 <template>
-  <div class="bankSelect-view flex flex-col items-center min-h-screen py-8 px-4">
-    <h2 class="text-xl font-medium mb-8">은행 선택</h2>
-    <div class="grid grid-cols-2 gap-x-4 gap-y-1 mb-10 w-full max-w-md">
-      <div
-        v-for="bank in banks"
-        :key="bank.name"
-        class="flex items-center px-3 py-2 rounded-lg cursor-pointer transition-all"
-        :class="
-          selectedBanks.some((b) => b.name === bank.name)
-            ? 'border-2 border-[#433D8B] bg-white shadow text-[#433D8B] font-bold'
-            : 'border border-transparent bg-transparent text-gray-800'
-        "
-        @click="selectBank(bank)"
-        style="min-width: 180px"
-      >
-        <img
-          :src="bankIcons[bank.file]"
-          :alt="bank.name + ' 아이콘'"
-          class="w-10 h-10 mr-4"
-          @error="console.log('이미지 에러:', bank.file, bankIcons[bank.file])"
-        />
-        <span class="text-base">{{ bank.name }}</span>
+  <div class="w-full h-full bg-white flex flex-col">
+    <!-- 헤더 -->
+    <div class="text-center py-8 flex-shrink-0">
+      <h1 class="text-2xl font-bold text-gray-900 mb-6">은행선택</h1>
+      <h2 class="text-lg text-gray-600 text-left ml-8">은행</h2>
+    </div>
+
+    <!-- 은행 선택 그리드 -->
+    <div class="flex-1 px-8 pb-24 overflow-y-auto">
+      <div class="grid grid-cols-2 gap-6">
+        <div
+          v-for="bank in banks"
+          :key="bank.name"
+          @click="selectBank(bank)"
+          class="flex items-center p-4 rounded-lg transition-all duration-200 cursor-pointer"
+          :class="selectedBanks.includes(bank.name) ? 'bg-[#433D8B]/5' : 'bg-white hover:bg-gray-50'"
+        >
+          <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mr-4 flex-shrink-0">
+            <img :src="bank.icon" :alt="bank.name" class="w-8 h-8" />
+          </div>
+          <span class="text-sm font-medium text-gray-900 whitespace-nowrap">{{ bank.name }}</span>
+        </div>
       </div>
     </div>
-    <Button label="완료" @click="onComplete" class="w-full max-w-md" />
+
+    <!-- 다음 버튼 -->
+    <div class="absolute bottom-0 left-0 right-0 p-6 bg-white border-t border-gray-200">
+      <button
+        @click="onNext"
+        class="w-full bg-[#433D8B] text-white py-4 rounded-lg font-semibold text-lg hover:bg-[#433D8B]/90 transition-colors"
+        :disabled="selectedBanks.length === 0"
+        :class="selectedBanks.length === 0 ? 'opacity-50 cursor-not-allowed' : ''"
+      >
+        다음
+      </button>
+    </div>
   </div>
 </template>
 
 <style scoped>
-.bankSelect-view {
-  max-height: 100vh;
-}
+/* 추가 스타일이 필요한 경우 여기에 작성 */
 </style>

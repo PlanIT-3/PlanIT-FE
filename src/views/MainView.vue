@@ -106,6 +106,12 @@ const fetchDailyData = async () => {
     }
   } catch (error) {
     console.error("일별 데이터 불러오기 실패:", error);
+    // 인증 관련 에러인 경우 처리
+    if (error.response?.status === 401) {
+      console.warn("인증이 필요합니다. 로그인 페이지로 이동합니다.");
+      // 에러를 다시 던져서 API 인터셉터가 처리하도록 함
+      throw error;
+    }
   }
 };
 
@@ -119,6 +125,11 @@ const fetchWeeklyData = async () => {
     }
   } catch (error) {
     console.error("주별 데이터 불러오기 실패:", error);
+    // 인증 관련 에러인 경우 처리
+    if (error.response?.status === 401) {
+      console.warn("인증이 필요합니다. 로그인 페이지로 이동합니다.");
+      throw error;
+    }
   }
 };
 
@@ -132,6 +143,11 @@ const fetchMonthlyData = async () => {
     }
   } catch (error) {
     console.error("월별 데이터 불러오기 실패:", error);
+    // 인증 관련 에러인 경우 처리
+    if (error.response?.status === 401) {
+      console.warn("인증이 필요합니다. 로그인 페이지로 이동합니다.");
+      throw error;
+    }
   }
 };
 
@@ -146,13 +162,26 @@ const fetchGoalRatioData = async () => {
     }
   } catch (error) {
     console.error("목표 비율 데이터 불러오기 실패:", error);
+    // 인증 관련 에러인 경우 처리
+    if (error.response?.status === 401) {
+      console.warn("인증이 필요합니다. 로그인 페이지로 이동합니다.");
+      throw error;
+    }
   }
 };
 
 // 페이지 로드 시 일자 데이터 자동 로드
-onMounted(() => {
-  fetchDailyData();
-  fetchGoalRatioData();
+onMounted(async () => {
+  try {
+    await Promise.all([fetchDailyData(), fetchGoalRatioData()]);
+  } catch (error) {
+    console.error("초기 데이터 로드 실패:", error);
+    // 인증 관련 에러인 경우 이미 API 인터셉터에서 처리됨
+    if (error.response?.status !== 401) {
+      // 401이 아닌 다른 에러의 경우 사용자에게 알림
+      console.warn("데이터를 불러오는데 실패했습니다. 잠시 후 다시 시도해주세요.");
+    }
+  }
 });
 
 const investmentData = {
