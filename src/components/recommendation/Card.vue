@@ -23,6 +23,7 @@
       <button
         type="button"
         class="border border-gray-300 rounded-lg px-4 py-1 text-sm font-medium transition hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-200"
+        @click="emitDetail"
       >
         상세보기
       </button>
@@ -31,11 +32,18 @@
 </template>
 
 <script setup>
-defineProps({
+const props = defineProps({
   title: String,
   ratio: String,
   yield: String,
   risk: String,
   riskVariant: String,
+  shortenCode: String,
 });
+
+const emit = defineEmits(["showDetail"]);
+
+function emitDetail() {
+  emit("showDetail", props.shortenCode);
+}
 </script>

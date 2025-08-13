@@ -1,8 +1,8 @@
 <template>
   <DefaultLayout>
-    <div class="flex flex-col min-h-screen relative mt-10">
+    <div class="flex flex-col relative">
       <!-- 목표 헤더 섹션 -->
-      <div class="bg-white rounded-2xl shadow-lg p-6 mb-4 mx-[13px] -mt-[87px] relative z-20">
+      <div class="w-full">
         <div class="flex items-center justify-between mb-4">
           <h1 class="text-xl font-bold text-gray-900">나의 목표</h1>
           <button class="p-2 rounded-lg hover:bg-gray-100">
@@ -24,27 +24,18 @@
           </button>
         </div>
 
-        <div class="mb-4">
-          <h2 class="text-lg font-semibold text-gray-800 mb-1">{{ goalTitle }}</h2>
-          <div class="flex items-center">
-            <div class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
-              {{ progressPercentage }}%
-            </div>
-            <span class="ml-2 text-sm text-gray-600">목표 달성까지 {{ remainingAmount }}만원</span>
-          </div>
-        </div>
-
-        <div class="mb-4">
-          <div class="flex justify-between text-sm text-gray-600 mb-2">
-            <span>{{ currentAmount }}만원</span>
-            <span>{{ targetAmount }}만원</span>
-          </div>
-          <BarChart />
-        </div>
+        <GoalCard
+          :title="goalDetail.goalName ?? ''"
+          :rate="goalDetail.goalRate ?? 0"
+          :showLegend="false"
+          :barChartData="rateList"
+          :totalAmount="goalDetail.totalAmount ?? 0"
+          :targetAmount="goalDetail.targetAmount ?? 0"
+        />
       </div>
 
       <!-- 목표에 할당된 계좌 섹션 -->
-      <div class="bg-white rounded-2xl shadow-sm mx-4 mb-4 p-5">
+      <div class="bg-white rounded-2xl shadow-sm mb-4 p-5">
         <h3 class="text-lg font-semibold text-gray-800 mb-4">목표에 할당된 계좌</h3>
         <GoalAssignedCard
           v-for="(account, index) in accounts"
@@ -58,7 +49,7 @@
       </div>
 
       <!-- 목표 금액 및 저축액 요약 -->
-      <div class="bg-white rounded-2xl shadow-sm mx-4 mb-4 p-5">
+      <div class="bg-white rounded-2xl shadow-sm mb-4 p-5">
         <div class="flex justify-between items-center mb-4">
           <div>
             <p class="text-sm text-gray-600">목표 금액</p>
@@ -78,37 +69,52 @@
       </div>
 
       <!-- 목표 진행 요약 및 차트 -->
-      <div class="bg-white rounded-2xl shadow-sm mx-4 mb-4 p-5">
-        <h3 class="text-lg font-semibold text-gray-800 mb-4">주식 진행 추이</h3>
-
-        <div class="mb-6 h-48 bg-gray-50 rounded-lg flex items-center justify-center border-2 border-purple-200">
-          <div class="text-center text-gray-500">
-            <div class="text-sm mb-2">주식 진행 추이 차트</div>
-            <div class="text-xs text-purple-600">추후 실제 차트 컴포넌트로 교체</div>
-          </div>
-        </div>
-
-        <div class="mb-6 flex justify-center">
-          <SummaryCard>
-            <template #title>🔍 목표 진행 요약</template>
-            목표 달성을 위한 현재 포트폴리오 상태입니다. 지속적인 적립식 투자로 목표 달성이 가능할 것으로 예상됩니다.
-            AI들어갈예정
-          </SummaryCard>
-        </div>
+      <div class="bg-white rounded-2xl shadow-sm mb-4 p-5 h-90">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">목표 진행 추이</h3>
+        <GoalProgress :progressData="goalProgress"></GoalProgress>
       </div>
+      <!-- <GoalProgressAdvice :goalId="id" /> -->
     </div>
   </DefaultLayout>
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
-import BarChart from "@/components/graph/BarChart.vue";
+import { ref, computed, onMounted, watch } from "vue";
 import GoalAssignedCard from "@/components/manageGoal/GoalAssignedCard.vue";
-import SummaryCard from "@/components/common/SummaryCard.vue";
 import DefaultLayout from "@/components/layouts/DefaultLayout.vue";
+import GoalProgress from "./GoalProgress.vue";
+import GoalProgressAdvice from "@/components/goal/GoalProgressAdvice.vue";
+import { useAuthStore } from "@/stores/auth";
+import { useRoute, useRouter } from "vue-router";
+import api from "@/api/goalApi";
+import GoalCard from "@/components/goal/GoalCard.vue";
+import VChart from "vue-echarts";
+
+const auth = useAuthStore();
+const cr = useRoute();
+const router = useRouter();
+
+const id = cr.params.id; //라우터 경로 변수
+
+const goalDetail = ref({});
+const rateList = ref();
+
+const goalProgress = ref([]); // api 응답 데이터 배열
+
+const investmentChartOption = ref({}); // 차트 옵션 빈 객체 초기화
+
+const load = async () => {
+  try {
+    goalDetail.value = (await api.getGoal(id)).data;
+    rateList.value = await api.getGoalAccountRates(id);
+    goalProgress.value = await api.getGoalProgress(id);
+    console.log("Goal Progress Response:", goalProgress.value);
+  } catch (err) {
+    console.log("Goal API 호출 실패", err);
+  }
+};
 
 // Props (나중에 외부에서 넘기도록 할 수 있음)
-const goalTitle = ref("자가용 구매하기");
 const targetAmount = ref(5000);
 
 const accounts = ref([
@@ -122,5 +128,6 @@ const currentAmount = computed(() => {
 });
 
 const remainingAmount = computed(() => targetAmount.value - currentAmount.value);
-const progressPercentage = computed(() => Math.round((currentAmount.value / targetAmount.value) * 100));
+
+onMounted(load);
 </script>
