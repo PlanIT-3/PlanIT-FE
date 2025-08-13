@@ -103,14 +103,10 @@ const drawChart = () => {
   const canvas = chartCanvas.value;
   const ctx = canvas.getContext("2d");
 
-  // 고해상도 대응
-  const dpr = window.devicePixelRatio || 1;
   const rect = canvas.getBoundingClientRect();
-  canvas.width = rect.width * dpr;
-  canvas.height = rect.height * dpr;
-  ctx.scale(dpr, dpr);
+  canvas.width = rect.width;
+  canvas.height = rect.height;
 
-  // 캔버스 크기 설정
   const width = rect.width;
   const height = rect.height;
 
