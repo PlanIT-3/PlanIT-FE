@@ -1,7 +1,7 @@
 <template>
   <MainLayout :chart-option="chartOption" :total-balance="totalBalance" :goal-count="goalRatioData.length">
     <div>
-      <GoalSliderCard />
+      <GoalSliderCard :goal-list="goalListData" />
 
       <!-- Investment Status Section -->
       <div class="w-full bg-white rounded-2xl shadow-lg p-5">
@@ -81,6 +81,7 @@ import MainLayout from "@/components/layouts/MainLayout.vue";
 import GoalSliderCard from "@/components/goal/GoalSliderCard.vue";
 import Api from "@/api/mainApi";
 import mainApi from "@/api/mainApi";
+import goalApi from "@/api/goalApi";
 
 use([CanvasRenderer, PieChart, LineChart, TitleComponent, TooltipComponent, LegendComponent, GridComponent]);
 
@@ -95,6 +96,8 @@ const monthlyData = ref([]);
 // API에서 받아온 목표 비율 데이터
 const goalRatioData = ref([]);
 const totalBalance = ref(0);
+// 목표 리스트 데이터
+const goalListData = ref([]);
 
 // 일자 버튼 클릭 시 API 호출
 const fetchDailyData = async () => {
@@ -149,9 +152,22 @@ const fetchGoalRatioData = async () => {
   }
 };
 
+// 목표 리스트 데이터 API 호출
+const fetchGoalListData = async () => {
+  try {
+    const data = await goalApi.getGoalList();
+    if (data.status === "OK" && data.data) {
+      goalListData.value = data.data;
+    }
+  } catch (error) {
+    console.error("목표 리스트 데이터 불러오기 실패:", error);
+  }
+};
+
 // 페이지 로드 시 일자 데이터 자동 로드
 onMounted(() => {
   fetchDailyData();
+  fetchGoalListData();
   fetchGoalRatioData();
 });
 
