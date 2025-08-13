@@ -2,7 +2,9 @@
   <div class="w-full max-w-xl flex flex-col gap-4">
     <IsaTaxSavingStatus />
 
-    <GraphBoxNonPeriod title="ISA vs 일반 계좌 세금 비교"> 그래프 내용 </GraphBoxNonPeriod>
+    <GraphBoxNonPeriod title="ISA vs 일반 계좌 세금 비교">
+      <TaxComparisonChart />
+    </GraphBoxNonPeriod>
 
     <GraphBoxNonPeriod title="누적 절세 효과">
       <CumulativeTaxSavingsChart />
@@ -16,6 +18,7 @@ import GraphBox from "./GraphBox.vue";
 import GraphBoxNonPeriod from "./GraphBoxNonPeriod.vue";
 import IsaTaxSavingStatus from "./IsaTaxSavingStatus.vue";
 import CumulativeTaxSavingsChart from "./CumulativeTaxSavingsChart.vue";
+import TaxComparisonChart from "./TaxComparisonChart.vue";
 </script>
 
 <style scoped></style>

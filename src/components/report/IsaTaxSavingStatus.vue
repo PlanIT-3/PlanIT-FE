@@ -7,17 +7,7 @@
       <p class="text-xs text-gray-600">2024년 연간 한도 {{ formatAmount(taxData.maxTaxSavingLimit) }} 중 사용 현황</p>
     </div>
 
-    <div v-if="loading" class="flex items-center justify-center py-8">
-      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      <span class="ml-3 text-gray-600">데이터를 불러오는 중...</span>
-    </div>
-
-    <div v-else-if="error" class="text-center py-8">
-      <p class="text-red-600 mb-2">⚠️ 데이터를 불러오는데 실패했습니다</p>
-      <button @click="fetchTaxData" class="text-blue-600 hover:text-blue-800 underline">다시 시도</button>
-    </div>
-
-    <div v-else class="space-y-4">
+    <div v-if="!loading && !error" class="space-y-4">
       <!-- 사용 금액 라벨 -->
       <div class="mb-2 flex justify-between items-center">
         <span class="text-xs font-medium text-gray-700">사용 금액</span>
@@ -68,6 +58,7 @@
         </p>
       </div>
     </div>
+    <div v-else class="flex items-center justify-center h-32 text-gray-400">데이터를 불러오는 중...</div>
   </div>
 </template>
 

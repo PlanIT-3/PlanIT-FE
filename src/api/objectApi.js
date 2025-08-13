@@ -51,7 +51,30 @@ export default {
   async getGoalAccounts(goalId) {
     const { data } = await api.get(`${BASE_URL}/${goalId}/accounts`);
     console.log("API 계좌 목록 응답데이터 :", data);
-    return data.data;
+
+    // 예금 계좌와 ISA 계좌 데이터를 하나로 합치고 변환
+    const allAccounts = [
+      ...data.goalDepositList.map((account) => ({
+        bankName: account.bankName,
+        productName: account.accountName,
+        percent: 0, // 비율은 계산 필요
+        amount: Math.round(account.accountBalance), // 만원 단위로 변환
+      })),
+      ...data.goalIsaList.map((account) => ({
+        bankName: account.bankName,
+        productName: account.accountName,
+        percent: 0, // 비율은 계산 필요
+        amount: Math.round(account.accountBalance), // 만원 단위로 변환
+      })),
+    ];
+
+    // 총 금액 계산하여 비율 설정
+    const totalAmount = allAccounts.reduce((sum, acc) => sum + acc.amount, 0);
+    allAccounts.forEach((account) => {
+      account.percent = totalAmount > 0 ? Math.round((account.amount / totalAmount) * 100) : 0;
+    });
+
+    return allAccounts;
   },
 
   // 해당 목표 targetamount 조회
