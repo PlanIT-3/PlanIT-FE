@@ -23,7 +23,7 @@
       <button
         type="button"
         class="border border-gray-300 rounded-lg px-4 py-1 text-sm font-medium transition hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-200"
-        @click="goToDetail"
+        @click="emitDetail"
       >
         상세보기
       </button>
@@ -32,11 +32,6 @@
 </template>
 
 <script setup>
-import { useRouter } from "vue-router";
-
-const router = useRouter();
-
-// defineProps 반환값을 변수에 담아야 props 객체로 쓸 수 있음
 const props = defineProps({
   title: String,
   ratio: String,
@@ -46,7 +41,9 @@ const props = defineProps({
   shortenCode: String,
 });
 
-function goToDetail() {
-  router.push(`/product/${props.shortenCode}`);
+const emit = defineEmits(["showDetail"]);
+
+function emitDetail() {
+  emit("showDetail", props.shortenCode);
 }
 </script>

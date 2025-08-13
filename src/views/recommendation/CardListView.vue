@@ -9,19 +9,21 @@
       :risk="item.investType"
       :riskVariant="getRiskVariant(item.investType)"
       :shortenCode="item.shortenCode"
+      @showDetail="handleShowDetail"
     />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, defineEmits } from "vue";
 import Card from "@/components/recommendation/Card.vue";
 import productApi from "@/api/productApi";
+
+const emit = defineEmits(["showDetail"]); // 부모 컴포넌트에 이벤트 전달용
 
 const recommendList = ref([]);
 
 function getRiskVariant(investType) {
-  // 백엔드 investType 값이 영어(SAFE, MODERATE, AGGRESSIVE)이므로 변환 필요
   switch (investType) {
     case "SAFE":
       return "two";
@@ -37,10 +39,13 @@ function getRiskVariant(investType) {
 onMounted(async () => {
   try {
     const res = await productApi.getRecommendList();
-    // API가 data.data 형태로 오면 아래처럼 처리
     recommendList.value = res.data || res;
   } catch (error) {
     console.error("추천 상품 불러오기 실패:", error);
   }
 });
+
+function handleShowDetail(srtnCd) {
+  emit("showDetail", srtnCd); // 상위 컴포넌트로 이벤트 전달
+}
 </script>
