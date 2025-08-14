@@ -109,6 +109,12 @@ const fetchDailyData = async () => {
     }
   } catch (error) {
     console.error("일별 데이터 불러오기 실패:", error);
+    // 인증 관련 에러인 경우 처리
+    if (error.response?.status === 401) {
+      console.warn("인증이 필요합니다. 로그인 페이지로 이동합니다.");
+      // 에러를 다시 던져서 API 인터셉터가 처리하도록 함
+      throw error;
+    }
   }
 };
 
@@ -122,6 +128,11 @@ const fetchWeeklyData = async () => {
     }
   } catch (error) {
     console.error("주별 데이터 불러오기 실패:", error);
+    // 인증 관련 에러인 경우 처리
+    if (error.response?.status === 401) {
+      console.warn("인증이 필요합니다. 로그인 페이지로 이동합니다.");
+      throw error;
+    }
   }
 };
 
@@ -135,6 +146,11 @@ const fetchMonthlyData = async () => {
     }
   } catch (error) {
     console.error("월별 데이터 불러오기 실패:", error);
+    // 인증 관련 에러인 경우 처리
+    if (error.response?.status === 401) {
+      console.warn("인증이 필요합니다. 로그인 페이지로 이동합니다.");
+      throw error;
+    }
   }
 };
 
@@ -149,6 +165,11 @@ const fetchGoalRatioData = async () => {
     }
   } catch (error) {
     console.error("목표 비율 데이터 불러오기 실패:", error);
+    // 인증 관련 에러인 경우 처리
+    if (error.response?.status === 401) {
+      console.warn("인증이 필요합니다. 로그인 페이지로 이동합니다.");
+      throw error;
+    }
   }
 };
 
@@ -164,7 +185,7 @@ const fetchGoalListData = async () => {
   }
 };
 
-// 페이지 로드 시 일자 데이터 자동 로드
+
 onMounted(() => {
   fetchDailyData();
   fetchGoalListData();

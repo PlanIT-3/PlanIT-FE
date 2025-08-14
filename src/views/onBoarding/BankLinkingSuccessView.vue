@@ -1,11 +1,35 @@
 <script setup>
+import { computed } from "vue";
 import GoBackButton from "@/components/base/GoBackButton.vue";
+import OnboardingProgress from "@/components/onBoarding/OnboardingProgress.vue";
+
+// props로 은행과 증권 배열 데이터를 받음
+const props = defineProps({
+  bankData: {
+    type: Array,
+    default: () => [],
+  },
+  securitiesData: {
+    type: Array,
+    default: () => [],
+  },
+});
+
+// 은행 배열 + 증권 배열의 총 개수로 단계 수 계산
+const totalSteps = computed(() => props.bankData.length + props.securitiesData.length);
+const completedSteps = totalSteps; // 모든 단계 완료
 </script>
 
 <template>
   <div class="flex flex-col items-center justify-center min-h-screen bg-white">
     <GoBackButton />
     <div class="h-10"></div>
+
+    <!-- 프로그레스 바 추가 -->
+    <OnboardingProgress :total-steps="totalSteps" :completed-steps="completedSteps" />
+
+    <div class="h-8"></div>
+
     <svg
       xmlns="http://www.w3.org/2000/svg"
       fill="none"

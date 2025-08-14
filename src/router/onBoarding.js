@@ -6,9 +6,27 @@ export default [
     meta: { layout: "noHeader", requiresAuth: true },
   },
   {
+    path: "/certificate-select",
+    name: "certificate-select",
+    component: () => import("../views/onBoarding/CertificateSelectView.vue"),
+    meta: { layout: "noHeader", requiresAuth: true },
+  },
+  {
     path: "/bank-login",
     name: "bankLogin",
     component: () => import("../views/onBoarding/BankLoginView.vue"),
+    meta: { layout: "noHeader", requiresAuth: true },
+  },
+  {
+    path: "/certificate-login",
+    name: "certificateLogin",
+    component: () => import("../views/onBoarding/CertificateLoginView.vue"),
+    meta: { layout: "noHeader", requiresAuth: true },
+  },
+  {
+    path: "/account-link-complete",
+    name: "accountLinkComplete",
+    component: () => import("../views/onBoarding/AccountLinkCompleteView.vue"),
     meta: { layout: "noHeader", requiresAuth: true },
   },
   {
@@ -49,5 +67,8 @@ export default [
   },
   {
     path: "/survey-result",
+    name: "surveyResult",
+    component: () => import("../views/onBoarding/InvestmentSurveyResult.vue"),
+    meta: { layout: "noHeader", requiresAuth: true },
   },
 ];

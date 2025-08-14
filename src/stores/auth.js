@@ -76,10 +76,18 @@ export const useAuthStore = defineStore("auth", () => {
   const getrefreshToken = () => state.value.token.refreshToken;
 
   const setToken = (accessToken, refreshToken = null) => {
-    state.value.token.accessToken = accessToken;
-    if (refreshToken !== null) {
-      state.value.token.refreshToken = refreshToken;
+    // 객체 형태로 전달된 경우 처리
+    if (typeof accessToken === "object" && accessToken !== null) {
+      state.value.token.accessToken = accessToken.accessToken || accessToken;
+      state.value.token.refreshToken = accessToken.refreshToken || refreshToken;
+    } else {
+      // 기존 방식 (개별 파라미터)
+      state.value.token.accessToken = accessToken;
+      if (refreshToken !== null) {
+        state.value.token.refreshToken = refreshToken;
+      }
     }
+
     // localStorage도 전체 auth 객체로 저장
     localStorage.setItem("auth", JSON.stringify(state.value));
     isLoggedIn.value = true;
