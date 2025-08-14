@@ -1,6 +1,7 @@
 <template>
   <DefaultLayout>
-    <div class="flex flex-col relative">
+    <!-- 메인 콘텐츠 -->
+    <div v-if="!isLoading" class="flex flex-col relative gap-4">
       <!-- 목표 헤더 섹션 -->
       <div class="w-full">
         <div class="flex items-center justify-between mb-4">
@@ -43,45 +44,67 @@
       </div>
 
       <!-- 목표에 할당된 계좌 섹션 -->
-      <div class="bg-white rounded-2xl shadow-sm mb-4 p-5">
-        <h3 class="text-lg font-semibold text-gray-800 mb-4">목표에 할당된 계좌</h3>
-        <GoalAssignedCard
-          v-for="(account, index) in accounts"
-          :key="index"
-          :bank-name="account.bankName"
-          :product-name="account.productName"
-          :percent="account.percent"
-          :amount="account.amount"
-          class="mb-3"
-        />
-      </div>
+      <div>
+        <div class="w-full">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4">목표에 할당된 계좌</h3>
+          <!-- 예금 계좌 -->
+          <GoalAssignedCard
+            v-for="(account, index) in depositAccounts"
+            :key="`deposit-${index}`"
+            :bank-name="account.bankName"
+            :product-name="account.productName"
+            :percent="Math.round((account.amount / (goalDetail.targetAmount || 1)) * 100)"
+            :amount="account.amount.toLocaleString()"
+            class="mb-3"
+          />
 
-      <!-- 목표 금액 및 저축액 요약 -->
-      <div class="bg-white rounded-2xl shadow-sm mb-4 p-5">
-        <div class="flex justify-between items-center mb-4">
-          <div>
-            <p class="text-sm text-gray-600">목표 금액</p>
-            <p class="text-2xl font-bold text-gray-800">{{ targetAmount }}만원</p>
-          </div>
-          <div class="text-right">
-            <p class="text-sm text-gray-600">현재 저축액</p>
-            <p class="text-2xl font-bold text-green-600">{{ currentAmount }}만원</p>
-          </div>
+          <!-- ISA 계좌 -->
+          <GoalIsaCard
+            v-for="(isa, index) in isaAccounts"
+            :key="`isa-${index}`"
+            :item-name="isa.itemName"
+            :present-amount="isa.presentAmount"
+            :quantity="isa.quantity"
+            :isa-balance="isa.isaBalance"
+            :percent="Math.round((isa.isaBalance / (goalDetail.targetAmount || 1)) * 100)"
+            class="mb-3"
+          />
         </div>
-        <div class="border-t pt-4">
-          <div class="flex justify-between items-center">
-            <p class="text-sm font-medium text-gray-700">목표 금액까지</p>
-            <p class="text-xl font-bold text-blue-600">{{ remainingAmount }}만원</p>
+
+        <!-- 목표 금액 및 저축액 요약 -->
+        <div class="bg-white rounded-2xl p-5">
+          <div class="flex justify-between items-center mb-2">
+            <div>
+              <p class="text-xs text-gray-600">목표 금액</p>
+              <p class="text-lg font-semibold text-gray-800">{{ goalDetail.targetAmount?.toLocaleString() }}원</p>
+            </div>
+            <div class="text-right">
+              <p class="text-xs text-gray-600">현재 저축액</p>
+              <p class="text-lg font-semibold text-green-600">{{ currentAmount.toLocaleString() }}원</p>
+            </div>
+          </div>
+          <div class="border-t border-gray-300 pt-2 w-full">
+            <div class="flex justify-between items-center">
+              <p class="text-xs font-medium text-gray-700">목표 금액까지</p>
+              <p class="text-lg font-semibold text-blue-600">{{ remainingAmount?.toLocaleString() }}원</p>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- 목표 진행 요약 및 차트 -->
-      <div class="bg-white rounded-2xl shadow-sm mb-4 p-5 h-90">
-        <h3 class="text-lg font-semibold text-gray-800 mb-4">목표 진행 추이</h3>
+      <div class="w-full">
+        <h3 class="text-lg font-semibold text-gray-800">목표 진행 추이</h3>
         <GoalProgress :progressData="goalProgress"></GoalProgress>
       </div>
       <!-- <GoalProgressAdvice :goalId="id" /> -->
+    </div>
+
+    <!-- 로딩 -->
+    <div v-else>
+      <div class="flex justify-center items-center h-24">
+        <div class="w-6 h-6 border-3 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+      </div>
     </div>
   </DefaultLayout>
 </template>
@@ -89,6 +112,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from "vue";
 import GoalAssignedCard from "@/components/manageGoal/GoalAssignedCard.vue";
+import GoalIsaCard from "@/components/manageGoal/GoalIsaCard.vue";
 import DefaultLayout from "@/components/layouts/DefaultLayout.vue";
 import GoalProgress from "./GoalProgress.vue";
 import GoalProgressAdvice from "@/components/goal/GoalProgressAdvice.vue";
@@ -107,36 +131,44 @@ const id = cr.params.id; //라우터 경로 변수
 
 const goalDetail = ref({});
 const rateList = ref();
-
 const goalProgress = ref([]); // api 응답 데이터 배열
+const accounts = ref([]);
+const depositAccounts = ref([]);
+const isaAccounts = ref([]);
+const isLoading = ref(true); // 로딩 상태
 
 const investmentChartOption = ref({}); // 차트 옵션 빈 객체 초기화
 
 const load = async () => {
   try {
+    isLoading.value = true;
+
     goalDetail.value = (await api.getGoal(id)).data;
     rateList.value = await api.getGoalAccountRates(id);
     goalProgress.value = await api.getGoalProgress(id);
+    accounts.value = await api.getGoalAccounts(id);
+
+    // 새로운 API로 예금과 ISA 계좌 분리 조회
+    const accountsDetail = await api.getGoalAccountsDetail(id);
+    depositAccounts.value = accountsDetail.depositAccounts;
+    isaAccounts.value = accountsDetail.isaAccounts;
+
     console.log("Goal Progress Response:", goalProgress.value);
+    console.log("Accounts Data:", accounts.value);
   } catch (err) {
     console.log("Goal API 호출 실패", err);
+  } finally {
+    isLoading.value = false;
   }
 };
 
-// Props (나중에 외부에서 넘기도록 할 수 있음)
-const targetAmount = ref(5000);
-
-const accounts = ref([
-  { bankName: "토스", productName: "예금 · 주택청약", percent: 15, amount: 675 },
-  { bankName: "KB국민은행", productName: "적금 · 주택청약", percent: 60, amount: 2700 },
-  { bankName: "카카오뱅크", productName: "자유적금", percent: 25, amount: 1125 },
-]);
-
 const currentAmount = computed(() => {
-  return accounts.value.reduce((sum, acc) => sum + acc.amount, 0);
+  const depositAmount = depositAccounts.value.reduce((sum, acc) => sum + acc.amount, 0);
+  const isaAmount = isaAccounts.value.reduce((sum, acc) => sum + acc.isaBalance, 0);
+  return depositAmount + isaAmount;
 });
 
-const remainingAmount = computed(() => targetAmount.value - currentAmount.value);
+const remainingAmount = computed(() => (goalDetail.value?.targetAmount || 0) - currentAmount.value);
 
 onMounted(load);
 </script>
