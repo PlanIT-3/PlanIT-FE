@@ -80,7 +80,7 @@ import MainLayout from "@/components/layouts/MainLayout.vue";
 import GoalSliderCard from "@/components/goal/GoalSliderCard.vue";
 import InvestmentStatusChart from "@/components/investment/InvestmentStatusChart.vue";
 import mainApi from "@/api/mainApi";
-import goalApi from "@/api/goalApi";
+import goalApi from "@/api/objectApi";
 
 use([CanvasRenderer, PieChart, TitleComponent, TooltipComponent, LegendComponent]);
 

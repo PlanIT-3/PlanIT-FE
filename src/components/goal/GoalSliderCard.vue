@@ -138,7 +138,7 @@ import { LineChart } from "echarts/charts";
 import { TooltipComponent, LegendComponent, GridComponent } from "echarts/components";
 
 import GoalCard from "@/components/goal/GoalCard.vue";
-import goalApi from "@/api/goalApi";
+import goalApi from "@/api/objectApi";
 
 use([CanvasRenderer, LineChart, TooltipComponent, LegendComponent, GridComponent]);
 
