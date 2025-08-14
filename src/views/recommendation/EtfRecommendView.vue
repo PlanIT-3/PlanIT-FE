@@ -17,7 +17,7 @@
         v-if="showDetail && selectedProduct"
         :product="selectedProduct"
         @close="closeDetail"
-        class="absolute top-[-70px] left-[-15px] w-80 h-full bg-white shadow-lg z-20"
+        class="absolute top-[-112px] left-[-15px] w-80 h-[704px] bg-white shadow-lg z-20"
       />
     </transition>
   </div>
@@ -65,5 +65,34 @@ function closeDetail() {
 }
 .slide-left-leave-to {
   transform: translateX(-100%); /* 왼쪽으로 사라짐 */
+}
+
+/* 커스텀 스크롤바 스타일 */
+.custom-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+}
+
+.custom-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scroll::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 2px;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.5);
+  border-radius: 2px;
+  transition: background-color 0.2s ease;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.8);
+}
+
+.custom-scroll::-webkit-scrollbar-corner {
+  background: transparent;
 }
 </style>

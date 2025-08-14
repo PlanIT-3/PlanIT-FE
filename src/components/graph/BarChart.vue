@@ -22,7 +22,7 @@ const props = defineProps({
   },
 });
 
-const colors = ["#4a90e2", "#7ed6df", "#f6b93b"];
+const colors = ["#4a90e2", "#eeeeee", "#5D00A8"];
 
 // 🔹 데이터 변환 (마지막 값 = 100 - 합계)
 const transformedData = computed(() => {
@@ -66,13 +66,14 @@ const options = computed(() => ({
   series: transformedData.value.map((item, index) => {
     const isFirst = index === 0;
     const isLast = index === transformedData.value.length - 1;
+    const isRemaining = item.name === "남은 비율";
     return {
       name: item.name,
       type: "bar",
       stack: "total",
       data: [item.value],
       itemStyle: {
-        color: colors[index % colors.length],
+        color: isRemaining ? "#eeeeee" : (index < 2 ? colors[index] : colors[2]),
         borderRadius: isFirst ? [6, 0, 0, 6] : isLast ? [0, 6, 6, 0] : 0,
       },
     };
