@@ -5,7 +5,15 @@
       <div class="w-full">
         <div class="flex items-center justify-between mb-4">
           <h1 class="text-xl font-bold text-gray-900">나의 목표</h1>
-          <button class="p-2 rounded-lg hover:bg-gray-100">
+          <button
+            class="p-2 rounded-lg hover:bg-gray-100"
+            @click="
+              router.push({
+                path: '/goal/edit',
+                query: { goalId: id },
+              })
+            "
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               class="h-5 w-5 text-gray-600"
