@@ -151,6 +151,7 @@ import { useRoute, useRouter } from "vue-router";
 import DefaultLayout from "@/components/layouts/DefaultLayout.vue";
 import AddRegisterModal from "./AddRegisterModal.vue";
 import Api from "@/api/objectApi";
+import isaApi from "@/api/isaApi";
 
 const route = useRoute();
 const router = useRouter();
@@ -197,6 +198,27 @@ const requiredFilled = computed(
     !!endDate.value
 );
 
+const fetchIsaChecked = async (gid) => {
+  try {
+    const res = await isaApi.getIsaProductsForEdit(gid);
+    const list = res?.data ?? res;
+    const rows = Array.isArray(list?.data) ? list.data : Array.isArray(list) ? list : [];
+
+    // checked=true만 필터 → 화면에서 쓰는 필드로 매핑
+    isaProducts.value = rows
+      .filter((r) => !!r.checked)
+      .map((r) => ({
+        memberProductId: Number(r.memberProductId),
+        itemName: r.itemName ?? "",
+        presentAmount: Number(r.presentAmount) || 0,
+        quantity: Number(r.quantity) || 0,
+      }));
+  } catch (e) {
+    console.error("ISA 목록불러오기 실패:", e);
+    isaProducts.value = [];
+  }
+};
+
 //완료 버튼 활성 조건 2 : isa 나 예적금 할당하기
 const hasAnyAllocation = computed(
   () => (isaProducts.value?.length || 0) > 0 || (depositAccounts.value?.length || 0) > 0
@@ -233,9 +255,8 @@ const fetchGoalDetails = async (id) => {
       endDate.value = (goalData.endDate ?? "").toString().slice(0, 10);
     }
 
-    // 할당된 배열 가져오기
-    isaProducts.value = goalData.isaProducts ?? goalData.isaAllocations ?? [];
     depositAccounts.value = goalData.depositAccounts ?? goalData.depositAllocations ?? [];
+    await fetchIsaChecked(id);
   } catch (error) {
     console.error("목표 상세 정보 불러오기 실패:", error);
   }
@@ -244,11 +265,12 @@ const fetchGoalDetails = async (id) => {
 // 라우터 쿼리 감지()
 watch(
   () => route.query.goalId,
-  (newId) => {
+  async (newId) => {
     const id = Number(newId ?? localStorage.getItem("currentGoalId"));
     if (id && !Number.isNaN(id)) {
       goalId.value = id;
-      fetchGoalDetails(id);
+      await fetchIsaChecked(id);
+      await fetchGoalDetails(id);
     }
   },
   { immediate: true } //처음 마운트 될 때도 바로 한번 실행

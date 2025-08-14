@@ -242,7 +242,7 @@ async function handleSubmit() {
         localStorage.removeItem("amount");
         router.push({
           path: "/goal/edit",
-          query: { goalId: goalId },
+          query: { goalId: goalId.value },
         });
       } else {
         alert("오류 : " + data.message);
