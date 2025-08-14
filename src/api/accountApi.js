@@ -1,5 +1,36 @@
 import api from "@/api";
 
+// 계좌 정보 조회 API
+export const getAccounts = async () => {
+  try {
+    console.log("🚀 계좌 정보 조회 API 호출 시작");
+    const response = await api.get("/auth/api/account");
+    console.log("✅ 계좌 정보 조회 API 응답 성공:", response);
+
+    // 응답값 구조에 맞춰 success 판단
+    const isSuccess = response.data?.code === "GEN-000" && response.data?.status === "OK";
+    console.log("🎯 성공 여부:", isSuccess);
+
+    return {
+      success: isSuccess,
+      data: response.data?.data,
+      accounts: response.data?.data?.accounts || [],
+      status: response.status,
+    };
+  } catch (error) {
+    console.error("❌ 계좌 정보 조회 API 에러:", error);
+    console.error("❌ 에러 응답:", error.response);
+    console.error("❌ 에러 상태:", error.response?.status);
+    console.error("❌ 에러 데이터:", error.response?.data);
+    return {
+      success: false,
+      error: error.response?.data || error.message,
+      status: error.response?.status,
+      accounts: [],
+    };
+  }
+};
+
 // 계정 등록 API
 export const registerAccount = async (accountData) => {
   try {
@@ -45,7 +76,7 @@ export const registerAccount = async (accountData) => {
 };
 
 // 여러 계정 일괄 등록
-export const registerMultipleAccounts = async (id, password, banks = [], securities = [], organization = "0088") => {
+export const registerMultipleAccounts = async (id, password, banks = [], securities = [], organization = "0088", isRural = null) => {
   const results = [];
   let completedCount = 0;
   const totalAccounts = banks.length + securities.length;
@@ -78,6 +109,7 @@ export const registerMultipleAccounts = async (id, password, banks = [], securit
           id: id,
           password: password,
           birthDate: "000816",
+          isRural: null, // 은행은 항상 null
         },
         last: isLast,
       };
@@ -117,6 +149,7 @@ export const registerMultipleAccounts = async (id, password, banks = [], securit
           id: id,
           password: password,
           birthDate: "000816",
+          isRural: isRural, // 증권사는 전달받은 값 사용
         },
         last: isLast,
       };
