@@ -6,14 +6,19 @@
           <h1 class="text-xl font-bold m-0">연결된 계좌 관리</h1>
         </div>
 
+        <!-- 로딩 상태 -->
+        <div v-if="isLoading" class="flex justify-center items-center py-8">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#433D8B]"></div>
+        </div>
+
         <!-- 계좌 카드 -->
         <template v-for="(account, idx) in accounts" :key="account.accountNumber">
           <div class="relative flex items-center rounded-xl px-4 py-3 mb-3 shadow-sm w-full bg-gray-50">
             <div class="w-10 h-10 flex items-center justify-center rounded-full mr-3">
-              <img :src="getBankIcon(account.bank)" :alt="account.bank" class="w-10 h-10" />
+              <img :src="getBankIcon(account.organization)" :alt="account.organization" class="w-10 h-10" />
             </div>
             <div class="flex-1">
-              <div class="font-semibold text-base">{{ account.bank }}</div>
+              <div class="font-semibold text-base">{{ account.organization }}</div>
               <div class="text-gray-400 text-sm">{{ account.accountNumber }}</div>
             </div>
             <svg
@@ -23,23 +28,7 @@
               stroke-width="1.5"
               viewBox="0 0 24 24"
               @click="openDeleteModal(idx)"
-            >
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6" />
-            </svg>
-
-            <!-- 삭제 모달/툴팁 -->
-            <div
-              v-if="showDeleteIdx === idx"
-              class="absolute right-8 top-1/2 -translate-y-1/2 bg-white border border-gray-200 rounded-lg shadow-lg px-4 py-3 z-50 flex flex-col items-center"
-              style="min-width: 120px"
-            >
-              <div class="flex gap-2">
-                <button class="text-red-500 px-2 py-1 rounded hover:bg-red-50" @click="deleteAccount(idx)">삭제</button>
-                <button class="text-gray-500 px-2 py-1 rounded hover:bg-gray-100" @click="closeDeleteModal">
-                  취소
-                </button>
-              </div>
-            </div>
+            ></svg>
           </div>
         </template>
         <!-- 새 계좌 연결하기 -->
@@ -55,23 +44,43 @@
 <script setup>
 import { ref, onMounted, nextTick } from "vue";
 import DefaultLayout from "@/components/layouts/DefaultLayout.vue";
+import { getAccounts } from "@/api/accountApi.js";
 
-const accounts = ref([
-  { bank: "KB국민은행", accountNumber: "****-****-1234" },
-  { bank: "신한은행", accountNumber: "****-****-5678" },
-  { bank: "카카오뱅크", accountNumber: "****-****-9012" },
-  { bank: "하나은행", accountNumber: "****-****-3456" },
-]);
-
+const accounts = ref([]);
 const showDeleteIdx = ref(null);
+const isLoading = ref(false);
 
-const bankList = ["국민", "신한", "카카오뱅크", "하나"];
 // 은행 아이콘 svg를 glob으로 모두 import
 const bankIcons = import.meta.glob("@/assets/icons/bank/*.svg", { eager: true, as: "url" });
+// 증권사 아이콘도 import
+const securityIcons = import.meta.glob("@/assets/icons/securities/*.{svg,png}", { eager: true, as: "url" });
 
 onMounted(async () => {
   await nextTick(); // accounts 렌더 후 실행
+  await fetchAccounts();
 });
+
+// API에서 계좌 정보 가져오기
+async function fetchAccounts() {
+  try {
+    isLoading.value = true;
+    const result = await getAccounts();
+
+    if (result.success) {
+      accounts.value = result.accounts.map((account) => ({
+        organization: account.organization,
+        accountNumber: account.accountNumber,
+      }));
+      console.log("✅ 계좌 정보 로드 성공:", accounts.value);
+    } else {
+      console.error("❌ 계좌 정보 로드 실패:", result.error);
+    }
+  } catch (error) {
+    console.error("❌ 계좌 정보 로드 중 오류:", error);
+  } finally {
+    isLoading.value = false;
+  }
+}
 
 function openDeleteModal(idx) {
   // 이미 열려있는 경우 닫기(토글)
@@ -89,12 +98,31 @@ function deleteAccount(idx) {
   closeDeleteModal();
 }
 
-function getBankIcon(bank) {
-  // 파일명과 bank명이 일치해야 함 (예: 국민.svg)
-  const match = Object.entries(bankIcons).find(([path]) => path.includes(`/${bank}.svg`));
+function getBankIcon(organization) {
+  // 은행 아이콘 먼저 찾기
+  let match = Object.entries(bankIcons).find(([path]) => {
+    const fileName = path
+      .split("/")
+      .pop()
+      .replace(/\.(svg|png)$/, "");
+    return organization.includes(fileName) || fileName.includes(organization);
+  });
+
   if (match) return match[1];
-  // 없으면 카카오뱅크 기본
-  const fallback = Object.entries(bankIcons).find(([path]) => path.includes("/카카오뱅크.svg"));
+
+  // 증권사 아이콘 찾기
+  match = Object.entries(securityIcons).find(([path]) => {
+    const fileName = path
+      .split("/")
+      .pop()
+      .replace(/\.(svg|png)$/, "");
+    return organization.includes(fileName) || fileName.includes(organization);
+  });
+
+  if (match) return match[1];
+
+  // 없으면 기본 아이콘 (KB국민은행)
+  const fallback = Object.entries(bankIcons).find(([path]) => path.includes("/KB국민은행.svg"));
   return fallback ? fallback[1] : "";
 }
 </script>

@@ -9,6 +9,28 @@ import LoadingModal from "@/components/common/LoadingModal.vue";
 import BankLoginProgress from "@/components/onBoarding/BankLoginProgress.vue";
 import { registerMultipleAccounts } from "@/api/accountApi.js";
 
+// 증권사 아이콘들을 직접 import (실제로 존재하는 파일들만)
+import YuantaIcon from "@/assets/icons/securities/유안타.svg";
+import MiraeIcon from "@/assets/icons/securities/미래에셋.svg";
+import KoreaInvestmentIcon from "@/assets/icons/securities/한국투자.svg";
+import KyoboIcon from "@/assets/icons/securities/교보.png";
+import LSIcon from "@/assets/icons/securities/LS.svg";
+import DaishinIcon from "@/assets/icons/securities/대신.svg";
+import HanwhaIcon from "@/assets/icons/securities/한화.svg";
+import ShinhanInvestmentIcon from "@/assets/icons/securities/신한투자.png";
+import EugeneIcon from "@/assets/icons/securities/유진.svg";
+import NHInvestmentIcon from "@/assets/icons/securities/NH투자.png";
+import IBKInvestmentIcon from "@/assets/icons/securities/IBK투자.svg";
+import KBIcon from "@/assets/icons/securities/KB.png";
+import SamsungIcon from "@/assets/icons/securities/삼성.png";
+import KiwoomIcon from "@/assets/icons/securities/키움.svg";
+import SKIcon from "@/assets/icons/securities/SK.svg";
+import HanaIcon from "@/assets/icons/securities/하나.svg";
+import DBIcon from "@/assets/icons/securities/DB.svg";
+import MeritzIcon from "@/assets/icons/securities/메리츠.png";
+import HiIcon from "@/assets/icons/securities/하이투자.png";
+import DaolIcon from "@/assets/icons/securities/다올.png";
+
 const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
@@ -24,6 +46,46 @@ const completedSecurities = ref([]); // 완료된 증권사들
 const errorModal = ref(null); // 에러 모달 참조
 const errorMessage = ref(""); // 에러 메시지
 const isLoading = ref(false); // 로딩 상태
+const isRuralCheck = ref(false); // 농어촌 체크 상태
+const imageLoadError = ref(false); // 이미지 로딩 에러 상태
+
+// 증권사명을 아이콘으로 매핑하는 함수
+function getSecurityIconByName(securityName) {
+  const securityIconMap = {
+    유안타증권: YuantaIcon,
+    미래에셋증권: MiraeIcon,
+    한국투자증권: KoreaInvestmentIcon,
+    교보증권: KyoboIcon,
+    LS증권: LSIcon,
+    대신증권: DaishinIcon,
+    한화투자증권: HanwhaIcon,
+    신한금융투자: ShinhanInvestmentIcon,
+    유진투자증권: EugeneIcon,
+    NH투자증권: NHInvestmentIcon,
+    IBK투자증권: IBKInvestmentIcon,
+    KB증권: KBIcon,
+    삼성증권: SamsungIcon,
+    키움증권: KiwoomIcon,
+    SK증권: SKIcon,
+    하나금융투자: HanaIcon,
+    DB금융투자: DBIcon,
+    메리츠종합금융증권: MeritzIcon,
+    하이투자증권: HiIcon,
+    다올투자증권: DaolIcon,
+  };
+
+  try {
+    const iconPath = securityIconMap[securityName];
+    if (iconPath) {
+      return iconPath;
+    }
+  } catch (error) {
+    console.warn("증권사 아이콘 경로 처리 중 오류:", error);
+  }
+
+  // 기본값으로 KB 로고 반환
+  return KBIcon;
+}
 
 // 한국어 순으로 정렬하는 함수
 function sortByKoreanOrder(array) {
@@ -102,8 +164,32 @@ const isLastSecurity = computed(() => {
   return currentSecurityIndex.value === selectedSecurities.value.length - 1;
 });
 
+// 현재 처리 중인 증권사의 아이콘 URL
+const currentSecurityIcon = computed(() => {
+  if (selectedSecurities.value.length > 0) {
+    const security = selectedSecurities.value[currentSecurityIndex.value];
+    return getSecurityIconByName(security);
+  }
+  return KBIcon; // 기본값
+});
+
+// 이미지 로딩 에러 처리
+function handleImageError() {
+  console.warn("증권사 로고 이미지 로딩 실패:", currentSecurityIcon.value);
+  imageLoadError.value = true;
+}
+
+// 이미지 로딩 성공 처리
+function handleImageLoad() {
+  console.log("증권사 로고 이미지 로딩 성공:", currentSecurityIcon.value);
+  imageLoadError.value = false;
+}
+
 onMounted(() => {
   console.log("CertificateLoginView 마운트됨");
+
+  // 이미지 에러 상태 초기화
+  imageLoadError.value = false;
 
   // 쿼리 파라미터에서 선택된 은행과 증권사 파싱
   if (route.query.selectedBanks) {
@@ -181,7 +267,8 @@ async function login() {
       [], // 은행은 이미 완료됨
       [currentSecurityName.value], // 현재 증권사만
       currentSecurityCode.value, // 증권사 organization ID
-      isLastSecurity.value // 마지막 증권사일 때만 true
+      isLastSecurity.value, // 마지막 증권사일 때만 true
+      isRuralCheck.value // 농어촌 체크 상태
     );
 
     console.log("📊 API 결과:", result);
@@ -294,8 +381,19 @@ async function login() {
     <h2 class="text-2xl font-semibold text-center mb-3 mt-6">증권사 로그인</h2>
     <span class="text-sm text-center mb-6">실제 증권사 아이디와 비밀번호를 입력하세요.</span>
 
-    <!-- 증권사 로고 -->
-    <div class="w-24 h-24 mx-auto mb-8 bg-blue-500 rounded-full flex items-center justify-center">
+    <!-- 동적 증권사 로고 -->
+    <div v-if="!imageLoadError" class="w-24 h-24 mx-auto mb-8">
+      <img
+        :src="currentSecurityIcon"
+        :alt="currentSecurityName || '증권사 로고'"
+        class="w-full h-full"
+        @error="handleImageError"
+        @load="handleImageLoad"
+      />
+    </div>
+
+    <!-- 이미지 로딩 실패 시 기본 아이콘 -->
+    <div v-else class="w-24 h-24 mx-auto mb-8 bg-blue-500 rounded-full flex items-center justify-center">
       <span class="text-white text-2xl font-bold">
         {{ currentSecurityName.charAt(0) || "S" }}
       </span>
@@ -352,6 +450,17 @@ async function login() {
             />
           </svg>
         </button>
+      </div>
+
+      <!-- 농어촌 체크 옵션 -->
+      <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+        <input
+          v-model="isRuralCheck"
+          type="checkbox"
+          id="ruralCheck"
+          class="w-5 h-5 text-[#433D8B] bg-white border-gray-300 rounded focus:ring-[#433D8B] focus:ring-2"
+        />
+        <label for="ruralCheck" class="text-sm text-gray-700 cursor-pointer"> 농어촌 체크 </label>
       </div>
     </div>
 

@@ -261,7 +261,8 @@ async function login() {
       [currentBankName.value], // 현재 은행만
       [], // 증권사는 현재 은행 처리 후에
       getBankOrganizationId(currentBankName.value),
-      isLastBank.value // 마지막 은행일 때만 true
+      isLastBank.value, // 마지막 은행일 때만 true
+      null // 은행은 isRural을 null로 설정
     );
 
     console.log("📊 API 결과:", result);
