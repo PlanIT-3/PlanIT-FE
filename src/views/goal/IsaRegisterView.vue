@@ -10,9 +10,10 @@
       <div class="mb-4 w-full">
         <label class="block text-sm font-medium mb-1">ISA 계좌의 목표 금액(정확 비율의 금액)</label>
         <BaseTextInput
-          :model-value="isaGoalAmount"
-          type="number"
-          :placeholder="`${isaGoalAmount}만원`"
+          :model-value="isaGoalAmountRaw.toLocaleString()"
+          inputmode="numeric"
+          readonly
+          :placeholder="`${isaGoalAmountRaw.toLocaleString()}원`"
           class="w-full max-w-lg mb-3"
           disabled
         />
@@ -71,7 +72,7 @@
         :disabled="selectedTotal > isaGoalAmount"
         @click="handleSubmit"
       >
-        {{ isEditMode ? "ISA 계좌 할당 수정  " : "ISA 계좌 할당 완료" }}
+        {{ isEditMode ? "ISA 할당 수정 완료 " : "ISA 계좌 할당 완료" }}
       </button>
     </div>
   </DefaultLayout>
@@ -96,7 +97,7 @@ const route = useRoute();
 
 const goalId = ref(null);
 const isaGoalAmountRaw = ref(0); // 원 단위
-const isaGoalAmount = computed(() => Math.round(isaGoalAmountRaw.value / 10000));
+const isaGoalAmount = computed(() => Math.round(isaGoalAmountRaw.value / 10000)); //만원 단위
 
 onMounted(() => {
   goalId.value = Number(route.query.goalId);
