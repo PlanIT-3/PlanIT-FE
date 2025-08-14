@@ -122,8 +122,10 @@
             </span>
           </div>
           
+          <BarChart :data="getAccountAllocationData(account)" />
+          
           <!-- 범례 -->
-          <div class="grid grid-cols-1 gap-2 mb-3 text-xs">
+          <div class="grid grid-cols-1 gap-2 mt-2 text-xs">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-2">
                 <div class="w-3 h-3 rounded bg-gray-400"></div>
@@ -152,8 +154,6 @@
               </span>
             </div>
           </div>
-          
-          <BarChart :data="getAccountAllocationData(account)" />
         </div>
       </GraphsContainer>
 
