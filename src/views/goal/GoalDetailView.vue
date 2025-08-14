@@ -47,13 +47,26 @@
       <div>
         <div class="w-full">
           <h3 class="text-lg font-semibold text-gray-800 mb-4">목표에 할당된 계좌</h3>
+          <!-- 예금 계좌 -->
           <GoalAssignedCard
-            v-for="(account, index) in accounts"
-            :key="index"
+            v-for="(account, index) in depositAccounts"
+            :key="`deposit-${index}`"
             :bank-name="account.bankName"
             :product-name="account.productName"
-            :percent="account.percent"
+            :percent="Math.round((account.amount / (goalDetail.targetAmount || 1)) * 100)"
             :amount="account.amount.toLocaleString()"
+            class="mb-3"
+          />
+
+          <!-- ISA 계좌 -->
+          <GoalIsaCard
+            v-for="(isa, index) in isaAccounts"
+            :key="`isa-${index}`"
+            :item-name="isa.itemName"
+            :present-amount="isa.presentAmount"
+            :quantity="isa.quantity"
+            :isa-balance="isa.isaBalance"
+            :percent="Math.round((isa.isaBalance / (goalDetail.targetAmount || 1)) * 100)"
             class="mb-3"
           />
         </div>
@@ -99,6 +112,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from "vue";
 import GoalAssignedCard from "@/components/manageGoal/GoalAssignedCard.vue";
+import GoalIsaCard from "@/components/manageGoal/GoalIsaCard.vue";
 import DefaultLayout from "@/components/layouts/DefaultLayout.vue";
 import GoalProgress from "./GoalProgress.vue";
 import GoalProgressAdvice from "@/components/goal/GoalProgressAdvice.vue";
@@ -119,6 +133,8 @@ const goalDetail = ref({});
 const rateList = ref();
 const goalProgress = ref([]); // api 응답 데이터 배열
 const accounts = ref([]);
+const depositAccounts = ref([]);
+const isaAccounts = ref([]);
 const isLoading = ref(true); // 로딩 상태
 
 const investmentChartOption = ref({}); // 차트 옵션 빈 객체 초기화
@@ -128,9 +144,14 @@ const load = async () => {
     isLoading.value = true;
 
     goalDetail.value = (await api.getGoal(id)).data;
-    // rateList.value = await api.getGoalAccountRates(id);
-    // goalProgress.value = await api.getGoalProgress(id);
+    rateList.value = await api.getGoalAccountRates(id);
+    goalProgress.value = await api.getGoalProgress(id);
     accounts.value = await api.getGoalAccounts(id);
+
+    // 새로운 API로 예금과 ISA 계좌 분리 조회
+    const accountsDetail = await api.getGoalAccountsDetail(id);
+    depositAccounts.value = accountsDetail.depositAccounts;
+    isaAccounts.value = accountsDetail.isaAccounts;
 
     console.log("Goal Progress Response:", goalProgress.value);
     console.log("Accounts Data:", accounts.value);
@@ -141,17 +162,10 @@ const load = async () => {
   }
 };
 
-// Props (나중에 외부에서 넘기도록 할 수 있음)
-const targetAmount = ref(5000);
-
-const accounts = ref([
-  { bankName: "토스", productName: "예금 · 주택청약", percent: 15, amount: 675 },
-  { bankName: "KB국민은행", productName: "적금 · 주택청약", percent: 60, amount: 2700 },
-  { bankName: "카카오뱅크", productName: "자유적금", percent: 25, amount: 1125 },
-]);
-
 const currentAmount = computed(() => {
-  return accounts.value.reduce((sum, acc) => sum + acc.amount, 0);
+  const depositAmount = depositAccounts.value.reduce((sum, acc) => sum + acc.amount, 0);
+  const isaAmount = isaAccounts.value.reduce((sum, acc) => sum + acc.isaBalance, 0);
+  return depositAmount + isaAmount;
 });
 
 const remainingAmount = computed(() => (goalDetail.value?.targetAmount || 0) - currentAmount.value);
