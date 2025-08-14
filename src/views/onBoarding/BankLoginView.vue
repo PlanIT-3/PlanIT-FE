@@ -4,29 +4,33 @@ import { useRouter, useRoute } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import Button from "@/components/base/Button.vue";
 import GoBackButton from "@/components/base/GoBackButton.vue";
+import BaseModal from "@/components/base/BaseModal.vue";
+import LoadingModal from "@/components/common/LoadingModal.vue";
 import OnboardingProgress from "@/components/onBoarding/OnboardingProgress.vue";
 import BankLoginProgress from "@/components/onBoarding/BankLoginProgress.vue";
 import { registerMultipleAccounts } from "@/api/accountApi.js";
 
 // SVG 아이콘들을 직접 import (실제로 존재하는 파일들만)
-import KBIcon from "@/assets/icons/bank/KB.svg";
-import ShinhanIcon from "@/assets/icons/bank/신한.svg";
-import HanaIcon from "@/assets/icons/bank/하나.svg";
-import WooriIcon from "@/assets/icons/bank/우리.svg";
-import KakaoIcon from "@/assets/icons/bank/카카오뱅크.svg";
+import KBIcon from "@/assets/icons/bank/KB국민은행.svg";
+import ShinhanIcon from "@/assets/icons/bank/신한은행.svg";
+import HanaIcon from "@/assets/icons/bank/하나은행.svg";
+import WooriIcon from "@/assets/icons/bank/우리은행.svg";
 import KBankIcon from "@/assets/icons/bank/케이뱅크.svg";
-import IBKIcon from "@/assets/icons/bank/IBK.svg";
-import NHIcon from "@/assets/icons/bank/농협.svg";
-import SCIcon from "@/assets/icons/bank/SC제일.svg";
-import BNKIcon from "@/assets/icons/bank/BNK.svg";
-import GwangjuIcon from "@/assets/icons/bank/광주.svg";
-import SaemaulIcon from "@/assets/icons/bank/MG새마을금고.svg";
-import CitiIcon from "@/assets/icons/bank/씨티.svg";
-import ShIcon from "@/assets/icons/bank/Sh수협.svg";
-import TossIcon from "@/assets/icons/bank/토스.svg";
-import KoreaIcon from "@/assets/icons/bank/한국투자.svg";
+import IBKIcon from "@/assets/icons/bank/IBK기업은행.svg";
+import NHIcon from "@/assets/icons/bank/농협은행.svg";
+import SCIcon from "@/assets/icons/bank/SC제일은행.svg";
+import BNKIcon from "@/assets/icons/bank/부산은행.svg";
+import GwangjuIcon from "@/assets/icons/bank/광주은행.svg";
+import SaemaulIcon from "@/assets/icons/bank/새마을금고.svg";
+import CitiIcon from "@/assets/icons/bank/한국씨티은행.svg";
+import ShIcon from "@/assets/icons/bank/수협은행.svg";
+import KoreaIcon from "@/assets/icons/bank/한국산업은행.svg";
 import ShinhyupIcon from "@/assets/icons/bank/신협.svg";
 import PostIcon from "@/assets/icons/bank/우체국.svg";
+import DaeguIcon from "@/assets/icons/bank/대구은행.svg";
+import JejuIcon from "@/assets/icons/bank/제주은행.svg";
+import JeonbukIcon from "@/assets/icons/bank/전북은행.svg";
+import GyeongnamIcon from "@/assets/icons/bank/경남은행.svg";
 
 const router = useRouter();
 const route = useRoute();
@@ -40,6 +44,24 @@ const isLoggingIn = ref(false);
 const currentBankIndex = ref(0); // 현재 처리 중인 은행 인덱스
 const completedBanks = ref([]); // 완료된 은행들
 const imageLoadError = ref(false); // 이미지 로딩 에러 상태
+const errorModal = ref(null); // 에러 모달 참조
+const errorMessage = ref(""); // 에러 메시지
+const isLoading = ref(false); // 로딩 상태
+
+// 한국어 순으로 정렬하는 함수
+function sortByKoreanOrder(array) {
+  return [...array].sort((a, b) => {
+    // 한국어가 영어보다 앞에 오도록
+    const aIsKorean = /[가-힣]/.test(a);
+    const bIsKorean = /[가-힣]/.test(b);
+
+    if (aIsKorean && !bIsKorean) return -1;
+    if (!aIsKorean && bIsKorean) return 1;
+
+    // 둘 다 한국어이거나 둘 다 영어인 경우 사전순 정렬
+    return a.localeCompare(b, "ko");
+  });
+}
 
 // 이미지 로딩 에러 처리
 function handleImageError() {
@@ -53,6 +75,12 @@ function handleImageLoad() {
   imageLoadError.value = false;
 }
 
+// 에러 모달 닫기
+function closeErrorModal() {
+  errorModal.value = null;
+  errorMessage.value = "";
+}
+
 // 은행명을 파일명으로 매핑하는 함수
 function getBankIconByName(bankName) {
   const bankIconMap = {
@@ -60,25 +88,22 @@ function getBankIconByName(bankName) {
     신한은행: ShinhanIcon,
     하나은행: HanaIcon,
     우리은행: WooriIcon,
-    카카오뱅크: KakaoIcon,
     케이뱅크: KBankIcon,
     IBK기업은행: IBKIcon,
-    NH농협은행: NHIcon,
+    농협은행: NHIcon,
     SC제일은행: SCIcon,
-    BNK부산은행: BNKIcon,
-    BNK경남은행: BNKIcon,
+    부산은행: BNKIcon,
+    경남은행: BNKIcon,
     광주은행: GwangjuIcon,
-    제주은행: GwangjuIcon, // 제주은행은 광주은행 아이콘 사용
+    제주은행: JejuIcon,
     새마을금고: SaemaulIcon,
-    씨티은행: CitiIcon,
-    지역농협: NHIcon,
-    iM뱅크: ShIcon,
-    전북은행: ShIcon,
+    한국씨티은행: CitiIcon,
+    수협은행: ShIcon,
+    전북은행: JeonbukIcon,
     우체국: PostIcon,
-    SH수협은행: ShIcon,
-    토스뱅크: TossIcon,
     한국산업은행: KoreaIcon,
     신협: ShinhyupIcon,
+    대구은행: DaeguIcon,
   };
 
   try {
@@ -102,27 +127,22 @@ function getBankOrganizationId(bankName) {
     KB국민은행: "0004",
     하나은행: "0081", // KEB하나은행
     우리은행: "0020",
-    카카오뱅크: "0004", // 기본값
     케이뱅크: "0004", // 기본값
     IBK기업은행: "0003",
-    NH농협은행: "0011",
+    농협은행: "0011",
     SC제일은행: "0023",
-    BNK부산은행: "0032",
-    BNK경남은행: "0039",
+    부산은행: "0032",
+    경남은행: "0039",
     광주은행: "0034",
     제주은행: "0035",
     새마을금고: "0045",
-    씨티은행: "0027",
-    지역농협: "0011",
-    iM뱅크: "0004", // 기본값
+    한국씨티은행: "0027",
+    수협은행: "0007",
     전북은행: "0037",
     우체국: "0071",
-    SH수협은행: "0007",
-    토스뱅크: "0004", // 기본값
     한국산업은행: "0002",
     신협: "0048",
     대구은행: "0031",
-    수협은행: "0007",
   };
 
   return bankOrgMap[bankName] || "0004"; // 기본값으로 0004
@@ -131,7 +151,8 @@ function getBankOrganizationId(bankName) {
 // 첫 번째 선택된 은행의 로고 URL
 const firstBankIcon = computed(() => {
   if (selectedBanks.value.length > 0) {
-    return getBankIconByName(selectedBanks.value[currentBankIndex.value]);
+    const bank = selectedBanks.value[currentBankIndex.value];
+    return getBankIconByName(typeof bank === "string" ? bank : bank.name);
   }
   return KBIcon; // 기본값
 });
@@ -139,7 +160,8 @@ const firstBankIcon = computed(() => {
 // 현재 처리 중인 은행명
 const currentBankName = computed(() => {
   if (selectedBanks.value.length > 0) {
-    return selectedBanks.value[currentBankIndex.value];
+    const bank = selectedBanks.value[currentBankIndex.value];
+    return typeof bank === "string" ? bank : bank.name;
   }
   return "";
 });
@@ -161,7 +183,13 @@ onMounted(() => {
       selectedBanks.value = JSON.parse(route.query.selectedBanks);
       console.log("선택된 은행들:", selectedBanks.value);
     } catch (error) {
-      console.error("은행 데이터 파싱 오류:", error);
+      console.error("selectedBanks 파싱 오류:", error);
+      // 기존 방식으로도 시도 (하위 호환성)
+      if (Array.isArray(route.query.selectedBanks)) {
+        selectedBanks.value = route.query.selectedBanks;
+      } else {
+        selectedBanks.value = [route.query.selectedBanks];
+      }
     }
   }
 
@@ -170,7 +198,13 @@ onMounted(() => {
       selectedSecurities.value = JSON.parse(route.query.selectedSecurities);
       console.log("선택된 증권사들:", selectedSecurities.value);
     } catch (error) {
-      console.error("증권사 데이터 파싱 오류:", error);
+      console.error("selectedSecurities 파싱 오류:", error);
+      // 기존 방식으로도 시도 (하위 호환성)
+      if (Array.isArray(route.query.selectedSecurities)) {
+        selectedSecurities.value = route.query.selectedSecurities;
+      } else {
+        selectedSecurities.value = [route.query.selectedSecurities];
+      }
     }
   }
 
@@ -198,7 +232,7 @@ onMounted(() => {
 
 async function login() {
   if (!email.value || !password.value) {
-    alert("이메일과 비밀번호를 입력해주세요.");
+    alert("이메일과 비밀번호를 입력하세요.");
     return;
   }
 
@@ -208,6 +242,8 @@ async function login() {
   }
 
   isLoggingIn.value = true;
+  isLoading.value = true; // 로딩 시작
+
   console.log("🔐 로그인 시작:", {
     email: email.value,
     currentBank: currentBankName.value,
@@ -250,7 +286,6 @@ async function login() {
         let authData;
 
         if (existingAuth) {
-          // 기존 auth 데이터가 있으면 토큰만 업데이트
           try {
             const parsed = JSON.parse(existingAuth);
             authData = {
@@ -262,7 +297,6 @@ async function login() {
               },
             };
           } catch (error) {
-            // 파싱 실패 시 새로 생성
             authData = {
               token: {
                 accessToken: result.accessToken,
@@ -271,7 +305,6 @@ async function login() {
             };
           }
         } else {
-          // 기존 auth 데이터가 없으면 새로 생성
           authData = {
             token: {
               accessToken: result.accessToken,
@@ -281,32 +314,7 @@ async function login() {
         }
 
         localStorage.setItem("auth", JSON.stringify(authData));
-
         console.log("🔑 로컬스토리지 업데이트 완료:", authData);
-
-        // 새로 발급받은 토큰을 콘솔에 출력
-        console.log("🔑 새로 발급받은 토큰:", {
-          accessToken: result.accessToken,
-          refreshToken: result.refreshToken,
-          connectedId: result.connectedId,
-          tokenLength: {
-            accessToken: result.accessToken.length,
-            refreshToken: result.refreshToken.length,
-          },
-        });
-
-        console.log("🔑 토큰 저장 완료:", {
-          accessToken: result.accessToken.substring(0, 20) + "...",
-          refreshToken: result.refreshToken.substring(0, 20) + "...",
-          connectedId: result.connectedId,
-        });
-      } else {
-        console.log("❌ 토큰이 없음:", {
-          hasAccessToken: !!result.accessToken,
-          hasRefreshToken: !!result.refreshToken,
-          accessToken: result.accessToken,
-          refreshToken: result.refreshToken,
-        });
       }
 
       // 현재 은행을 완료된 목록에 추가
@@ -315,18 +323,26 @@ async function login() {
       if (isLastBank.value) {
         // 마지막 은행이면 증권사 연동 여부 확인
         if (selectedSecurities.value.length > 0) {
+          // 입력 필드 초기화
+          email.value = "";
+          password.value = "";
+
           // 증권사가 선택되어 있으면 증권사 연동 페이지로 이동
           router.push({
             path: "/certificate-login",
             query: {
-              selectedBanks: JSON.stringify(selectedBanks.value),
-              selectedSecurities: JSON.stringify(selectedSecurities.value),
+              selectedBanks: JSON.stringify(sortByKoreanOrder(selectedBanks.value)),
+              selectedSecurities: JSON.stringify(sortByKoreanOrder(selectedSecurities.value)),
               completedBanks: JSON.stringify(completedBanks.value),
             },
           });
         } else {
+          // 입력 필드 초기화
+          email.value = "";
+          password.value = "";
+
           // 증권사가 선택되지 않았으면 계좌 연동 완료 페이지로 이동
-          const bankList = selectedBanks.value.join(", ");
+          const bankList = selectedBanks.value.map((bank) => (typeof bank === "string" ? bank : bank.name)).join(", ");
           alert(`모든 계정 등록 완료!\n선택된 은행: ${bankList}\n선택된 증권사: 없음`);
           router.push("/account-link-complete");
         }
@@ -334,27 +350,38 @@ async function login() {
         // 다음 은행이 있으면 다음 은행 로그인 페이지로 이동
         currentBankIndex.value++;
 
+        // 입력 필드 초기화
+        email.value = "";
+        password.value = "";
+
         // 다음 은행 정보와 함께 같은 페이지로 이동 (새로운 요청)
         router.push({
           path: "/bank-login",
           query: {
-            selectedBanks: JSON.stringify(selectedBanks.value),
-            selectedSecurities: JSON.stringify(selectedSecurities.value),
+            selectedBanks: JSON.stringify(sortByKoreanOrder(selectedBanks.value)),
+            selectedSecurities: JSON.stringify(sortByKoreanOrder(selectedSecurities.value)),
             currentIndex: currentBankIndex.value,
             completedBanks: JSON.stringify(completedBanks.value),
           },
         });
       }
     } else {
-      alert(
-        `❌ ${currentBankName.value} 연동에 실패했습니다.\n(${currentBankIndex.value + 1}/${selectedBanks.value.length}) 다시 시도해주세요.`
-      );
+      // 에러 메시지가 있으면 모달로 표시
+      if (result.error?.message) {
+        errorMessage.value = result.error.message;
+        errorModal.value = true;
+      } else {
+        errorMessage.value = `${currentBankName.value} 연동에 실패했습니다. 다시 시도해주세요.`;
+        errorModal.value = true;
+      }
     }
   } catch (error) {
     console.error("로그인 에러:", error);
-    alert("로그인 중 오류가 발생했습니다. 다시 시도해주세요.");
+    errorMessage.value = "로그인 중 오류가 발생했습니다. 다시 시도해주세요.";
+    errorModal.value = true;
   } finally {
     isLoggingIn.value = false;
+    isLoading.value = false; // 로딩 종료
     console.log("🏁 로그인 프로세스 완료");
   }
 }
@@ -373,7 +400,10 @@ async function login() {
     <div v-if="!imageLoadError" class="w-24 h-24 mx-auto mb-8">
       <img
         :src="firstBankIcon"
-        :alt="selectedBanks[0] || '은행 로고'"
+        :alt="
+          (selectedBanks[0] && typeof selectedBanks[0] === 'string' ? selectedBanks[0] : selectedBanks[0]?.name) ||
+          '은행 로고'
+        "
         class="w-full h-full"
         @error="handleImageError"
         @load="handleImageLoad"
@@ -390,15 +420,15 @@ async function login() {
     <div class="w-full max-w-md flex flex-col gap-4 mb-8">
       <input
         v-model="email"
-        type="email"
-        placeholder="Enter your email"
+        type="text"
+        placeholder="id를 입력하세요"
         class="w-full px-4 py-3 rounded-lg border border-gray-200 bg-gray-50 text-base focus:outline-none focus:ring-2 focus:ring-[#433D8B]"
       />
       <div class="relative">
         <input
           :type="showPassword ? 'text' : 'password'"
           v-model="password"
-          placeholder="Enter your password"
+          placeholder="바말반호를 입력하세요"
           class="w-full px-4 py-3 rounded-lg border border-gray-200 bg-gray-50 text-base focus:outline-none focus:ring-2 focus:ring-[#433D8B] pr-12"
         />
         <button
@@ -440,12 +470,32 @@ async function login() {
         </button>
       </div>
     </div>
-    <Button label="Login" @click="login" class="w-full max-w-md mb-10" />
+    <Button label="로그인" @click="login" class="w-full max-w-md mb-10" />
 
     <!-- 하단 프로그래스 바 -->
     <BankLoginProgress
       :total-steps="selectedBanks.length + selectedSecurities.length"
       :completed-steps="completedBanks.length"
+    />
+
+    <!-- 에러 모달 -->
+    <BaseModal :is-modal="errorModal" title="연동 실패" sub-title="" @close="closeErrorModal">
+      <div class="text-center">
+        <p class="text-gray-700 mb-4">{{ errorMessage }}</p>
+        <button
+          @click="closeErrorModal"
+          class="w-full bg-[#433D8B] text-white py-2 px-4 rounded-lg hover:bg-[#433D8B]/90 transition-colors"
+        >
+          확인
+        </button>
+      </div>
+    </BaseModal>
+
+    <!-- 로딩 모달 -->
+    <LoadingModal
+      :is-visible="isLoading"
+      title="연동 중"
+      message="은행 연동을 진행하고 있습니다. 잠시만 기다려주세요..."
     />
   </div>
 </template>

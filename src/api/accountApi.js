@@ -112,7 +112,7 @@ export const registerMultipleAccounts = async (id, password, banks = [], securit
           countryCode: "KR",
           businessType: "ST",
           organization: organization,
-          clientType: "P",
+          clientType: "A",
           loginType: "1",
           id: id,
           password: password,

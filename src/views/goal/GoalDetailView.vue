@@ -120,7 +120,7 @@ const targetAmount = ref(5000);
 
 const accounts = ref([
   { bankName: "토스", productName: "예금 · 주택청약", percent: 15, amount: 675 },
-  { bankName: "KB", productName: "적금 · 주택청약", percent: 60, amount: 2700 },
+  { bankName: "KB국민은행", productName: "적금 · 주택청약", percent: 60, amount: 2700 },
   { bankName: "카카오뱅크", productName: "자유적금", percent: 25, amount: 1125 },
 ]);
 

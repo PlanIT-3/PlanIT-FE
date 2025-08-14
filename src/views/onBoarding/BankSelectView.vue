@@ -6,31 +6,26 @@ const router = useRouter();
 const selectedBanks = ref([]);
 
 const banks = [
-  { name: "BNK경남은행", icon: "/src/assets/icons/bank/BNK.svg" },
-  { name: "BNK부산은행", icon: "/src/assets/icons/bank/BNK.svg" },
-  { name: "IBK기업은행", icon: "/src/assets/icons/bank/IBK.svg" },
-  { name: "KB국민은행", icon: "/src/assets/icons/bank/KB.svg" },
-  { name: "NH농협은행", icon: "/src/assets/icons/bank/농협.svg" },
-  { name: "SC제일은행", icon: "/src/assets/icons/bank/SC제일.svg" },
-  { name: "SH수협은행", icon: "/src/assets/icons/bank/Sh수협.svg" },
-  { name: "iM뱅크", icon: "/src/assets/icons/bank/iM.svg" },
-  { name: "광주은행", icon: "/src/assets/icons/bank/광주.svg" },
-  { name: "농협", icon: "/src/assets/icons/bank/농협.svg" },
-  { name: "대한민국", icon: "/src/assets/icons/bank/한국투자.svg" },
-  { name: "새마을금고", icon: "/src/assets/icons/bank/MG새마을금고.svg" },
-  { name: "신한은행", icon: "/src/assets/icons/bank/신한.svg" },
-  { name: "신협", icon: "/src/assets/icons/bank/신협.svg" },
-  { name: "씨티은행", icon: "/src/assets/icons/bank/씨티.svg" },
-  { name: "우리은행", icon: "/src/assets/icons/bank/우리.svg" },
-  { name: "우체국", icon: "/src/assets/icons/bank/우체국.svg" },
-  { name: "전북은행", icon: "/src/assets/icons/bank/전북.svg" },
-  { name: "제주은행", icon: "/src/assets/icons/bank/제주.svg" },
-  { name: "지역농협", icon: "/src/assets/icons/bank/농협.svg" },
-  { name: "카카오뱅크", icon: "/src/assets/icons/bank/카카오뱅크.svg" },
-  { name: "케이뱅크", icon: "/src/assets/icons/bank/케이뱅크.svg" },
-  { name: "토스뱅크", icon: "/src/assets/icons/bank/토스.svg" },
-  { name: "하나은행", icon: "/src/assets/icons/bank/하나.svg" },
-  { name: "한국산업은행", icon: "/src/assets/icons/bank/한국투자.svg" },
+  { name: "경남은행", icon: "/src/assets/icons/bank/경남은행.svg", code: "0039" },
+  { name: "광주은행", icon: "/src/assets/icons/bank/광주은행.svg", code: "0034" },
+  { name: "대구은행", icon: "/src/assets/icons/bank/대구은행.svg", code: "0031" },
+  { name: "부산은행", icon: "/src/assets/icons/bank/부산은행.svg", code: "0032" },
+  { name: "새마을금고", icon: "/src/assets/icons/bank/새마을금고.svg", code: "0045" },
+  { name: "신협", icon: "/src/assets/icons/bank/신협.svg", code: "0048" },
+  { name: "신한은행", icon: "/src/assets/icons/bank/신한은행.svg", code: "0088" },
+  { name: "우리은행", icon: "/src/assets/icons/bank/우리은행.svg", code: "0020" },
+  { name: "우체국", icon: "/src/assets/icons/bank/우체국.svg", code: "0071" },
+  { name: "전북은행", icon: "/src/assets/icons/bank/전북은행.svg", code: "0037" },
+  { name: "제주은행", icon: "/src/assets/icons/bank/제주은행.svg", code: "0035" },
+  { name: "하나은행", icon: "/src/assets/icons/bank/하나은행.svg", code: "0081" },
+  { name: "한국산업은행", icon: "/src/assets/icons/bank/한국산업은행.svg", code: "0002" },
+  { name: "한국씨티은행", icon: "/src/assets/icons/bank/한국씨티은행.svg", code: "0027" },
+  { name: "IBK기업은행", icon: "/src/assets/icons/bank/IBK기업은행.svg", code: "0003" },
+  { name: "KB국민은행", icon: "/src/assets/icons/bank/KB국민은행.svg", code: "0004" },
+  { name: "SC제일은행", icon: "/src/assets/icons/bank/SC제일은행.svg", code: "0023" },
+  { name: "수협은행", icon: "/src/assets/icons/bank/수협은행.svg", code: "0007" },
+  { name: "농협은행", icon: "/src/assets/icons/bank/농협은행.svg", code: "0011" },
+  { name: "케이뱅크", icon: "/src/assets/icons/bank/케이뱅크.svg", code: "0089" },
 ];
 
 function selectBank(bank) {
@@ -47,10 +42,24 @@ function onNext() {
     alert("은행을 선택하세요.");
     return;
   }
+
+  // 선택된 은행들을 한국어순으로 정렬
+  const sortedSelectedBanks = [...selectedBanks.value].sort((a, b) => {
+    // 한국어가 영어보다 앞에 오도록
+    const aIsKorean = /[가-힣]/.test(a);
+    const bIsKorean = /[가-힣]/.test(b);
+
+    if (aIsKorean && !bIsKorean) return -1;
+    if (!aIsKorean && bIsKorean) return 1;
+
+    // 둘 다 한국어이거나 둘 다 영어인 경우 사전순 정렬
+    return a.localeCompare(b, "ko");
+  });
+
   router.push({
     path: "/certificate-select",
     query: {
-      selectedBanks: JSON.stringify(selectedBanks.value),
+      selectedBanks: JSON.stringify(sortedSelectedBanks),
     },
   });
 }

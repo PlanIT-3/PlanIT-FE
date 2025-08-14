@@ -57,10 +57,10 @@ import { ref, onMounted, nextTick } from "vue";
 import DefaultLayout from "@/components/layouts/DefaultLayout.vue";
 
 const accounts = ref([
-  { bank: "국민", accountNumber: "****-****-1234" },
-  { bank: "신한", accountNumber: "****-****-5678" },
+  { bank: "KB국민은행", accountNumber: "****-****-1234" },
+  { bank: "신한은행", accountNumber: "****-****-5678" },
   { bank: "카카오뱅크", accountNumber: "****-****-9012" },
-  { bank: "하나", accountNumber: "****-****-3456" },
+  { bank: "하나은행", accountNumber: "****-****-3456" },
 ]);
 
 const showDeleteIdx = ref(null);

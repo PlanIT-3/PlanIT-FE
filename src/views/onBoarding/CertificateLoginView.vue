@@ -4,6 +4,8 @@ import { useRouter, useRoute } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import Button from "@/components/base/Button.vue";
 import GoBackButton from "@/components/base/GoBackButton.vue";
+import BaseModal from "@/components/base/BaseModal.vue";
+import LoadingModal from "@/components/common/LoadingModal.vue";
 import BankLoginProgress from "@/components/onBoarding/BankLoginProgress.vue";
 import { registerMultipleAccounts } from "@/api/accountApi.js";
 
@@ -19,13 +21,80 @@ const isLoggingIn = ref(false);
 const currentSecurityIndex = ref(0); // 현재 처리 중인 증권사 인덱스
 const completedBanks = ref([]); // 완료된 은행들
 const completedSecurities = ref([]); // 완료된 증권사들
+const errorModal = ref(null); // 에러 모달 참조
+const errorMessage = ref(""); // 에러 메시지
+const isLoading = ref(false); // 로딩 상태
+
+// 한국어 순으로 정렬하는 함수
+function sortByKoreanOrder(array) {
+  return [...array].sort((a, b) => {
+    // 한국어가 영어보다 앞에 오도록
+    const aIsKorean = /[가-힣]/.test(a);
+    const bIsKorean = /[가-힣]/.test(b);
+
+    if (aIsKorean && !bIsKorean) return -1;
+    if (!aIsKorean && bIsKorean) return 1;
+
+    // 둘 다 한국어이거나 둘 다 영어인 경우 사전순 정렬
+    return a.localeCompare(b, "ko");
+  });
+}
+
+// 증권사명을 코드로 변환하는 함수
+function getSecurityCode(securityName) {
+  const securityCodeMap = {
+    유안타증권: "0209",
+    미래에셋증권: "0238",
+    한국투자증권: "0243",
+    교보증권: "0261",
+    LS증권: "0265",
+    대신증권: "0267",
+    한화투자증권: "0269",
+    신한금융투자: "0278",
+    유진투자증권: "0280",
+    NH투자증권: "0247",
+    IBK투자증권: "0225",
+    KB증권: "0218",
+    삼성증권: "0240",
+    키움증권: "0264",
+    SK증권: "0266",
+    하나금융투자: "0270",
+    DB금융투자: "0279",
+    메리츠종합금융증권: "0287",
+    하이투자증권: "0262",
+    다올투자증권: "0227",
+  };
+
+  return securityCodeMap[securityName] || "0004";
+}
+
+// 에러 모달 닫기
+function closeErrorModal() {
+  errorModal.value = null;
+  errorMessage.value = "";
+}
 
 // 현재 처리 중인 증권사명
 const currentSecurityName = computed(() => {
   if (selectedSecurities.value.length > 0) {
-    return selectedSecurities.value[currentSecurityIndex.value];
+    const securityName = selectedSecurities.value[currentSecurityIndex.value];
+    return securityName || "";
   }
   return "";
+});
+
+// 현재 처리 중인 증권사 코드
+const currentSecurityCode = computed(() => {
+  if (selectedSecurities.value.length > 0) {
+    const securityName = selectedSecurities.value[currentSecurityIndex.value];
+    if (securityName) {
+      const code = getSecurityCode(securityName);
+      console.log("✅ 증권사 코드:", code, "증권사명:", securityName);
+      return code;
+    }
+  }
+  console.log("⚠️ selectedSecurities가 비어있음 - 기본값 0004 사용");
+  return "0004";
 });
 
 // 현재 증권사가 마지막인지 확인
@@ -50,6 +119,12 @@ onMounted(() => {
     try {
       selectedSecurities.value = JSON.parse(route.query.selectedSecurities);
       console.log("선택된 증권사들:", selectedSecurities.value);
+      console.log("증권사 데이터 구조 확인:", {
+        length: selectedSecurities.value.length,
+        firstItem: selectedSecurities.value[0],
+        firstItemType: typeof selectedSecurities.value[0],
+        allItems: selectedSecurities.value,
+      });
     } catch (error) {
       console.error("증권사 데이터 파싱 오류:", error);
     }
@@ -69,7 +144,7 @@ onMounted(() => {
 
 async function login() {
   if (!email.value || !password.value) {
-    alert("이메일과 비밀번호를 입력해주세요.");
+    alert("아이디와 비밀번호를 입력하세요.");
     return;
   }
 
@@ -79,6 +154,8 @@ async function login() {
   }
 
   isLoggingIn.value = true;
+  isLoading.value = true; // 로딩 시작
+
   console.log("🔐 증권사 로그인 시작:", {
     email: email.value,
     currentSecurity: currentSecurityName.value,
@@ -88,6 +165,14 @@ async function login() {
 
   try {
     console.log("🚀 registerMultipleAccounts 호출 시작");
+    console.log("📋 API 호출 파라미터:", {
+      email: email.value,
+      password: password.value,
+      banks: [],
+      securities: [currentSecurityName.value],
+      organization: currentSecurityCode.value,
+      isLast: isLastSecurity.value,
+    });
 
     // 현재 증권사만 처리
     const result = await registerMultipleAccounts(
@@ -95,7 +180,7 @@ async function login() {
       password.value,
       [], // 은행은 이미 완료됨
       [currentSecurityName.value], // 현재 증권사만
-      "0004", // 증권사 기본 organization ID
+      currentSecurityCode.value, // 증권사 organization ID
       isLastSecurity.value // 마지막 증권사일 때만 true
     );
 
@@ -153,6 +238,10 @@ async function login() {
 
       if (isLastSecurity.value) {
         // 마지막 증권사이면 계좌 연동 완료 페이지로 이동
+        // 입력 필드 초기화
+        email.value = "";
+        password.value = "";
+
         const bankList = selectedBanks.value.join(", ");
         const securityList = selectedSecurities.value.join(", ");
         alert(`모든 계정 등록 완료!\n선택된 은행: ${bankList}\n선택된 증권사: ${securityList}`);
@@ -160,26 +249,38 @@ async function login() {
       } else {
         // 다음 증권사가 있으면 다음 증권사 로그인 페이지로 이동
         currentSecurityIndex.value++;
+
+        // 입력 필드 초기화
+        email.value = "";
+        password.value = "";
+
         router.push({
           path: "/certificate-login",
           query: {
-            selectedBanks: JSON.stringify(selectedBanks.value),
-            selectedSecurities: JSON.stringify(selectedSecurities.value),
+            selectedBanks: JSON.stringify(sortByKoreanOrder(selectedBanks.value)),
+            selectedSecurities: JSON.stringify(sortByKoreanOrder(selectedSecurities.value)),
             completedBanks: JSON.stringify(completedBanks.value),
             completedSecurities: JSON.stringify(completedSecurities.value),
           },
         });
       }
     } else {
-      alert(
-        `❌ ${currentSecurityName.value} 연동에 실패했습니다.\n(${currentSecurityIndex.value + 1}/${selectedSecurities.value.length}) 다시 시도해주세요.`
-      );
+      // 에러 메시지가 있으면 모달로 표시
+      if (result.error?.message) {
+        errorMessage.value = result.error.message;
+        errorModal.value = true;
+      } else {
+        errorMessage.value = `${currentSecurityName.value} 연동에 실패했습니다. 다시 시도해주세요.`;
+        errorModal.value = true;
+      }
     }
   } catch (error) {
     console.error("로그인 에러:", error);
-    alert("로그인 중 오류가 발생했습니다. 다시 시도해주세요.");
+    errorMessage.value = "로그인 중 오류가 발생했습니다. 다시 시도해주세요.";
+    errorModal.value = true;
   } finally {
     isLoggingIn.value = false;
+    isLoading.value = false; // 로딩 종료
     console.log("🏁 증권사 로그인 프로세스 완료");
   }
 }
@@ -204,15 +305,15 @@ async function login() {
     <div class="w-full max-w-md flex flex-col gap-4 mb-8">
       <input
         v-model="email"
-        type="email"
-        placeholder="Enter your email"
+        type="text"
+        placeholder="id를 입력하세요"
         class="w-full px-4 py-3 rounded-lg border border-gray-200 bg-gray-50 text-base focus:outline-none focus:ring-2 focus:ring-[#433D8B]"
       />
       <div class="relative">
         <input
           :type="showPassword ? 'text' : 'password'"
           v-model="password"
-          placeholder="Enter your password"
+          placeholder="비밀번호를 입력하세요"
           class="w-full px-4 py-3 rounded-lg border border-gray-200 bg-gray-50 text-base focus:outline-none focus:ring-2 focus:ring-[#433D8B] pr-12"
         />
         <button
@@ -255,8 +356,28 @@ async function login() {
       </div>
     </div>
 
+    <!-- 에러 모달 -->
+    <BaseModal :is-modal="errorModal" title="연동 실패" sub-title="" @close="closeErrorModal">
+      <div class="text-center">
+        <p class="text-gray-700 mb-4">{{ errorMessage }}</p>
+        <button
+          @click="closeErrorModal"
+          class="w-full bg-[#433D8B] text-white py-2 px-4 rounded-lg hover:bg-[#433D8B]/90 transition-colors"
+        >
+          확인
+        </button>
+      </div>
+    </BaseModal>
+
+    <!-- 로딩 모달 -->
+    <LoadingModal
+      :is-visible="isLoading"
+      title="연동 중"
+      message="증권사 연동을 진행하고 있습니다. 잠시만 기다려주세요..."
+    />
+
     <Button
-      :label="isLoggingIn ? '연동 중...' : 'Login'"
+      :label="isLoggingIn ? '연동 중...' : '로그인'"
       @click="login"
       :disabled="isLoggingIn || !email || !password"
       class="w-full max-w-md mb-10"
