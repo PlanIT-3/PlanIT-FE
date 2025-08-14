@@ -1,72 +1,7 @@
 <template>
   <MainLayout :chart-option="chartOption" :total-balance="totalBalance" :goal-count="goalRatioData.length">
-    <div>
-      <GoalSliderCard :goal-list="goalListData" />
-      <InvestmentStatusChart />
-
-      <!-- Investment Status Section -->
-      <div class="w-full bg-white rounded-2xl shadow-lg p-5">
-        <!-- Header -->
-        <div class="flex justify-between items-center mb-2">
-          <div class="flex items-center">
-            <div class="text-indigo-600 mr-2">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-                />
-              </svg>
-            </div>
-            <h3 class="text-base font-semibold text-gray-800 whitespace-nowrap">일일 계좌 총 잔고 추이</h3>
-          </div>
-          <button class="text-xs text-indigo-600 font-medium whitespace-nowrap">전체보기</button>
-        </div>
-
-        <!-- Time Period Toggle Buttons -->
-        <div class="flex justify-center space-x-1 bg-gray-100 rounded-lg p-1 -mb-6 relative z-10">
-          <button
-            @click="selectPeriod('daily')"
-            :class="[
-              'w-full py-1 text-xs rounded-md transition-colors duration-200',
-              selectedPeriod === 'daily' ? 'bg-white text-indigo-600 shadow' : 'text-gray-500 hover:bg-gray-200',
-            ]"
-          >
-            일
-          </button>
-          <button
-            @click="selectPeriod('weekly')"
-            :class="[
-              'w-full py-1 text-xs rounded-md transition-colors duration-200',
-              selectedPeriod === 'weekly' ? 'bg-white text-indigo-600 shadow' : 'text-gray-500 hover:bg-gray-200',
-            ]"
-          >
-            주
-          </button>
-          <button
-            @click="selectPeriod('monthly')"
-            :class="[
-              'w-full py-1 text-xs rounded-md transition-colors duration-200',
-              selectedPeriod === 'monthly' ? 'bg-white text-indigo-600 shadow' : 'text-gray-500 hover:bg-gray-200',
-            ]"
-          >
-            월
-          </button>
-        </div>
-
-        <!-- Investment Chart -->
-        <div class="h-[150px]">
-          <VChart :option="investmentChartOption" autoresize />
-        </div>
-      </div>
-    </div>
+    <GoalSliderCard :goal-list="goalListData" />
+    <InvestmentStatusChart />
   </MainLayout>
 </template>
 

@@ -133,8 +133,8 @@ const load = async () => {
     isLoading.value = true;
 
     goalDetail.value = (await api.getGoal(id)).data;
-    rateList.value = await api.getGoalAccountRates(id);
-    goalProgress.value = await api.getGoalProgress(id);
+    // rateList.value = await api.getGoalAccountRates(id);
+    // goalProgress.value = await api.getGoalProgress(id);
     accounts.value = await api.getGoalAccounts(id);
 
     console.log("Goal Progress Response:", goalProgress.value);
