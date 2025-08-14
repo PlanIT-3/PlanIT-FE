@@ -48,9 +48,27 @@ const router = createRouter({
 
 // 인증이 필요한 페이지 접근 제어
 router.beforeEach((to, _from, next) => {
-  const auth = useAuthStore();
-  const token = auth.getaccessToken();
-  const isAuthenticated = !!token;
+  // 로컬스토리지에서 직접 토큰 확인
+  const authStr = localStorage.getItem("auth");
+  let isAuthenticated = false;
+
+  if (authStr) {
+    try {
+      const auth = JSON.parse(authStr);
+      console.log("🔍 auth:", auth);
+      isAuthenticated = !!auth.token?.accessToken;
+    } catch (error) {
+      console.error("Auth parsing error:", error);
+      isAuthenticated = false;
+    }
+  }
+
+  console.log("🔍 라우터 가드:", {
+    to: to.path,
+    isAuthenticated,
+    hasAuth: !!authStr,
+    authData: authStr ? JSON.parse(authStr) : null,
+  });
 
   if (to.path === "/") {
     if (isAuthenticated) {

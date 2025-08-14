@@ -2,6 +2,7 @@ import axios from "axios";
 
 import { useAuthStore } from "@/stores/auth";
 import { API_BASE_URL, STORAGE_KEYS } from "@/utils/constants";
+import router from "@/router";
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -17,6 +18,7 @@ apiClient.interceptors.request.use(
     const auth = useAuthStore();
     const token = auth.getaccessToken();
     if (token) {
+      console.log("🔍 token:", token);
       config.headers["Authorization"] = `Bearer ${token}`;
     }
     return config;
@@ -77,10 +79,19 @@ apiClient.interceptors.response.use(
           window.location.href = "/login";
         }
       } catch (refreshError) {
-        console.error("❌ Token refresh failed:", refreshError);
-        // 리프레시 토큰도 만료된 경우 로그아웃
-        localStorage.removeItem("auth");
-        window.location.href = "/login";
+
+        // 리프레시 토큰도 만료된 경우 사용자에게 알림 후 로그아웃
+        console.warn("토큰이 만료되었습니다. 다시 로그인해주세요.");
+
+        // 현재 경로가 메인 페이지나 인증이 필요한 페이지인 경우에만 로그아웃 처리
+        const currentPath = window.location.pathname;
+        const requiresAuthPaths = ["/main", "/goal", "/recommend", "/report", "/mypage"];
+
+        if (requiresAuthPaths.some((path) => currentPath.startsWith(path))) {
+          auth.logout();
+          router.replace("/login");
+        }
+
         return Promise.reject(refreshError);
       }
     }

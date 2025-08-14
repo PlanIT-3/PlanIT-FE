@@ -7,15 +7,8 @@
 </template>
 
 <script setup>
-import { RouterView, useRouter } from "vue-router";
-import { useAuthStore } from "@/stores/auth";
-
-const auth = useAuthStore();
-
-if (auth.isLogin) {
-  const router = useRouter();
-  router.push({ name: "main" });
-}
+import { RouterView } from "vue-router";
+// 자동 리다이렉트 로직 제거 - 라우터 가드에서 처리
 </script>
 
 <style>

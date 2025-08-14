@@ -141,7 +141,6 @@ const load = async () => {
   }
 };
 
-// Props (나중에 외부에서 넘기도록 할 수 있음)
 
 const currentAmount = computed(() => {
   return accounts.value.reduce((sum, acc) => sum + acc.amount, 0);
