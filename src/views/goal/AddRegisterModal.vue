@@ -1,32 +1,47 @@
 <script setup lang="ts">
 import BaseModal from "@/components/base/BaseModal.vue";
 import Button from "@/components/base/Button.vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
+import { computed } from "vue";
 
 const props = defineProps({
   isOpen: Boolean,
   isaAmount: Number, //
   depositAmount: Number,
+  goalId: [Number, String],
 });
 
 const emit = defineEmits(["close"]);
 const router = useRouter();
+const route = useRoute();
+
+// goalId  : props -> url => localstorage 순
+const safeGoalId = computed(() => {
+  return String(props.goalId ?? route.query.goalId ?? localStorage.getItem("currentGoalId") ?? "");
+});
 
 const goToISA = () => {
-  const goalId = localStorage.getItem("currentGoalId");
-  if (goalId) {
+  const gid = safeGoalId.value;
+  if (gid) {
     router.push({
       path: "/goal/isa",
-      query: { goalId: goalId, amount: props.isaAmount },
+      query: { goalId: gid, amount: props.isaAmount },
     });
+  } else {
+    console.log("goalID 찾기 실패 ");
+    return;
   }
 };
 
 const goToSavings = () => {
-  const goalId = localStorage.getItem("currentGoalId");
+  const gid = safeGoalId.value;
+  if (!gid) {
+    console.log("goalId를 찾기 실패.");
+    return;
+  }
   router.push({
     path: "/goal/deposit",
-    query: { goalId: goalId, amount: props.depositAmount },
+    query: { goalId: gid, amount: props.depositAmount ?? 0 },
   });
   emit("close");
 };

@@ -175,10 +175,11 @@ const formattedIsaAmount = computed(() => isaAmount.value.toLocaleString());
 // 편집 모드 여부
 const isEditMode = computed(() => !!goalId.value);
 
-// 합계(원 단위)
+// 합계(원 )
 const isaTotal = computed(() =>
   isaProducts.value.reduce((sum, p) => sum + Number(p.presentAmount ?? 0) * Number(p.quantity ?? 1), 0)
 );
+
 const depositTotal = computed(() =>
   depositAccounts.value.reduce((sum, acc) => sum + Number(acc.allocatedAmount ?? acc.amount ?? 0), 0)
 );
@@ -187,7 +188,7 @@ const depositTotal = computed(() =>
 const toWanFloor = (n) => Math.floor(Number(n ?? 0) / 10000);
 const formatWan = (n) => toWanFloor(n).toLocaleString("ko-KR") + "만원";
 
-// 완료 버튼 활성 조건 1
+// 완료 버튼 활성 조건 1: 목표 이름 , 금액 , 날짜
 const requiredFilled = computed(
   () =>
     String(goalName.value || "").trim().length > 0 &&
@@ -196,7 +197,7 @@ const requiredFilled = computed(
     !!endDate.value
 );
 
-//완료 버튼 활성 조건 2
+//완료 버튼 활성 조건 2 : isa 나 예적금 할당하기
 const hasAnyAllocation = computed(
   () => (isaProducts.value?.length || 0) > 0 || (depositAccounts.value?.length || 0) > 0
 );
@@ -204,7 +205,7 @@ const hasAnyAllocation = computed(
 // 완료버튼 활성
 const canComplete = computed(() => requiredFilled.value && hasAnyAllocation.value);
 
-//ISA  할당 후 edit 페이지 돌아올 때 데이터받아오기
+//ISA  할당 후 edit 페이지 돌아올 때 get api 데이터받아오기
 const fetchGoalDetails = async (id) => {
   try {
     const res = await Api.getGoal(id);
@@ -213,7 +214,6 @@ const fetchGoalDetails = async (id) => {
     if (!goalData) return;
 
     goalName.value = goalData.goalName;
-    // ?? goalData.objectName ?? "";
     goalAmount.value = Number(goalData.targetAmount ?? 0);
     depositRatio.value =
       typeof goalData.depositRate === "number" ? goalData.depositRate : 100 - Number(goalData.isaRate ?? 50);
@@ -233,7 +233,7 @@ const fetchGoalDetails = async (id) => {
       endDate.value = (goalData.endDate ?? "").toString().slice(0, 10);
     }
 
-    ///////////
+    // 할당된 배열 가져오기
     isaProducts.value = goalData.isaProducts ?? goalData.isaAllocations ?? [];
     depositAccounts.value = goalData.depositAccounts ?? goalData.depositAllocations ?? [];
   } catch (error) {

@@ -34,7 +34,7 @@
               <input
                 type="checkbox"
                 class="mr-2"
-                :value="item.id"
+                :value="Number(item.id)"
                 v-model="selectedProductIds"
                 :disabled="isProductDisabled(item)"
               />
@@ -42,7 +42,7 @@
                 <div class="font-medium text-sm">{{ item.name }}</div>
                 <div class="text-xs text-gray-500">{{ item.desc }}</div>
               </div>
-              <span class="ml-2">{{ item.priceOnly }}만원</span>
+              <span class="ml-2">{{ item.amount }}만원</span>
             </label>
           </template>
           <div v-if="filteredProducts.length === 0" class="text-xs text-gray-400 text-center py-2">
@@ -69,9 +69,9 @@
       <button
         class="w-full bg-indigo-700 hover:bg-indigo-800 text-white py-3 rounded font-bold text-base"
         :disabled="selectedTotal > isaGoalAmount"
-        @click="handleIsaRegister"
+        @click="handleSubmit"
       >
-        ISA 계좌 할당 완료
+        {{ isEditMode ? "ISA 계좌 할당 수정  " : "ISA 계좌 할당 완료" }}
       </button>
     </div>
   </DefaultLayout>
@@ -88,6 +88,7 @@ import { PieChart } from "echarts/charts";
 import { TooltipComponent, LegendComponent } from "echarts/components";
 import { useRoute, useRouter } from "vue-router";
 import isaApi from "@/api/isaApi";
+import goal from "@/router/goal";
 use([CanvasRenderer, PieChart, TooltipComponent, LegendComponent]);
 
 const router = useRouter();
@@ -100,20 +101,23 @@ const isaGoalAmount = computed(() => Math.round(isaGoalAmountRaw.value / 10000))
 onMounted(() => {
   goalId.value = Number(route.query.goalId);
   isaGoalAmountRaw.value = Number(route.query.amount);
-  fetchIsaProducts();
+  fetcuProductsPreferEdit(); //편집용 먼저 부르고 => 없으면 일반용
   fetchTaxExemption();
 });
 
-// 상품 데이터 (API에서 받아옴)
+// 전체 상품 데이터 (할당/미할당)(API)
 const products = ref([]);
+// 체크된 상품 id
+const selectedProductIds = ref([]);
 // 비과세 금액 (API에서 받아옴)
 const taxSavedAmount = ref(0);
 // 검색어
 const search = ref("");
-// 선택된 상품 id
-const selectedProductIds = ref([]);
 
-// 상품 API 호출 및 세팅
+//수정 모드 여부 확인하기
+const isEditMode = ref(false);
+
+// 처음 아무것도 을 때 등록 위한 상품 API 호출 및 세팅
 async function fetchIsaProducts() {
   try {
     const data = await isaApi.getIsaProducts();
@@ -127,6 +131,7 @@ async function fetchIsaProducts() {
         presentAmount: item.presentAmount,
         quantity: item.quantity,
       }));
+      isEditMode.value = false;
     } else {
       console.error("ISA 상품 API 응답 비정상:", data?.message);
     }
@@ -135,6 +140,33 @@ async function fetchIsaProducts() {
   }
 }
 
+//편집용 목록 (체크 목록) 우선로딩 => 없으면 일반목록
+async function fetcuProductsPreferEdit() {
+  try {
+    const data = await isaApi.getIsaProductsForEdit(goalId.value);
+    if (data.status === "OK" && Array.isArray(data.data)) {
+      products.value = data.data.map((item) => ({
+        id: item.memberProductId,
+        name: item.itemName,
+        desc: `수량:${item.quantity}`,
+        amount: Math.round((item.presentAmount * item.quantity) / 10000),
+        priceOnly: Math.round(item.presentAmount / 10000),
+        presentAmount: item.presentAmount,
+        quantity: item.quantity,
+        checked: !!item.checked,
+      }));
+
+      selectedProductIds.value = products.value.filter((p) => p.checked).map((p) => p.id);
+      isEditMode.value = selectedProductIds.value.length > 0;
+      return;
+    }
+    //체크 된 값 없으면 일반 목록으로 가기
+    await fetchIsaProducts();
+  } catch (e) {
+    console.warn("수정용 목록 불러오기 실패 => 일반 목록으로 ", e);
+    await fetchIsaProducts();
+  }
+}
 // 비과세 현황 API 호출
 async function fetchTaxExemption() {
   try {
@@ -159,7 +191,12 @@ const filteredProducts = computed(() => {
 const selectedTotal = computed(() => {
   return products.value
     .filter((item) => selectedProductIds.value.includes(item.id))
-    .reduce((sum, item) => sum + Math.round((item.presentAmount * item.quantity) / 10000), 0);
+    .reduce((sum, item) => {
+      const present = Number(item.presentAmount);
+      const qty = Number(item.quantity);
+      const amount = Math.round((present * qty) / 10000);
+      return sum + amount;
+    }, 0);
 });
 
 // 목표 남은 금액 (만원 단위)
@@ -170,6 +207,52 @@ const remainingAmount = computed(() => {
     .reduce((sum, item) => sum + item.presentAmount * item.quantity, 0);
   return Math.round((isaGoalAmountRaw.value - selectedSum) / 10000);
 });
+
+// 상품 선택 시 ISA 목표 금액을 초과하지 않도록 체크박스 비활성화
+function isProductDisabled(item) {
+  // 이미 선택된 경우는 항상 활성
+  if (selectedProductIds.value.includes(item.id)) return false;
+  // 선택 시 총합이 ISA 목표 금액을 초과하면 비활성
+  return selectedTotal.value + Math.round((item.presentAmount * item.quantity) / 10000) > isaGoalAmount.value;
+}
+
+// ISA 계좌 할당 완료 버튼 클릭 시 API 호출
+async function handleSubmit() {
+  try {
+    if (isEditMode.value) {
+      //수정모드 => 상태 put으로 전달
+      const data = await isaApi.editIsaAllocation(
+        goalId.value,
+        products.value, //전부
+        selectedProductIds.value // 선택 된 것들
+      );
+      if (data.status === "OK") {
+        alert("ISA 계좌 할당이 수정되었습니다!");
+        router.push({ path: "/goal/edit", query: { goalId: goalId.value } });
+      } else {
+        alert("오류: " + (data.message || "알 수 없는 오류"));
+      }
+    }
+    //수정 모드 X => 일반모드 => post
+    else {
+      const data = await isaApi.registerIsaAllocation(goalId.value, selectedProductIds.value);
+      if (data.status === "OK") {
+        alert("ISA 계좌 할당 완료 !");
+        localStorage.removeItem("amount");
+        router.push({
+          path: "/goal/edit",
+          query: { goalId: goalId },
+        });
+      } else {
+        alert("오류 : " + data.message);
+      }
+    }
+  } catch (e) {
+    alert("API 요청 실패 " + e);
+  }
+}
+
+/*                       차트들                       */
 
 // 도넛 차트 비율 (만원 단위 기준)
 const donutPercent = computed(() => {
@@ -242,33 +325,4 @@ const chartOption = computed(() => ({
     },
   ],
 }));
-
-// 상품 선택 시 ISA 목표 금액을 초과하지 않도록 체크박스 비활성화
-function isProductDisabled(item) {
-  // 이미 선택된 경우는 항상 활성
-  if (selectedProductIds.value.includes(item.id)) return false;
-  // 선택 시 총합이 ISA 목표 금액을 초과하면 비활성
-  return selectedTotal.value + Math.round((item.presentAmount * item.quantity) / 10000) > isaGoalAmount.value;
-}
-
-// ISA 계좌 할당 완료 버튼 클릭 시 API 호출
-async function handleIsaRegister() {
-  try {
-    const data = await isaApi.registerIsaAllocation(goalId.value, selectedProductIds.value);
-
-    if (data.status === "OK") {
-      alert("ISA 계좌 할당이 완료되었습니다!");
-      localStorage.removeItem("amount");
-      //할당하고 edit 페이지로 이동하기
-      router.push({
-        path: "/goal/edit",
-        query: { goalId: goalId.value },
-      });
-    } else {
-      alert("오류: " + (json.message || "알 수 없는 오류"));
-    }
-  } catch (e) {
-    alert("API 요청 실패: " + e);
-  }
-}
 </script>
