@@ -91,7 +91,7 @@
               <li v-for="p in isaProducts" :key="p.memberProductId" class="leading-5">
                 <span class="font-medium">{{ p.itemName }}</span>
                 <span v-if="p.quantity"> × {{ p.quantity }}</span>
-                <span class="ml-1">— {{ formatWan((p.presentAmount ?? 0) * (p.quantity ?? 1)) }}</span>
+                <span class="ml-1">{{ formatWan((p.presentAmount ?? 0) * (p.quantity ?? 1)) }}</span>
               </li>
             </ul>
           </div>
@@ -205,14 +205,17 @@ const fetchIsaChecked = async (gid) => {
     const rows = Array.isArray(list?.data) ? list.data : Array.isArray(list) ? list : [];
 
     // checked=true만 필터 → 화면에서 쓰는 필드로 매핑
-    isaProducts.value = rows
-      .filter((r) => !!r.checked)
-      .map((r) => ({
-        memberProductId: Number(r.memberProductId),
-        itemName: r.itemName ?? "",
-        presentAmount: Number(r.presentAmount) || 0,
-        quantity: Number(r.quantity) || 0,
-      }));
+    // 1) 체크된 것만
+    const onlyChecked = rows.filter((r) => !!r.checked);
+    // 2) 같은 memberProductId 중복 제거
+    const deduped = dedupeBy(onlyChecked, "memberProductId");
+    // 3) 화면 모델로 매핑
+    isaProducts.value = deduped.map((r) => ({
+      memberProductId: toNum(r.memberProductId),
+      itemName: r.itemName ?? "",
+      presentAmount: toNum(r.presentAmount) || 0,
+      quantity: toNum(r.quantity) || 0,
+    }));
   } catch (e) {
     console.error("ISA 목록불러오기 실패:", e);
     isaProducts.value = [];
@@ -269,11 +272,10 @@ watch(
     const id = Number(newId ?? localStorage.getItem("currentGoalId"));
     if (id && !Number.isNaN(id)) {
       goalId.value = id;
-      await fetchIsaChecked(id);
       await fetchGoalDetails(id);
     }
   },
-  { immediate: true } //처음 마운트 될 때도 바로 한번 실행
+  { immediate: true } //처음 마운트 될 때 바로 한번 실행
 );
 
 // + 버튼: 생성 모드면 먼저 생성, 편집 모드면 모달만 오픈
@@ -332,4 +334,18 @@ const handleCompleteGoal = async () => {
     alert("목표 저장에 실패했습니다. 다시 시도해주세요.");
   }
 };
+
+//중복이슈
+// --- helpers: 숫자화 & 중복제거 ---
+const toNum = (v) => Number(v ?? 0);
+
+/** rows 배열에서 key(기본 memberProductId) 기준으로 중복 제거 */
+function dedupeBy(rows, key = "memberProductId") {
+  const m = new Map();
+  for (const r of rows) {
+    const id = toNum(r?.[key]);
+    if (!m.has(id)) m.set(id, r);
+  }
+  return Array.from(m.values());
+}
 </script>

@@ -123,15 +123,10 @@ async function fetchIsaProducts() {
   try {
     const data = await isaApi.getIsaProducts();
     if (data.status === "OK" && Array.isArray(data.data)) {
-      products.value = data.data.map((item) => ({
-        id: item.memberProductId,
-        name: item.itemName,
-        desc: `수량: ${item.quantity}`,
-        amount: Math.round((item.presentAmount * item.quantity) / 10000),
-        priceOnly: Math.round(item.presentAmount / 10000),
-        presentAmount: item.presentAmount,
-        quantity: item.quantity,
-      }));
+      const mapped = data.data.map(mapApiItem);
+      products.value = dedupeProducts(mapped);
+      normalizeSelectedIds();
+
       isEditMode.value = false;
     } else {
       console.error("ISA 상품 API 응답 비정상:", data?.message);
@@ -146,18 +141,10 @@ async function fetcuProductsPreferEdit() {
   try {
     const data = await isaApi.getIsaProductsForEdit(goalId.value);
     if (data.status === "OK" && Array.isArray(data.data)) {
-      products.value = data.data.map((item) => ({
-        id: item.memberProductId,
-        name: item.itemName,
-        desc: `수량:${item.quantity}`,
-        amount: Math.round((item.presentAmount * item.quantity) / 10000),
-        priceOnly: Math.round(item.presentAmount / 10000),
-        presentAmount: item.presentAmount,
-        quantity: item.quantity,
-        checked: !!item.checked,
-      }));
-
+      const mapped = data.data.map((item) => ({ ...mapApiItem(item), checked: !!item.checked }));
+      products.value = dedupeProducts(mapped);
       selectedProductIds.value = products.value.filter((p) => p.checked).map((p) => p.id);
+      normalizeSelectedIds();
       isEditMode.value = selectedProductIds.value.length > 0;
       return;
     }
@@ -326,4 +313,34 @@ const chartOption = computed(() => ({
     },
   ],
 }));
+
+// --- dedupe helpers (추가) ---
+const toNum = (v) => Number(v ?? 0);
+
+function mapApiItem(item) {
+  return {
+    id: toNum(item.memberProductId ?? item.id),
+    name: item.itemName ?? item.name,
+    desc: `수량: ${toNum(item.quantity)}`,
+    presentAmount: toNum(item.presentAmount),
+    quantity: toNum(item.quantity),
+    amount: Math.round((toNum(item.presentAmount) * toNum(item.quantity)) / 10000),
+    checked: !!item.checked,
+  };
+}
+
+function dedupeProducts(list) {
+  const m = new Map();
+  for (const p of list) {
+    const prev = m.get(p.id);
+    if (!prev) m.set(p.id, p);
+    else m.set(p.id, { ...prev, ...p, checked: prev.checked || p.checked }); // 체크는 OR
+  }
+  return Array.from(m.values());
+}
+
+function normalizeSelectedIds() {
+  // 숫자화 + 고유화
+  selectedProductIds.value = Array.from(new Set(selectedProductIds.value.map((x) => Number(x))));
+}
 </script>
