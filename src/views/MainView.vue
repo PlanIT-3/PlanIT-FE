@@ -1,7 +1,7 @@
 <template>
   <MainLayout :chart-option="chartOption" :total-balance="totalBalance" :goal-count="goalRatioData.length">
     <div>
-      <GoalSliderCard />
+      <GoalSliderCard :goal-list="goalListData" />
 
       <!-- Investment Status Section -->
       <div class="w-full bg-white rounded-2xl shadow-lg p-5">
@@ -81,6 +81,7 @@ import MainLayout from "@/components/layouts/MainLayout.vue";
 import GoalSliderCard from "@/components/goal/GoalSliderCard.vue";
 import Api from "@/api/mainApi";
 import mainApi from "@/api/mainApi";
+import goalApi from "@/api/objectApi";
 
 use([CanvasRenderer, PieChart, LineChart, TitleComponent, TooltipComponent, LegendComponent, GridComponent]);
 
@@ -95,6 +96,8 @@ const monthlyData = ref([]);
 // API에서 받아온 목표 비율 데이터
 const goalRatioData = ref([]);
 const totalBalance = ref(0);
+// 목표 리스트 데이터
+const goalListData = ref([]);
 
 // 일자 버튼 클릭 시 API 호출
 const fetchDailyData = async () => {
@@ -170,18 +173,23 @@ const fetchGoalRatioData = async () => {
   }
 };
 
-// 페이지 로드 시 일자 데이터 자동 로드
-onMounted(async () => {
+// 목표 리스트 데이터 API 호출
+const fetchGoalListData = async () => {
   try {
-    await Promise.all([fetchDailyData(), fetchGoalRatioData()]);
-  } catch (error) {
-    console.error("초기 데이터 로드 실패:", error);
-    // 인증 관련 에러인 경우 이미 API 인터셉터에서 처리됨
-    if (error.response?.status !== 401) {
-      // 401이 아닌 다른 에러의 경우 사용자에게 알림
-      console.warn("데이터를 불러오는데 실패했습니다. 잠시 후 다시 시도해주세요.");
+    const data = await goalApi.getGoalList();
+    if (data.status === "OK" && data.data) {
+      goalListData.value = data.data;
     }
+  } catch (error) {
+    console.error("목표 리스트 데이터 불러오기 실패:", error);
   }
+};
+
+
+onMounted(() => {
+  fetchDailyData();
+  fetchGoalListData();
+  fetchGoalRatioData();
 });
 
 const investmentData = {
