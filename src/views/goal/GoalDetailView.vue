@@ -5,7 +5,6 @@
       <!-- 목표 헤더 섹션 -->
       <div class="w-full">
         <div class="flex items-center justify-between mb-4">
-<<<<<<< HEAD
           <h1 class="text-xl font-bold text-gray-900">나의 목표</h1>
           <button
             class="p-2 rounded-lg hover:bg-gray-100"
@@ -16,10 +15,6 @@
               })
             "
           >
-=======
-          <h1 class="text-lg font-semibold text-gray-900">나의 목표</h1>
-          <button class="p-2 rounded-lg hover:bg-gray-100">
->>>>>>> 3d4c87a (feat: 목표 관리 페이지 수정)
             <svg
               xmlns="http://www.w3.org/2000/svg"
               class="h-5 w-5 text-gray-600"
