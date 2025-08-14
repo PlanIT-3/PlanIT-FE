@@ -342,8 +342,6 @@ async function login() {
           password.value = "";
 
           // 증권사가 선택되지 않았으면 계좌 연동 완료 페이지로 이동
-          const bankList = selectedBanks.value.map((bank) => (typeof bank === "string" ? bank : bank.name)).join(", ");
-          alert(`모든 계정 등록 완료!\n선택된 은행: ${bankList}\n선택된 증권사: 없음`);
           router.push("/account-link-complete");
         }
       } else {
@@ -428,7 +426,7 @@ async function login() {
         <input
           :type="showPassword ? 'text' : 'password'"
           v-model="password"
-          placeholder="바말반호를 입력하세요"
+          placeholder="비밀번호를 입력하세요"
           class="w-full px-4 py-3 rounded-lg border border-gray-200 bg-gray-50 text-base focus:outline-none focus:ring-2 focus:ring-[#433D8B] pr-12"
         />
         <button

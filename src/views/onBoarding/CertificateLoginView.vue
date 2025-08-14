@@ -244,7 +244,6 @@ async function login() {
 
         const bankList = selectedBanks.value.join(", ");
         const securityList = selectedSecurities.value.join(", ");
-        alert(`모든 계정 등록 완료!\n선택된 은행: ${bankList}\n선택된 증권사: ${securityList}`);
         router.push("/account-link-complete");
       } else {
         // 다음 증권사가 있으면 다음 증권사 로그인 페이지로 이동
