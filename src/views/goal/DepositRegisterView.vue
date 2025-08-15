@@ -160,14 +160,35 @@
         </div>
       </GraphsContainer>
 
-      <!-- 계좌 추가 버튼 -->
-      <button
-        @click="addAccount"
-        :disabled="accounts.length >= accountOptions.length || loading"
-        class="w-full mb-6 py-2 rounded border border-gray-300 text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
-      >
-        ＋ 계좌 추가
-      </button>
+      <!-- 계좌 추가 드롭다운 -->
+      <div class="relative mb-6">
+        <button
+          @click="toggleAccountDropdown"
+          :disabled="remainingAccountOptions.length === 0 || loading"
+          class="w-full py-2 rounded border border-gray-300 text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        >
+          <span>＋ 계좌 추가</span>
+          <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': showAccountDropdown }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+          </svg>
+        </button>
+        
+        <!-- 드롭다운 메뉴 -->
+        <div v-if="showAccountDropdown" class="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded shadow-lg z-10 max-h-60 overflow-y-auto">
+          <div v-if="remainingAccountOptions.length === 0" class="px-4 py-3 text-sm text-gray-500 text-center">
+            추가 가능한 계좌가 없습니다
+          </div>
+          <button
+            v-for="account in remainingAccountOptions"
+            :key="account.name"
+            @click="addSelectedAccount(account)"
+            class="w-full px-4 py-3 text-left text-sm hover:bg-gray-50 border-b border-gray-100 last:border-b-0 focus:outline-none focus:bg-gray-50"
+          >
+            <div class="font-medium text-gray-900">{{ account.name }}</div>
+            <div class="text-xs text-gray-500 mt-1">사용 가능: {{ formatMoney(account.remainingAmount) }}</div>
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- 완료 버튼 -->
@@ -230,6 +251,9 @@ const accounts = ref([]);
 
 // 완료 상태 추적 (미완료 Goal 삭제 방지용)
 const isCompleted = ref(false);
+
+// 계좌 추가 드롭다운 상태
+const showAccountDropdown = ref(false);
 
 // API 호출 함수들
 async function loadGoalAmount() {
@@ -514,13 +538,33 @@ function updatePercentage(index, value) {
   accounts.value[index].percentage = newPercent;
 }
 
-// 계좌 추가
+// 남은 계좌 옵션 계산
+const remainingAccountOptions = computed(() => {
+  const selectedNames = accounts.value.map((a) => a.name);
+  return accountOptions.value.filter((option) => !selectedNames.includes(option.name));
+});
+
+// 계좌 추가 드롭다운 토글
+function toggleAccountDropdown() {
+  showAccountDropdown.value = !showAccountDropdown.value;
+}
+
+// 선택된 계좌 추가
+function addSelectedAccount(selectedAccount) {
+  accounts.value.push({
+    name: selectedAccount.name,
+    memberAccountId: selectedAccount.memberAccountId,
+    accountNumber: selectedAccount.accountNumber,
+    percentage: 0,
+  });
+  showAccountDropdown.value = false; // 드롭다운 닫기
+}
+
+// 계좌 추가 (기존 함수 - 호환성 유지)
 function addAccount() {
-  const remainingOptions = accountOptions
-    .map((a) => a.name)
-    .filter((name) => !accounts.value.map((a) => a.name).includes(name));
-  if (remainingOptions.length > 0) {
-    accounts.value.push({ name: remainingOptions[0], percentage: 0 });
+  const remaining = remainingAccountOptions.value;
+  if (remaining.length > 0) {
+    addSelectedAccount(remaining[0]);
   }
 }
 
