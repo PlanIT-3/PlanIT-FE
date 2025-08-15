@@ -6,7 +6,7 @@
         <div class="absolute left-5">
           <GoBackButton />
         </div>
-        <h2 class="text-lg font-bold ml-12">ISA 계좌 할당</h2>
+        <h2 class="text-lg font-bold ml-13">ISA 계좌 할당</h2>
       </div>
 
       <!-- 목표 금액 입력 -->
