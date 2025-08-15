@@ -44,7 +44,7 @@ const onClickSurvey = () => {
   router.push("/investment-survey");
 };
 
-const investType = ref("NEUTRAL");
+const investType = ref("");
 
 //투자 성향 불러오기
 onMounted(async () => {
