@@ -28,6 +28,12 @@ export default {
     return data;
   },
 
+  //목표 삭제
+  async deleteGoal(goalId) {
+    const { data } = await api.delete(`${BASE_URL}/${goalId}`);
+    return data;
+  },
+
   // 목표 진행 추이 조회
   async getGoalProgress(goalId) {
     const { data } = await api.get(`${BASE_URL}/${goalId}/progress`);
