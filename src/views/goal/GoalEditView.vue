@@ -91,7 +91,7 @@
               <li v-for="p in isaProducts" :key="p.memberProductId" class="leading-5">
                 <span class="font-medium">{{ p.itemName }}</span>
                 <span v-if="p.quantity"> × {{ p.quantity }}</span>
-                <span class="ml-1">— {{ formatWan((p.presentAmount ?? 0) * (p.quantity ?? 1)) }}</span>
+                <span class="ml-1">{{ formatWan((p.presentAmount ?? 0) * (p.quantity ?? 1)) }}</span>
               </li>
             </ul>
           </div>
@@ -151,6 +151,7 @@ import { useRoute, useRouter } from "vue-router";
 import DefaultLayout from "@/components/layouts/DefaultLayout.vue";
 import AddRegisterModal from "./AddRegisterModal.vue";
 import Api from "@/api/objectApi";
+import isaApi from "@/api/isaApi";
 
 const route = useRoute();
 const router = useRouter();
@@ -175,10 +176,11 @@ const formattedIsaAmount = computed(() => isaAmount.value.toLocaleString());
 // 편집 모드 여부
 const isEditMode = computed(() => !!goalId.value);
 
-// 합계(원 단위)
+// 합계(원 )
 const isaTotal = computed(() =>
   isaProducts.value.reduce((sum, p) => sum + Number(p.presentAmount ?? 0) * Number(p.quantity ?? 1), 0)
 );
+
 const depositTotal = computed(() =>
   depositAccounts.value.reduce((sum, acc) => sum + Number(acc.allocatedAmount ?? acc.amount ?? 0), 0)
 );
@@ -187,7 +189,7 @@ const depositTotal = computed(() =>
 const toWanFloor = (n) => Math.floor(Number(n ?? 0) / 10000);
 const formatWan = (n) => toWanFloor(n).toLocaleString("ko-KR") + "만원";
 
-// 완료 버튼 활성 조건 1
+// 완료 버튼 활성 조건 1: 목표 이름 , 금액 , 날짜
 const requiredFilled = computed(
   () =>
     String(goalName.value || "").trim().length > 0 &&
@@ -196,7 +198,31 @@ const requiredFilled = computed(
     !!endDate.value
 );
 
-//완료 버튼 활성 조건 2
+const fetchIsaChecked = async (gid) => {
+  try {
+    const res = await isaApi.getIsaProductsForEdit(gid);
+    const list = res?.data ?? res;
+    const rows = Array.isArray(list?.data) ? list.data : Array.isArray(list) ? list : [];
+
+    // checked=true만 필터 → 화면에서 쓰는 필드로 매핑
+    // 1) 체크된 것만
+    const onlyChecked = rows.filter((r) => !!r.checked);
+    // 2) 같은 memberProductId 중복 제거
+    const deduped = dedupeBy(onlyChecked, "memberProductId");
+    // 3) 화면 모델로 매핑
+    isaProducts.value = deduped.map((r) => ({
+      memberProductId: toNum(r.memberProductId),
+      itemName: r.itemName ?? "",
+      presentAmount: toNum(r.presentAmount) || 0,
+      quantity: toNum(r.quantity) || 0,
+    }));
+  } catch (e) {
+    console.error("ISA 목록불러오기 실패:", e);
+    isaProducts.value = [];
+  }
+};
+
+//완료 버튼 활성 조건 2 : isa 나 예적금 할당하기
 const hasAnyAllocation = computed(
   () => (isaProducts.value?.length || 0) > 0 || (depositAccounts.value?.length || 0) > 0
 );
@@ -204,7 +230,7 @@ const hasAnyAllocation = computed(
 // 완료버튼 활성
 const canComplete = computed(() => requiredFilled.value && hasAnyAllocation.value);
 
-//ISA  할당 후 edit 페이지 돌아올 때 데이터받아오기
+//ISA  할당 후 edit 페이지 돌아올 때 get api 데이터받아오기
 const fetchGoalDetails = async (id) => {
   try {
     const res = await Api.getGoal(id);
@@ -213,7 +239,6 @@ const fetchGoalDetails = async (id) => {
     if (!goalData) return;
 
     goalName.value = goalData.goalName;
-    // ?? goalData.objectName ?? "";
     goalAmount.value = Number(goalData.targetAmount ?? 0);
     depositRatio.value =
       typeof goalData.depositRate === "number" ? goalData.depositRate : 100 - Number(goalData.isaRate ?? 50);
@@ -233,9 +258,8 @@ const fetchGoalDetails = async (id) => {
       endDate.value = (goalData.endDate ?? "").toString().slice(0, 10);
     }
 
-    ///////////
-    isaProducts.value = goalData.isaProducts ?? goalData.isaAllocations ?? [];
     depositAccounts.value = goalData.depositAccounts ?? goalData.depositAllocations ?? [];
+    await fetchIsaChecked(id);
   } catch (error) {
     console.error("목표 상세 정보 불러오기 실패:", error);
   }
@@ -244,14 +268,14 @@ const fetchGoalDetails = async (id) => {
 // 라우터 쿼리 감지()
 watch(
   () => route.query.goalId,
-  (newId) => {
+  async (newId) => {
     const id = Number(newId ?? localStorage.getItem("currentGoalId"));
     if (id && !Number.isNaN(id)) {
       goalId.value = id;
-      fetchGoalDetails(id);
+      await fetchGoalDetails(id);
     }
   },
-  { immediate: true } //처음 마운트 될 때도 바로 한번 실행
+  { immediate: true } //처음 마운트 될 때 바로 한번 실행
 );
 
 // + 버튼: 생성 모드면 먼저 생성, 편집 모드면 모달만 오픈
@@ -310,4 +334,18 @@ const handleCompleteGoal = async () => {
     alert("목표 저장에 실패했습니다. 다시 시도해주세요.");
   }
 };
+
+//중복이슈
+// --- helpers: 숫자화 & 중복제거 ---
+const toNum = (v) => Number(v ?? 0);
+
+/** rows 배열에서 key(기본 memberProductId) 기준으로 중복 제거 */
+function dedupeBy(rows, key = "memberProductId") {
+  const m = new Map();
+  for (const r of rows) {
+    const id = toNum(r?.[key]);
+    if (!m.has(id)) m.set(id, r);
+  }
+  return Array.from(m.values());
+}
 </script>

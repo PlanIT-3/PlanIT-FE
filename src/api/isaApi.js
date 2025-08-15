@@ -25,8 +25,32 @@ export async function registerIsaAllocation(goalId, memberProductIds) {
   return res.data; // { status, message, ... }
 }
 
+//isa 편집용 전체 보는 리스트 (할당된 / 안된 전부 )
+export async function getIsaProductsForEdit(goalId) {
+  const res = await api.get("/auth/api/account/isa/edit", {
+    params: { goalId }, //get query params로
+  });
+  return res.data;
+}
+
+//수정 버튼 put
+export async function editIsaAllocation(goalId, allItems, selectedIds) {
+  const editReqs = allItems.map((p) => ({
+    goalId,
+    memberProductId: p.memberProductId ?? p.id, // 둘 중 있는 키 사용
+    accountType: "ISA",
+    checked: selectedIds.includes(p.memberProductId ?? p.id),
+  }));
+
+  const body = { editReqs }; // ✅ 백엔드 DTO: IsaAccountProductEditListReq.editReqs
+  const res = await api.put("/auth/api/account/isa", body);
+  return res.data;
+}
+
 export default {
   getIsaProducts,
   getTaxExemption,
   registerIsaAllocation,
+  getIsaProductsForEdit,
+  editIsaAllocation,
 };
