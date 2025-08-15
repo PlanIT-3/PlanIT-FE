@@ -3,7 +3,10 @@
     <div class="flex flex-col w-full">
       <!-- 상단 헤더 -->
       <div class="flex items-center mb-6">
-        <h2 class="text-lg font-bold">ISA 계좌 할당</h2>
+        <div class="absolute left-5">
+          <GoBackButton />
+        </div>
+        <h2 class="text-lg font-bold ml-12">ISA 계좌 할당</h2>
       </div>
 
       <!-- 목표 금액 입력 -->
@@ -90,6 +93,7 @@ import { TooltipComponent, LegendComponent } from "echarts/components";
 import { useRoute, useRouter } from "vue-router";
 import isaApi from "@/api/isaApi";
 import goal from "@/router/goal";
+import GoBackButton from "@/components/base/GoBackButton.vue";
 use([CanvasRenderer, PieChart, TooltipComponent, LegendComponent]);
 
 const router = useRouter();
@@ -328,7 +332,7 @@ function mapApiItem(item) {
     checked: !!item.checked,
   };
 }
-
+//중복이슈 발생 해결
 function dedupeProducts(list) {
   const m = new Map();
   for (const p of list) {
