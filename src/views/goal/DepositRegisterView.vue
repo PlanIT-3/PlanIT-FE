@@ -35,8 +35,39 @@
       <p class="mt-1 text-sm text-gray-400">목표 남은 금액: {{ leftGoalAmount.toLocaleString() }}원</p>
     </div>
 
+    <!-- 할당 가능한 계좌가 없을 때 안내 메시지 -->
+    <div v-if="!loading && !error && accountOptions.length === 0" class="text-center py-12">
+      <div class="mb-6">
+        <svg class="mx-auto h-16 w-16 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+        </svg>
+      </div>
+      <h3 class="text-lg font-medium text-gray-900 mb-3">
+        할당 가능한 예적금 계좌가 없습니다
+      </h3>
+      <div class="text-sm text-gray-500 mb-6 space-y-1">
+        <p>다음 중 하나의 이유일 수 있습니다:</p>
+        <p>• 모든 예적금 계좌가 다른 목표에 할당됨</p>
+        <p>• 연결된 예적금 계좌가 없음</p>
+        <p>• 할당 가능한 잔액이 부족함</p>
+      </div>
+      <div class="space-y-3">
+        <Button 
+          label="계좌 연결하러 가기" 
+          @click="goToAccountLink"
+          class="w-full max-w-sm mx-auto"
+        />
+        <button 
+          @click="goToGoalList"
+          class="block w-full max-w-sm mx-auto px-4 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-md transition-colors"
+        >
+          다른 목표 확인하기
+        </button>
+      </div>
+    </div>
+
     <!-- 계좌 목록 -->
-    <div v-if="!loading && !error && accounts.length > 0">
+    <div v-else-if="!loading && !error && accounts.length > 0">
       <GraphsContainer v-for="(account, index) in accounts" :key="index" class="relative bg-white shadow-sm mb-5">
         <!-- 삭제 버튼 -->
         <div class="absolute top-[1px] right-[6px] flex justify-end">
@@ -82,7 +113,48 @@
         </div>
 
         <!-- 할당 상태 바차트 -->
-        <BarChart :data="getAccountAllocationData(account)" />
+        <div class="mx-2 mb-3">
+          <div class="flex items-center justify-between mb-2">
+            <h4 class="text-sm font-medium text-gray-700">계좌 할당 현황</h4>
+            <span class="text-xs text-gray-500">
+              {{ formatMoney(getAccountTotal(account.name)) }} 중 
+              {{ formatMoney(getAllocatedAmount(account)) }} 할당
+            </span>
+          </div>
+          
+          <BarChart :data="getAccountAllocationData(account)" />
+          
+          <!-- 범례 -->
+          <div class="grid grid-cols-1 gap-2 mt-2 text-xs">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <div class="w-3 h-3 rounded bg-gray-400"></div>
+                <span class="text-gray-600">이미 할당됨</span>
+              </div>
+              <span class="text-gray-800 font-medium">
+                {{ formatMoney(getAccountTotal(account.name) - getAccountInfo(account.name)?.remainingAmount || 0) }}
+              </span>
+            </div>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <div class="w-3 h-3 rounded bg-blue-500"></div>
+                <span class="text-gray-600">현재 선택</span>
+              </div>
+              <span class="text-blue-600 font-medium">
+                {{ formatMoney(getAllocatedAmount(account)) }}
+              </span>
+            </div>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <div class="w-3 h-3 rounded bg-green-500"></div>
+                <span class="text-gray-600">할당 가능</span>
+              </div>
+              <span class="text-green-600 font-medium">
+                {{ formatMoney(Math.max(0, getAccountInfo(account.name)?.remainingAmount - getAllocatedAmount(account) || 0)) }}
+              </span>
+            </div>
+          </div>
+        </div>
       </GraphsContainer>
 
       <!-- 계좌 추가 버튼 -->
@@ -96,10 +168,23 @@
     </div>
 
     <!-- 완료 버튼 -->
-    <div v-if="!loading && !error && accounts.length > 0">
+    <div v-if="!loading && !error && accounts.length > 0 && accountOptions.length > 0">
+      <!-- 완료 조건 안내 메시지 -->
+      <div v-if="!isCompletionReady" class="mb-4 p-3 bg-amber-50 border border-amber-200 rounded">
+        <div class="flex items-start gap-2">
+          <svg class="w-4 h-4 text-amber-500 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+          </svg>
+          <div class="text-sm">
+            <p class="font-medium text-amber-800 mb-1">할당 설정을 완료해주세요</p>
+            <p class="text-amber-700">모든 계좌의 할당 비율을 0%보다 크게 설정해야 완료할 수 있습니다.</p>
+          </div>
+        </div>
+      </div>
+      
       <Button
         :label="loading ? '저장 중...' : '예치금 자산 할당 완료'"
-        :disabled="loading"
+        :disabled="loading || !isCompletionReady"
         @click="saveDepositAllocation"
       />
     </div>
@@ -107,7 +192,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import BaseTextInput from "@/components/base/BaseTextInput.vue";
 import GoBackButton from "@/components/base/GoBackButton.vue";
@@ -141,6 +226,9 @@ const availableAccounts = ref([]);
 
 // 현재 선택된 계좌들
 const accounts = ref([]);
+
+// 완료 상태 추적 (미완료 Goal 삭제 방지용)
+const isCompleted = ref(false);
 
 // API 호출 함수들
 async function loadGoalAmount() {
@@ -312,6 +400,7 @@ async function saveDepositAllocation() {
     const response = await depositService.registerDeposits(memberId.value, requestData);
 
     if (response.data.code === "GEN-000") {
+      isCompleted.value = true; // 완료 상태로 설정 (Goal 삭제 방지)
       // 로컬스토리지 정리
       localStorage.removeItem('newGoalId');
       alert("예적금 할당이 완료되었습니다.");
@@ -326,6 +415,38 @@ async function saveDepositAllocation() {
     loading.value = false;
   }
 }
+
+// 미완료 Goal 삭제 함수
+async function deleteIncompleteGoal() {
+  if (!goalId.value) return;
+  
+  try {
+    console.log('🗑️ 미완료 Goal 삭제 시도:', goalId.value);
+    await objectApi.deleteGoal(goalId.value);
+    localStorage.removeItem('newGoalId');
+    localStorage.removeItem('currentGoalId');
+    console.log('✅ 미완료 Goal 삭제 완료:', goalId.value);
+  } catch (error) {
+    console.error('❌ Goal 삭제 실패:', error);
+    // 삭제 실패해도 사용자에게는 알리지 않음 (백그라운드 정리 작업)
+  }
+}
+
+// 페이지를 벗어날 때 미완료 Goal 삭제
+onBeforeUnmount(async () => {
+  if (!isCompleted.value && goalId.value) {
+    console.log('🚪 페이지 떠남 - 미완료 Goal 삭제 실행');
+    await deleteIncompleteGoal();
+  }
+});
+
+// 브라우저 새로고침/닫기 감지
+window.addEventListener('beforeunload', () => {
+  if (!isCompleted.value && goalId.value) {
+    // 동기적 삭제 (브라우저 제약으로 인한 제한적 지원)
+    navigator.sendBeacon(`/api/goals/${goalId.value}`, JSON.stringify({ _method: 'DELETE' }));
+  }
+});
 
 // 컴포넌트 마운트 시 데이터 로딩
 onMounted(() => {
@@ -349,6 +470,11 @@ onMounted(() => {
 function getAccountTotal(accountName) {
   const account = accountOptions.value.find((a) => a.name === accountName);
   return account?.total ?? 0;
+}
+
+// 계좌 정보 가져오기
+function getAccountInfo(accountName) {
+  return accountOptions.value.find((a) => a.name === accountName);
 }
 
 // 개별 할당 금액 계산 - 목표 금액과 계좌 잔액 중 작은 값을 기준으로 계산
@@ -417,6 +543,19 @@ function formatMoney(totalGoalAmount) {
   return totalGoalAmount.toLocaleString() + "만원";
 }
 
+// 완료 버튼 활성화 조건 검사
+const isCompletionReady = computed(() => {
+  // 계좌가 없으면 비활성화
+  if (accounts.value.length === 0) {
+    return false;
+  }
+  
+  // 모든 계좌가 선택되어 있고 비율이 0보다 큰지 확인
+  return accounts.value.every(account => {
+    return account.name && account.percentage > 0;
+  });
+});
+
 // 계좌별 할당 상태 차트 데이터 생성 (백분율로 변환)
 function getAccountAllocationData(account) {
   const accountInfo = accountOptions.value.find(opt => opt.name === account.name);
@@ -448,13 +587,33 @@ function getAccountAllocationData(account) {
   const availableAmountPercent = Math.round((availableAmount / totalAmount) * 100);
 
   const chartData = [
-    { name: '이미 할당됨', value: alreadyAllocatedPercent || 0 },
-    { name: '현재 선택', value: currentAllocationPercent || 0 },
-    { name: '할당 가능', value: availableAmountPercent || 0 }
+    { 
+      something: '이미 할당됨', // BarChart 컴포넌트가 찾는 속성명
+      value: alreadyAllocatedPercent || 0
+    },
+    { 
+      something: '현재 선택',
+      value: currentAllocationPercent || 0
+    },
+    { 
+      something: '할당 가능',
+      value: availableAmountPercent || 0
+    }
   ].filter(item => item.value > 0); // 0보다 큰 값만 표시
 
   console.log(`📊 ${account.name} 백분율 데이터:`, chartData);
 
   return chartData;
+}
+
+// 네비게이션 함수들
+function goToAccountLink() {
+  // 계좌 연결 페이지로 이동 (실제 라우팅 경로에 맞게 수정 필요)
+  router.push('/onboarding/bank-select');
+}
+
+function goToGoalList() {
+  // 목표 목록 페이지로 이동
+  router.push('/goal');
 }
 </script>
