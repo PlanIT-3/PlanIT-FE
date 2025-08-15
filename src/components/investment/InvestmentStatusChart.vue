@@ -44,7 +44,7 @@
     </div>
 
     <!-- Investment Chart -->
-    <div class="h-[170px]">
+    <div class="h-[200px]">
       <VChart :option="investmentChartOption" autoresize />
     </div>
   </div>

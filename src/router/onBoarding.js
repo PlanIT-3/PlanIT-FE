@@ -71,4 +71,10 @@ export default [
     component: () => import("../views/onBoarding/InvestmentSurveyResult.vue"),
     meta: { layout: "noHeader", requiresAuth: true },
   },
+  {
+    path: "/agree-condition",
+    name: "agreeCondition",
+    component: () => import("../views/onBoarding/AgreeConditionView.vue"),
+    meta: { layout: "noHeader", requiresAuth: true },
+  },
 ];

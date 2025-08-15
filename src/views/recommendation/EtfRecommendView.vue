@@ -4,8 +4,8 @@
       <RecommendBanner />
     </div>
     <div
-      class="flex flex-col gap-4 w-[366px] mx-auto py-4 overflow-y-auto pb-16 custom-scroll"
-      style="max-height: 500px"
+      class="flex flex-col gap-4 w-[366px] mx-auto py-4 overflow-y-auto overflow-x-hidden pb-16 custom-scroll"
+      style="max-height: 400px"
     >
       <!-- CardListView에 이벤트 핸들러 추가 -->
       <CardListView @showDetail="openDetail" />
@@ -94,5 +94,10 @@ function closeDetail() {
 
 .custom-scroll::-webkit-scrollbar-corner {
   background: transparent;
+}
+
+/* 강제로 overflow hidden 적용 */
+.overflow-hidden-force {
+  overflow: hidden !important;
 }
 </style>
