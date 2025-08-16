@@ -68,6 +68,8 @@ export default {
       })),
     ];
 
+    console.log("모든 계좌 데이터:", allAccounts);
+
     // 총 금액 계산하여 비율 설정
     const totalAmount = allAccounts.reduce((sum, acc) => sum + acc.amount, 0);
     allAccounts.forEach((account) => {
@@ -77,37 +79,11 @@ export default {
     return allAccounts;
   },
 
-  // 목표에 할당된 계좌와 ISA 목록 조회 (분리된 버전)
+  // 목표에 할당된 계좌와 ISA 목록 조회 (원본 데이터 반환)
   async getGoalAccountsDetail(goalId) {
     const { data } = await api.get(`${BASE_URL}/${goalId}/accounts`);
     console.log("API 계좌 목록 상세 응답데이터 :", data);
-
-    // 예금 계좌 변환
-    const depositAccounts = data.goalDepositList.map((account) => ({
-      bankName: account.bankName,
-      productName: account.accountName,
-      percent: 0,
-      amount: Math.round(account.accountBalance),
-    }));
-
-    // ISA 계좌 변환
-    const isaAccounts = data.goalIsaList.map((account) => ({
-      itemName: account.itemName,
-      presentAmount: Math.round(account.presentAmount),
-      quantity: account.quantity,
-      isaBalance: Math.round(account.isaBalance),
-    }));
-
-    // 예금 계좌 비율 계산
-    const totalDepositAmount = depositAccounts.reduce((sum, acc) => sum + acc.amount, 0);
-    depositAccounts.forEach((account) => {
-      account.percent = totalDepositAmount > 0 ? Math.round((account.amount / totalDepositAmount) * 100) : 0;
-    });
-
-    return {
-      depositAccounts,
-      isaAccounts,
-    };
+    return data;
   },
 
   // 해당 목표 targetamount 조회
