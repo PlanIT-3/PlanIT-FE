@@ -178,7 +178,6 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
           </svg>
         </button>
-
         <!-- 드롭다운 메뉴 -->
         <div
           v-if="showAccountDropdown"
@@ -422,7 +421,7 @@ async function saveDepositAllocation() {
           goalId: parseInt(goalId.value),
           memberAccountId: account.memberAccountId,
           accountNumber: account.accountNumber,
-          accountType: "예적금",
+          accountType: "Deposit",
           amount: allocatedAmount,
           allocatedRate: account.percentage,
           accountAllocatedRate: 100, // 기본값
