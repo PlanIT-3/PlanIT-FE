@@ -75,8 +75,8 @@
             <ul class="mt-2 text-xs text-blue-800 space-y-1">
               <li v-for="acc in depositAccounts" :key="acc.accountId" class="leading-5">
                 <span class="font-medium">{{ acc.accountName }}</span>
-                <!-- <span v-if="acc.bankName" class="text-blue-600"> · {{ acc.bankName }}</span> -->
-                <span class="ml-1">— {{ formatWan(acc.myAmount ?? 0) }}</span>
+                <span v-if="acc.bankName" class="text-blue-600"> · {{ acc.bankName }}</span>
+                <span class="ml-1">— {{ formatWan(acc.allocatedAmount ?? acc.amount ?? 0) }}</span>
               </li>
             </ul>
           </div>
@@ -181,7 +181,9 @@ const isaTotal = computed(() =>
   isaProducts.value.reduce((sum, p) => sum + Number(p.presentAmount ?? 0) * Number(p.quantity ?? 1), 0)
 );
 
-const depositTotal = computed(() => depositAccounts.value.reduce((sum, acc) => sum + Number(acc.myAmount ?? 0), 0));
+const depositTotal = computed(() =>
+  depositAccounts.value.reduce((sum, acc) => sum + Number(acc.allocatedAmount ?? acc.amount ?? 0), 0)
+);
 
 // 원 → 만원(절삭) 함수 →
 const toWanFloor = (n) => Math.round(Number(n ?? 0) / 10000);
@@ -255,23 +257,8 @@ const fetchGoalDetails = async (id) => {
     } else {
       endDate.value = (goalData.endDate ?? "").toString().slice(0, 10);
     }
-    //예적금
-    const rawDeposits = Array.isArray(goalData.depositAccounts) ? goalData.depositAccounts : [];
-    const seen = new Set();
-    const minimalDeposits = [];
-    for (const acc of rawDeposits) {
-      const key = acc.accountNumber || acc.accountName;
-      if (!key) continue;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      minimalDeposits.push({
-        id: acc.memberAccountId ?? acc.accountId ?? key,
-        accountNumber: acc.accountNumber ?? "",
-        accountName: acc.accountName ?? "",
-        myAmount: acc.myAmount ?? 0,
-      });
-    }
-    depositAccounts.value = minimalDeposits;
+
+    depositAccounts.value = goalData.depositAccounts ?? goalData.depositAllocations ?? [];
     await fetchIsaChecked(id);
   } catch (error) {
     console.error("목표 상세 정보 불러오기 실패:", error);
