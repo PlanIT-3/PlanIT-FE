@@ -424,7 +424,7 @@ async function saveDepositAllocation() {
           accountType: "Deposit",
           amount: allocatedAmount,
           allocatedRate: account.percentage,
-          accountAllocatedRate: 100, // 기본값
+          accountAllocatedRate: account.percentage, // 사용자가 설정한 실제 비율
           actionType: "DEPOSIT",
         };
       }),
@@ -434,10 +434,9 @@ async function saveDepositAllocation() {
 
     if (response.data.code === "GEN-000") {
       isCompleted.value = true; // 완료 상태로 설정 (Goal 삭제 방지)
-      // 로컬스토리지 정리
-      localStorage.removeItem("newGoalId");
       alert("예적금 할당이 완료되었습니다.");
-      router.back(); // 이전 페이지로 돌아가기
+      // GoalEdit으로 돌아가서 최종 완료 처리
+      router.push({ path: '/goal/edit', query: { goalId: goalId.value } });
     } else {
       throw new Error(response.data.message || "알 수 없는 오류가 발생했습니다.");
     }
