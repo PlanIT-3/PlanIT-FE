@@ -160,42 +160,15 @@
         </div>
       </GraphsContainer>
 
-      <!-- 계좌 추가 드롭다운 -->
-      <div class="relative mb-6">
+      <!-- 계좌 추가 버튼 -->
+      <div class="mb-6">
         <button
-          @click="toggleAccountDropdown"
+          @click="addNextAccount"
           :disabled="remainingAccountOptions.length === 0 || loading"
           class="w-full py-2 rounded border border-gray-300 text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           <span>＋ 계좌 추가</span>
-          <svg
-            class="w-4 h-4 transition-transform"
-            :class="{ 'rotate-180': showAccountDropdown }"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-          </svg>
         </button>
-        <!-- 드롭다운 메뉴 -->
-        <div
-          v-if="showAccountDropdown"
-          class="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded shadow-lg z-10 max-h-60 overflow-y-auto"
-        >
-          <div v-if="remainingAccountOptions.length === 0" class="px-4 py-3 text-sm text-gray-500 text-center">
-            추가 가능한 계좌가 없습니다
-          </div>
-          <button
-            v-for="account in remainingAccountOptions"
-            :key="account.name"
-            @click="addSelectedAccount(account)"
-            class="w-full px-4 py-3 text-left text-sm hover:bg-gray-50 border-b border-gray-100 last:border-b-0 focus:outline-none focus:bg-gray-50"
-          >
-            <div class="font-medium text-gray-900">{{ account.name }}</div>
-            <div class="text-xs text-gray-500 mt-1">사용 가능: {{ formatMoney(account.remainingAmount) }}</div>
-          </button>
-        </div>
       </div>
     </div>
 
@@ -550,12 +523,20 @@ const remainingAccountOptions = computed(() => {
   return accountOptions.value.filter((option) => !selectedNames.includes(option.name));
 });
 
-// 계좌 추가 드롭다운 토글
-function toggleAccountDropdown() {
-  showAccountDropdown.value = !showAccountDropdown.value;
+// 다음 계좌 자동 추가
+function addNextAccount() {
+  const remaining = remainingAccountOptions.value;
+  if (remaining.length > 0) {
+    accounts.value.push({
+      name: remaining[0].name,
+      memberAccountId: remaining[0].memberAccountId,
+      accountNumber: remaining[0].accountNumber,
+      percentage: 0,
+    });
+  }
 }
 
-// 선택된 계좌 추가
+// 선택된 계좌 추가 (기존 함수 유지)
 function addSelectedAccount(selectedAccount) {
   accounts.value.push({
     name: selectedAccount.name,
@@ -563,7 +544,6 @@ function addSelectedAccount(selectedAccount) {
     accountNumber: selectedAccount.accountNumber,
     percentage: 0,
   });
-  showAccountDropdown.value = false; // 드롭다운 닫기
 }
 
 // 계좌 추가 (기존 함수 - 호환성 유지)
