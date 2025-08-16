@@ -429,8 +429,8 @@ async function loadAvailableAccounts() {
       availableAccounts.value = response.data.data;
       console.log("📊 받은 계좌 데이터:", availableAccounts.value);
 
-      // 수정모드 확인 (goalId가 있고 쿼리에 amount가 있으면 수정모드)
-      const isEditMode = goalId.value && route.query.amount;
+      // 수정모드 확인 (goalId가 있고 기존 할당 정보가 로딩되어 accountOptions가 채워져 있으면 수정모드)
+      const isEditMode = goalId.value && accountOptions.value.length > 0;
       
       // accountOptions를 API 데이터로 변환
       if (isEditMode) {
