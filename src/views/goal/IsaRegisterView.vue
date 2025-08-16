@@ -240,7 +240,7 @@ async function handleSubmit() {
       }
     }
   } catch (e) {
-    alert("API 요청 실패 " + e);
+    alert(" 요청 실패 " + e);
   }
 }
 
