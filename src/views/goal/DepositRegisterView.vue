@@ -263,10 +263,22 @@ const showAccountDropdown = ref(false);
 async function loadGoalAmount() {
   console.log("🎯 loadGoalAmount 시작:", { goalId: goalId.value, queryAmount: route.query.amount });
 
-  // 신규 생성: 쿼리 파라미터에 amount가 있으면 GoalEdit에서 넘어온 값 사용
-  if (route.query.amount && Number(route.query.amount) > 0) {
+  // 신규 생성: goalId가 없고 쿼리 파라미터에 amount가 있으면 신규모드
+  if (route.query.amount && Number(route.query.amount) > 0 && !goalId.value) {
     totalGoalAmount.value = Number(route.query.amount);
     console.log("🎯 쿼리에서 목표 금액 설정 (신규):", totalGoalAmount.value.toLocaleString() + "원");
+    return;
+  }
+
+  // 수정 모드: goalId가 있고 amount도 있으면 수정모드 (amount는 쿼리로 넘어옴)
+  if (goalId.value && route.query.amount && Number(route.query.amount) > 0) {
+    totalGoalAmount.value = Number(route.query.amount);
+    console.log("🎯 쿼리에서 목표 금액 설정 (수정):", totalGoalAmount.value.toLocaleString() + "원");
+    
+    // 수정 모드에서는 기존 할당된 계좌 정보도 가져오기
+    await loadExistingAllocations();
+    // 수정 모드에서도 사용 가능한 계좌 목록 필요 (계좌 추가나 변경을 위해)
+    await loadAvailableAccounts();
     return;
   }
 
@@ -330,15 +342,27 @@ async function loadExistingAllocations() {
         };
       });
 
+      // 기존 할당된 계좌들을 accountOptions에도 설정 (수정모드에서 드롭다운에 표시하기 위해)
+      accountOptions.value = existingAllocations.map((allocation) => ({
+        name: allocation.accountName,
+        accountNumber: allocation.accountNumber,
+        memberAccountId: allocation.memberAccountId,
+        total: Math.floor((allocation.presentAmount || allocation.accountBalance || 0) / 10000),
+        remainingAmount: Math.floor((allocation.remainingAmount || allocation.accountBalance || 0) / 10000),
+      }));
+
       console.log("✅ 기존 할당 정보 화면 설정 완료:", accounts.value);
+      console.log("✅ accountOptions 설정 완료:", accountOptions.value);
     } else {
       console.log("❌ 기존 할당 정보 없음:", response);
       // 할당 정보가 없으면 빈 상태로 시작
       accounts.value = [];
+      accountOptions.value = [];
     }
   } catch (err) {
     console.error("기존 할당 정보 로딩 실패:", err);
     accounts.value = []; // 실패시 빈 상태로 시작
+    accountOptions.value = [];
   }
 }
 
@@ -363,29 +387,101 @@ async function loadAvailableAccounts() {
       availableAccounts.value = response.data.data;
       console.log("📊 받은 계좌 데이터:", availableAccounts.value);
 
+      // 수정모드 확인 (goalId가 있고 쿼리에 amount가 있으면 수정모드)
+      const isEditMode = goalId.value && route.query.amount;
+      
       // accountOptions를 API 데이터로 변환
-      accountOptions.value = availableAccounts.value.map((account) => ({
-        name: account.accountName,
-        accountNumber: account.accountNumber,
-        memberAccountId: account.memberAccountId,
-        total: Math.floor(account.presentAmount / 10000), // 원 단위를 만원 단위로 변환
-        remainingAmount: Math.floor(account.remainingAmount / 10000),
-      }));
+      if (isEditMode) {
+        // 수정모드: loadExistingAllocations에서 이미 accountOptions를 설정했으므로 
+        // 추가 계좌만 병합 (계좌 추가 기능용)
+        console.log("🔄 수정모드: 기존 accountOptions 유지하고 추가 계좌만 병합");
+        console.log("🔍 현재 accountOptions:", accountOptions.value);
+        console.log("🔍 사용 가능한 추가 계좌:", availableAccounts.value);
+        
+        // 기존 accountOptions에 없는 계좌만 추가
+        const existingAccountNames = accountOptions.value.map(acc => acc.name);
+        const additionalAccounts = availableAccounts.value
+          .filter(account => !existingAccountNames.includes(account.accountName) && account.remainingAmount > 0)
+          .map(account => ({
+            name: account.accountName,
+            accountNumber: account.accountNumber,
+            memberAccountId: account.memberAccountId,
+            total: Math.floor(account.presentAmount / 10000),
+            remainingAmount: Math.floor(account.remainingAmount / 10000),
+          }));
+        
+        // 기존 계좌 + 추가 계좌 병합
+        accountOptions.value = [...accountOptions.value, ...additionalAccounts];
+        console.log("✅ 병합된 accountOptions:", accountOptions.value);
+      } else {
+        // 신규모드: 할당 가능한 자산이 있는 계좌만
+        console.log("🆕 신규모드: 할당 가능한 계좌만");
+        accountOptions.value = availableAccounts.value
+          .filter((account) => account.remainingAmount > 0)
+          .map((account) => ({
+            name: account.accountName,
+            accountNumber: account.accountNumber,
+            memberAccountId: account.memberAccountId,
+            total: Math.floor(account.presentAmount / 10000),
+            remainingAmount: Math.floor(account.remainingAmount / 10000),
+          }));
+      }
       console.log("🔄 변환된 계좌 옵션:", accountOptions.value);
 
-      // 첫 번째 계좌를 기본으로 선택
-      if (accountOptions.value.length > 0) {
-        accounts.value = [
-          {
-            name: accountOptions.value[0].name,
-            memberAccountId: accountOptions.value[0].memberAccountId,
-            accountNumber: accountOptions.value[0].accountNumber,
-            percentage: 0,
-          },
-        ];
-        console.log("✅ 기본 계좌 선택:", accounts.value);
+      // 수정모드에서 기존 할당된 계좌가 accountOptions에 없을 경우 전체 계좌에서 가져와서 추가
+      if (isEditMode) {
+        console.log("🔄 수정모드: 기존 할당 계좌 확인 및 추가");
+        
+        try {
+          // 전체 계좌 정보 가져오기
+          const allAccountsResponse = await depositService.getDepositAccounts(memberId.value);
+          console.log("📊 전체 계좌 정보:", allAccountsResponse);
+          
+          if (allAccountsResponse.data.data) {
+            const allAccounts = allAccountsResponse.data.data;
+            
+            // 기존 할당된 계좌 중에서 accountOptions에 없는 것들을 찾아서 추가
+            for (const allocatedAccount of accounts.value) {
+              const existsInOptions = accountOptions.value.some(opt => opt.name === allocatedAccount.name);
+              
+              if (!existsInOptions) {
+                // 전체 계좌에서 해당 계좌 정보 찾기
+                const realAccountInfo = allAccounts.find(acc => acc.accountName === allocatedAccount.name);
+                
+                if (realAccountInfo) {
+                  console.log(`🔄 기존 할당 계좌 추가: ${allocatedAccount.name}`);
+                  
+                  accountOptions.value.push({
+                    name: realAccountInfo.accountName,
+                    accountNumber: realAccountInfo.accountNumber,
+                    memberAccountId: realAccountInfo.memberAccountId || allocatedAccount.memberAccountId,
+                    total: Math.floor((realAccountInfo.presentAmount || realAccountInfo.accountBalance || 0) / 10000),
+                    remainingAmount: Math.floor((realAccountInfo.remainingAmount || realAccountInfo.accountBalance || 0) / 10000),
+                  });
+                }
+              }
+            }
+            
+            console.log("✅ 수정모드: 최종 계좌 옵션:", accountOptions.value);
+          }
+        } catch (error) {
+          console.error("전체 계좌 정보 가져오기 실패:", error);
+        }
       } else {
-        console.log("⚠️ 사용 가능한 계좌 없음");
+        // 신규모드에서만 첫 번째 계좌를 기본으로 선택
+        if (accountOptions.value.length > 0) {
+          accounts.value = [
+            {
+              name: accountOptions.value[0].name,
+              memberAccountId: accountOptions.value[0].memberAccountId,
+              accountNumber: accountOptions.value[0].accountNumber,
+              percentage: 0,
+            },
+          ];
+          console.log("✅ 신규모드: 기본 계좌 선택:", accounts.value);
+        } else {
+          console.log("⚠️ 사용 가능한 계좌 없음");
+        }
       }
     } else {
       console.log("❌ 응답 데이터 구조 문제:", response);
