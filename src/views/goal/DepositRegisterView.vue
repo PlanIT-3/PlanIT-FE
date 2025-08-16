@@ -106,7 +106,7 @@
             />
           </div>
           <div class="flex justify-between text-xs text-gray-400">
-            <span>총액: {{ formatMoney(getAccountInfo(account.name)?.remainingAmount || 0) }}</span>
+            <span>총액: {{ formatMoney(getMaxAllocatableAmount(account.name)) }}</span>
             <span>할당: {{ formatMoney(getAllocatedAmount(account)) }}</span>
           </div>
         </div>
@@ -665,11 +665,28 @@ function getAccountInfo(accountName) {
   return accountOptions.value.find((a) => a.name === accountName);
 }
 
-// 개별 할당 금액 계산 - 계좌 잔여액 기준으로 비율 적용
-function getAllocatedAmount(account) {
-  const accountInfo = getAccountInfo(account.name);
+// 최대 할당 가능 금액 계산 (수정모드 고려)
+function getMaxAllocatableAmount(accountName) {
+  const accountInfo = getAccountInfo(accountName);
+  const goalAmountInWan = Math.floor(totalGoalAmount.value / 10000) || 0;
   const availableAmount = accountInfo?.remainingAmount || 0;
-  return (availableAmount * account.percentage) / 100;
+  
+  console.log(`🎯 최대할당계산 ${accountName}: 목표=${goalAmountInWan}, 잔액=${availableAmount}`);
+  
+  // 목표 금액과 계좌 할당 가능 금액 중 더 작은 값
+  const result = Math.min(goalAmountInWan, availableAmount);
+  return isNaN(result) ? 0 : Math.max(0, result);
+}
+
+// 개별 할당 금액 계산 - 최대 할당 가능 금액 기준으로 비율 적용
+function getAllocatedAmount(account) {
+  const maxAmount = getMaxAllocatableAmount(account.name) || 0;
+  const percentage = account.percentage || 0;
+  const result = (maxAmount * percentage) / 100;
+  
+  console.log(`💰 할당금액 계산 ${account.name}: 최대=${maxAmount}, 비율=${percentage}%, 결과=${result}`);
+  
+  return isNaN(result) ? 0 : result;
 }
 
 // 전체 할당 금액
@@ -680,20 +697,13 @@ const leftGoalAmount = computed(() => {
   return totalGoalAmount.value - totalAllocated.value * 10000; // 할당된 금액은 만원 단위이므로 원으로 변환
 });
 
-// 퍼센트 업데이트 - 목표 금액과 할당 가능한 금액 중 작은 값을 기준으로 변경
+// 퍼센트 업데이트 - 최대 할당 가능 금액 기준으로 변경
 function updatePercentage(index, value) {
   const newPercent = Number(value);
-  const goalAmountInWan = Math.floor(totalGoalAmount.value / 10000);
-  const accountInfo = getAccountInfo(accounts.value[index].name);
-  const availableAmount = accountInfo?.remainingAmount || 0;
-  const maxAmount = Math.min(goalAmountInWan, availableAmount); // 목표 금액과 할당 가능한 금액 중 작은 값
+  const accountName = accounts.value[index].name;
+  const maxAmount = getMaxAllocatableAmount(accountName);
 
-  console.log(`🎯 계좌 ${accounts.value[index].name}:`, {
-    goalAmount: goalAmountInWan,
-    availableAmount: availableAmount,
-    maxAmount: maxAmount,
-    newPercent: newPercent,
-  });
+  console.log(`🎯 계좌 ${accountName}: 최대할당=${maxAmount}만원, 비율=${newPercent}%`);
 
   // 100% = maxAmount이므로 자동으로 할당 가능 금액 초과 방지됨
   accounts.value[index].percentage = newPercent;
@@ -775,12 +785,33 @@ const isCompletionReady = computed(() => {
 function getAccountAllocationData(account) {
   const accountInfo = accountOptions.value.find((opt) => opt.name === account.name);
   if (!accountInfo) {
+    console.error("🚨 accountInfo를 찾을 수 없음:", account.name);
     return [];
   }
 
-  const totalAmount = accountInfo.total; // 전체 계좌 잔액 (만원)
-  const currentAllocation = getAllocatedAmount(account); // 현재 설정한 할당 금액 (만원)
-  const alreadyAllocated = accountInfo.total - accountInfo.remainingAmount; // 이미 다른 목표에 할당된 금액 (만원)
+  const totalAmount = accountInfo.total || 0; // 전체 계좌 잔액 (만원)
+  const currentAllocation = getAllocatedAmount(account) || 0; // 현재 설정한 할당 금액 (만원)
+  
+  console.log("📊 BarChart 데이터 계산:", {
+    accountName: account.name,
+    accountInfo,
+    totalAmount,
+    currentAllocation,
+    percentage: account.percentage
+  });
+  
+  // 수정모드 확인
+  const isEditMode = goalId.value && route.query.amount;
+  
+  // 다른 목표에 할당된 금액 계산
+  let alreadyAllocated = accountInfo.total - accountInfo.remainingAmount; // 전체 할당된 금액
+  
+  if (isEditMode) {
+    // 수정모드에서는 현재 목표에 할당된 금액을 제외 (다른 목표에만 할당된 금액)
+    const currentGoalAllocation = currentAllocation; // 현재 목표에 할당된 금액
+    alreadyAllocated = Math.max(0, alreadyAllocated - currentGoalAllocation);
+  }
+  
   const availableAmount = Math.max(0, accountInfo.remainingAmount - currentAllocation); // 남은 사용 가능 금액
 
   if (totalAmount === 0) {
