@@ -168,13 +168,22 @@
           class="w-full py-2 rounded border border-gray-300 text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           <span>＋ 계좌 추가</span>
-          <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': showAccountDropdown }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg
+            class="w-4 h-4 transition-transform"
+            :class="{ 'rotate-180': showAccountDropdown }"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
           </svg>
         </button>
-        
+
         <!-- 드롭다운 메뉴 -->
-        <div v-if="showAccountDropdown" class="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded shadow-lg z-10 max-h-60 overflow-y-auto">
+        <div
+          v-if="showAccountDropdown"
+          class="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded shadow-lg z-10 max-h-60 overflow-y-auto"
+        >
           <div v-if="remainingAccountOptions.length === 0" class="px-4 py-3 text-sm text-gray-500 text-center">
             추가 가능한 계좌가 없습니다
           </div>
