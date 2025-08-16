@@ -131,7 +131,7 @@
                 <span class="text-gray-600">할당된 자산</span>
               </div>
               <span class="text-black font-medium">
-                {{ formatMoney(getAccountTotal(account.name) - getAccountInfo(account.name)?.remainingAmount || 0) }}
+                {{ formatMoney(getLegendAllocatedAmount(account.name)) }}
               </span>
             </div>
             <div class="flex items-center justify-between">
@@ -149,11 +149,7 @@
                 <span class="text-gray-600">할당 가능자산</span>
               </div>
               <span class="text-black font-medium">
-                {{
-                  formatMoney(
-                    Math.max(0, getAccountInfo(account.name)?.remainingAmount - getAllocatedAmount(account) || 0)
-                  )
-                }}
+                {{ formatMoney(getLegendAvailableAmount(account.name)) }}
               </span>
             </div>
           </div>
@@ -329,8 +325,37 @@ async function loadExistingAllocations() {
       accounts.value = existingAllocations.map((allocation) => {
         const goalAmountInWan = Math.floor(totalGoalAmount.value / 10000);
         const allocatedAmountInWan = Math.floor(allocation.amount / 10000);
-        // 기존 할당 비율 계산: (할당 금액 / 목표 금액) * 100
-        const percentage = goalAmountInWan > 0 ? Math.round((allocatedAmountInWan / goalAmountInWan) * 100) : 0;
+        
+        console.log(`🔍 비율계산 디버그 ${allocation.accountName}:`, {
+          totalGoalAmount: totalGoalAmount.value,
+          goalAmountInWan,
+          allocationAmount: allocation.amount,
+          allocatedAmountInWan,
+          division: allocatedAmountInWan / goalAmountInWan
+        });
+        
+        // 수정모드에서는 최대 할당 가능 금액 대비 비율로 계산해야 함
+        // 최대 할당 가능 금액 = min(목표 금액, 계좌 사용가능 잔액)
+        const accountTotalInWan = Math.floor((allocation.presentAmount || allocation.accountBalance || 0) / 10000);
+        const apiRemainingInWan = Math.floor((allocation.remainingAmount || 0) / 10000);
+        const correctedRemainingInWan = apiRemainingInWan + allocatedAmountInWan; // 현재 할당분 추가
+        const maxAllocatableInWan = Math.min(goalAmountInWan, correctedRemainingInWan);
+        
+        // 기존 할당 비율 계산: (할당 금액 / 최대 할당 가능 금액) * 100
+        let percentage = 0;
+        if (maxAllocatableInWan > 0 && !isNaN(allocatedAmountInWan) && !isNaN(maxAllocatableInWan)) {
+          percentage = Math.round((allocatedAmountInWan / maxAllocatableInWan) * 100);
+        }
+        
+        // NaN 방지
+        percentage = isNaN(percentage) ? 0 : percentage;
+        
+        console.log(`📊 수정모드 비율계산 ${allocation.accountName}:`, {
+          goalAmount: goalAmountInWan,
+          allocated: allocatedAmountInWan,
+          maxAllocatable: maxAllocatableInWan,
+          percentage: percentage
+        });
 
         console.log(`💰 ${allocation.accountName}: ${allocatedAmountInWan}만원 (${percentage}%)`);
 
@@ -338,18 +363,35 @@ async function loadExistingAllocations() {
           name: allocation.accountName,
           memberAccountId: allocation.memberAccountId,
           accountNumber: allocation.accountNumber,
-          percentage: Math.min(percentage, 100), // 최대 100%로 제한
+          percentage: Math.min(Math.max(percentage, 0), 100), // 0-100% 범위로 제한
         };
       });
 
       // 기존 할당된 계좌들을 accountOptions에도 설정 (수정모드에서 드롭다운에 표시하기 위해)
-      accountOptions.value = existingAllocations.map((allocation) => ({
-        name: allocation.accountName,
-        accountNumber: allocation.accountNumber,
-        memberAccountId: allocation.memberAccountId,
-        total: Math.floor((allocation.presentAmount || allocation.accountBalance || 0) / 10000),
-        remainingAmount: Math.floor((allocation.remainingAmount || allocation.accountBalance || 0) / 10000),
-      }));
+      accountOptions.value = existingAllocations.map((allocation) => {
+        const totalAmount = Math.floor((allocation.presentAmount || allocation.accountBalance || 0) / 10000);
+        const allocatedAmount = Math.floor(allocation.amount / 10000); // 현재 목표에 할당된 금액
+        const apiRemainingAmount = Math.floor((allocation.remainingAmount || 0) / 10000);
+        
+        // 수정모드에서는 현재 할당 금액을 다시 사용 가능하게 만들어야 함
+        const correctedRemainingAmount = (isNaN(apiRemainingAmount) ? 0 : apiRemainingAmount) + 
+                                       (isNaN(allocatedAmount) ? 0 : allocatedAmount);
+        
+        console.log(`🔧 계좌 정보 수정: ${allocation.accountName}`, {
+          total: totalAmount,
+          apiRemaining: apiRemainingAmount, 
+          allocated: allocatedAmount,
+          correctedRemaining: correctedRemainingAmount
+        });
+        
+        return {
+          name: allocation.accountName,
+          accountNumber: allocation.accountNumber,
+          memberAccountId: allocation.memberAccountId,
+          total: isNaN(totalAmount) ? 0 : totalAmount,
+          remainingAmount: Math.max(0, isNaN(correctedRemainingAmount) ? 0 : correctedRemainingAmount),
+        };
+      });
 
       console.log("✅ 기존 할당 정보 화면 설정 완료:", accounts.value);
       console.log("✅ accountOptions 설정 완료:", accountOptions.value);
@@ -671,11 +713,33 @@ function getMaxAllocatableAmount(accountName) {
   const goalAmountInWan = Math.floor(totalGoalAmount.value / 10000) || 0;
   const availableAmount = accountInfo?.remainingAmount || 0;
   
-  console.log(`🎯 최대할당계산 ${accountName}: 목표=${goalAmountInWan}, 잔액=${availableAmount}`);
+  // 수정모드에서는 현재 목표에 할당된 금액도 수정 가능하므로 
+  // 실제 사용 가능한 금액은 remainingAmount 전체
+  const isEditMode = goalId.value && route.query.amount;
+  const currentAccount = accounts.value.find(acc => acc.name === accountName);
   
-  // 목표 금액과 계좌 할당 가능 금액 중 더 작은 값
-  const result = Math.min(goalAmountInWan, availableAmount);
-  return isNaN(result) ? 0 : Math.max(0, result);
+  console.log(`🔍 상세 디버그 ${accountName}:`, {
+    accountInfo: accountInfo,
+    accountInfoExists: !!accountInfo,
+    goalAmountInWan,
+    availableAmount,
+    isEditMode,
+    currentAccount: currentAccount,
+    accountOptions: accountOptions.value.map(opt => ({ name: opt.name, remaining: opt.remainingAmount, total: opt.total }))
+  });
+  
+  let maxAllocatable = 0;
+  if (isEditMode && currentAccount) {
+    // 수정모드: remainingAmount에 현재 할당분이 포함되어 있으므로 전체 사용 가능
+    maxAllocatable = Math.min(goalAmountInWan, availableAmount);
+  } else {
+    // 신규모드: 기존 로직
+    maxAllocatable = Math.min(goalAmountInWan, availableAmount);
+  }
+  
+  console.log(`🎯 최대할당계산 ${accountName}: 목표=${goalAmountInWan}, 잔액=${availableAmount}, 최대할당=${maxAllocatable}, 수정모드=${isEditMode}`);
+  
+  return isNaN(maxAllocatable) ? 0 : Math.max(0, maxAllocatable);
 }
 
 // 개별 할당 금액 계산 - 최대 할당 가능 금액 기준으로 비율 적용
@@ -804,13 +868,39 @@ function getAccountAllocationData(account) {
   const isEditMode = goalId.value && route.query.amount;
   
   // 다른 목표에 할당된 금액 계산
-  let alreadyAllocated = accountInfo.total - accountInfo.remainingAmount; // 전체 할당된 금액
+  let alreadyAllocated = 0;
   
   if (isEditMode) {
-    // 수정모드에서는 현재 목표에 할당된 금액을 제외 (다른 목표에만 할당된 금액)
-    const currentGoalAllocation = currentAllocation; // 현재 목표에 할당된 금액
-    alreadyAllocated = Math.max(0, alreadyAllocated - currentGoalAllocation);
+    // 수정모드: 현재 이 목표에 할당된 계좌의 경우, 
+    // 다른 목표에 할당된 금액만 "할당된 자산"으로 표시
+    const currentAccount = accounts.value.find(acc => acc.name === account.name);
+    if (currentAccount) {
+      // 수정모드에서는 remainingAmount에 현재 목표 할당분이 이미 포함되어 있음
+      // 다른 목표에 할당된 금액 = 전체 - 현재 사용가능한 금액 (현재 목표 할당분 포함)
+      alreadyAllocated = Math.max(0, accountInfo.total - accountInfo.remainingAmount);
+      
+      console.log(`🔍 수정모드 할당계산 ${account.name}:`, {
+        total: accountInfo.total,
+        remainingAmount: accountInfo.remainingAmount,
+        alreadyAllocated,
+        현재할당분포함여부: "remainingAmount에 이미 포함됨"
+      });
+    } else {
+      // 이 계좌가 현재 목표에 할당되지 않은 경우 (계좌 추가할 때)
+      alreadyAllocated = accountInfo.total - accountInfo.remainingAmount;
+    }
+  } else {
+    // 신규모드: 전체 할당된 금액
+    alreadyAllocated = accountInfo.total - accountInfo.remainingAmount;
   }
+  
+  console.log("📊 할당된 자산 계산:", {
+    isEditMode,
+    totalAmount,
+    remainingAmount: accountInfo.remainingAmount,
+    currentAllocation,
+    alreadyAllocated
+  });
   
   const availableAmount = Math.max(0, accountInfo.remainingAmount - currentAllocation); // 남은 사용 가능 금액
 
@@ -819,24 +909,66 @@ function getAccountAllocationData(account) {
   }
 
   // 백분율로 변환 (전체 계좌 잔액 100% 기준)
-  const alreadyAllocatedPercent = Math.round((alreadyAllocated / totalAmount) * 100);
-  const currentAllocationPercent = Math.round((currentAllocation / totalAmount) * 100);
-  const availableAmountPercent = Math.round((availableAmount / totalAmount) * 100);
+  const alreadyAllocatedPercent = totalAmount > 0 ? Math.round((alreadyAllocated / totalAmount) * 100) : 0;
+  const currentAllocationPercent = totalAmount > 0 ? Math.round((currentAllocation / totalAmount) * 100) : 0;
+  const availableAmountPercent = totalAmount > 0 ? Math.round((availableAmount / totalAmount) * 100) : 0;
+  
+  console.log("📊 백분율 계산:", {
+    alreadyAllocated,
+    currentAllocation,
+    availableAmount,
+    totalAmount,
+    alreadyAllocatedPercent,
+    currentAllocationPercent,
+    availableAmountPercent
+  });
 
-  return [
+  const result = [
     {
       something: "할당된 자산", // 다른 목표에 이미 할당된 자산
-      value: Math.max(alreadyAllocatedPercent, 0),
+      value: Math.max(isNaN(alreadyAllocatedPercent) ? 0 : alreadyAllocatedPercent, 0),
     },
     {
       something: "선택된 자산", // 현재 슬라이더로 선택한 자산
-      value: Math.max(currentAllocationPercent, 0),
+      value: Math.max(isNaN(currentAllocationPercent) ? 0 : currentAllocationPercent, 0),
     },
     {
       something: "할당 가능자산", // 아직 할당되지 않은 남은 자산
-      value: Math.max(availableAmountPercent, 0),
+      value: Math.max(isNaN(availableAmountPercent) ? 0 : availableAmountPercent, 0),
     },
   ];
+  
+  console.log("📊 최종 BarChart 데이터:", result);
+  return result;
+}
+
+// 범례용 계산 함수들 (BarChart와 동일한 로직)
+function getLegendAllocatedAmount(accountName) {
+  const accountInfo = getAccountInfo(accountName);
+  if (!accountInfo) return 0;
+  
+  const isEditMode = goalId.value && route.query.amount;
+  const currentAccount = accounts.value.find(acc => acc.name === accountName);
+  const currentAllocation = currentAccount ? getAllocatedAmount(currentAccount) : 0;
+  
+  if (isEditMode && currentAccount) {
+    // 수정모드: 다른 목표에만 할당된 금액
+    // remainingAmount에 현재 목표 할당분이 이미 포함되어 있으므로
+    return Math.max(0, accountInfo.total - accountInfo.remainingAmount);
+  } else {
+    // 신규모드: 전체 할당된 금액
+    return accountInfo.total - accountInfo.remainingAmount;
+  }
+}
+
+function getLegendAvailableAmount(accountName) {
+  const accountInfo = getAccountInfo(accountName);
+  if (!accountInfo) return 0;
+  
+  const currentAccount = accounts.value.find(acc => acc.name === accountName);
+  const currentAllocation = currentAccount ? getAllocatedAmount(currentAccount) : 0;
+  
+  return Math.max(0, accountInfo.remainingAmount - currentAllocation);
 }
 
 // 네비게이션 함수들
