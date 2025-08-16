@@ -22,22 +22,27 @@ const props = defineProps({
   },
 });
 
-const colors = ["#4a90e2", "#eeeeee", "#5D00A8"];
+// 유채색 팔레트
+const colors = ["#4a90e2", "#ff7f50", "#5D00A8", "#00c49f", "#ffbb28"];
 
-// 🔹 데이터 변환 (마지막 값 = 100 - 합계)
+// 데이터 변환 (값 0 제외, 마지막 값 = 100 - 합계)
 const transformedData = computed(() => {
-  const converted = props.data.map((item) => ({
-    name: item.something, // something → name
-    value: Number(item.value.toFixed(2)), // 소수점 2자리 고정
-  }));
+  const converted = props.data
+    .map((item) => ({
+      name: item.name,
+      value: Math.round(item.value), // 정수 처리
+    }))
+    .filter((item) => item.value > 0); // 값이 0인 항목 제거
 
   const sum = converted.reduce((acc, cur) => acc + cur.value, 0);
-  const lastValue = Number((100 - sum).toFixed(2));
+  const lastValue = 100 - sum;
 
-  converted.push({
-    name: "남은 비율", // 필요 시 다른 이름으로 변경 가능
-    value: lastValue < 0 ? 0 : lastValue, // 합이 100 초과일 경우 0 처리
-  });
+  if (lastValue > 0) {
+    converted.push({
+      name: "남은 비율",
+      value: lastValue,
+    });
+  }
 
   return converted;
 });
@@ -47,6 +52,9 @@ const options = computed(() => ({
     trigger: "axis",
     triggerOn: "click",
     axisPointer: { type: "shadow" },
+    formatter: (params) => {
+      return params.map((p) => `${p.marker} ${p.seriesName}: ${Math.round(p.value)}%`).join("<br/>");
+    },
   },
   legend: {
     show: props.showLegend,
@@ -56,7 +64,7 @@ const options = computed(() => ({
     selectedMode: true,
   },
   grid: {
-    left: "",
+    left: "2%",
     right: "2%",
     bottom: "3%",
     containLabel: true,
@@ -64,17 +72,27 @@ const options = computed(() => ({
   xAxis: { type: "value", show: false },
   yAxis: { type: "category", data: [""], show: false },
   series: transformedData.value.map((item, index) => {
+    const isRemaining = item.name === "남은 비율";
     const isFirst = index === 0;
     const isLast = index === transformedData.value.length - 1;
-    const isRemaining = item.name === "남은 비율";
+
+    let radius = 0;
+    if (isFirst && isLast) {
+      radius = 5; // 데이터가 하나일 경우 전체 둥글게
+    } else if (isFirst) {
+      radius = [5, 0, 0, 5]; // 왼쪽 둥글게
+    } else if (isLast) {
+      radius = [0, 5, 5, 0]; // 오른쪽 둥글게
+    }
+
     return {
       name: item.name,
       type: "bar",
       stack: "total",
       data: [item.value],
       itemStyle: {
-        color: isRemaining ? "#eeeeee" : (index < 2 ? colors[index] : colors[2]),
-        borderRadius: isFirst ? [6, 0, 0, 6] : isLast ? [0, 6, 6, 0] : 0,
+        color: isRemaining ? "#eeeeee" : colors[index % colors.length],
+        borderRadius: radius,
       },
     };
   }),
