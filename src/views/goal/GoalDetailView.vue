@@ -9,6 +9,7 @@
           <div class="flex items-center gap-2">
             <button
               class="p-2 rounded-lg hover:bg-gray-100"
+              title="수정"
               @click="
                 router.push({
                   path: '/goal/edit',
@@ -22,7 +23,6 @@
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
-                @click=""
               >
                 <path
                   stroke-linecap="round"
@@ -32,7 +32,12 @@
                 />
               </svg>
             </button>
-            <button class="p-2 rounded-lg hover:bg-gray-100">
+            <button
+              class="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              @click="onDelete"
+              :disabled="deleting"
+              title="삭제"
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
@@ -156,7 +161,7 @@ const isaAccounts = ref([]);
 const isLoading = ref(true); // 로딩 상태
 
 const investmentChartOption = ref({}); // 차트 옵션 빈 객체 초기화
-
+const deleting = ref(false);
 const load = async () => {
   try {
     isLoading.value = true;
@@ -179,7 +184,19 @@ const load = async () => {
     isLoading.value = false;
   }
 };
-
+async function onDelete() {
+  if (!confirm("해당 목적을 삭제하시겠습니까 ?")) return;
+  deleting.value = true;
+  try {
+    await api.deleteGoal(id);
+    alert("삭제되었습니다.");
+    router.push("/goal");
+  } catch (e) {
+    console.error("목표 삭제 실패: ", e);
+  } finally {
+    deleting.value = false;
+  }
+}
 const currentAmount = computed(() => {
   const depositAmount = depositAccounts.value.reduce((sum, acc) => sum + acc.amount, 0);
   const isaAmount = isaAccounts.value.reduce((sum, acc) => sum + acc.isaBalance, 0);

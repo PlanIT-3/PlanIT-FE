@@ -412,7 +412,7 @@ async function saveDepositAllocation() {
 
   try {
     loading.value = true;
-    console.log("🚀 saveDepositAllocation 시작 - 호출 스택:", new Error().stack?.split('\n')[1]);
+    console.log("🚀 saveDepositAllocation 시작 - 호출 스택:", new Error().stack?.split("\n")[1]);
 
     // API 요청 형식에 맞게 데이터 변환
     const requestData = {
@@ -439,19 +439,19 @@ async function saveDepositAllocation() {
     console.log("  - route.query.goalId:", route.query.goalId);
     console.log("  - localStorage.currentGoalId:", localStorageGoalId);
     console.log("  - 기존 goalId:", goalId.value);
-    
+
     // localStorage에 올바른 goalId가 있으면 사용
     if (localStorageGoalId && localStorageGoalId !== goalId.value) {
       console.log("📝 localStorage의 goalId로 업데이트:", localStorageGoalId);
       goalId.value = localStorageGoalId;
     }
-    
+
     console.log("  - 최종 사용 goalId:", goalId.value);
 
     // 예적금 할당 데이터 저장
     console.log("📡 예적금 할당 API 호출:", requestData);
     const response = await depositService.registerDeposits(memberId.value, requestData);
-    
+
     console.log("✅ 저장 API 응답:", response);
     console.log("✅ 응답 코드:", response.data?.code);
     console.log("✅ 응답 상태:", response.status);
@@ -459,28 +459,28 @@ async function saveDepositAllocation() {
     if (response.data.code === "GEN-000") {
       isCompleted.value = true; // 완료 상태로 설정 (Goal 삭제 방지)
       console.log("✅ 예적금 할당 성공 - GoalEdit으로 이동");
-      
+
       // 저장 후 실제 데이터 확인 - DB에 저장된 action 테이블 데이터를 조회해보자
       console.log("🔍 저장 확인 - goalId:", goalId.value, "memberId:", memberId.value);
-      
+
       // 저장된 데이터 확인용 API 호출
       const verifyData = async () => {
         try {
           const checkResponse = await depositService.getDepositAccountsByGoal(memberId.value, goalId.value);
           console.log("✅ action 테이블 저장 확인:", checkResponse);
-          
+
           // 사용자의 실제 목표 목록 확인
           try {
             const goalsResponse = await objectApi.getGoalList();
             console.log("🎯 goal 테이블의 실제 목표 목록:", goalsResponse);
-            
+
             const existingGoals = goalsResponse?.data || [];
-            const currentGoalExists = existingGoals.find(goal => goal.goalId == goalId.value);
-            
+            const currentGoalExists = existingGoals.find((goal) => goal.goalId == goalId.value);
+
             if (!currentGoalExists) {
               console.log("❌ goalId 7491이 goal 테이블에 없습니다!");
               console.log("💡 해결책 필요: action 테이블에만 저장되고 goal 테이블에는 없는 상태");
-              
+
               if (existingGoals.length > 0) {
                 console.log("📝 실제 존재하는 첫 번째 목표:", existingGoals[0]);
                 console.log("💭 이 목표 ID를 사용하는 것을 고려해보세요:", existingGoals[0].goalId);
@@ -496,7 +496,7 @@ async function saveDepositAllocation() {
         }
       };
       verifyData();
-      
+
       alert("예적금 할당이 완료되었습니다.");
       // GoalEdit으로 돌아가서 최종 완료 처리
       router.push({ path: "/goal/edit", query: { goalId: goalId.value } });
