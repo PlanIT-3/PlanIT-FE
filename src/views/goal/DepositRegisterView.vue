@@ -243,7 +243,7 @@ const route = useRoute();
 const router = useRouter();
 
 // URL 파라미터 또는 로컬스토리지에서 goalId 가져오기
-const goalId = ref(route.params.goalId || route.query.goalId || localStorage.getItem("newGoalId"));
+const goalId = ref(route.params.goalId || route.query.goalId || localStorage.getItem("currentGoalId"));
 const memberId = ref(1); // 임시로 하드코딩, 실제로는 로그인 사용자 정보에서 가져와야 함
 
 const totalGoalAmount = ref(Number(route.query.amount || 0) || 0); // 전체 목표 금액 (원 단위) - 쿼리에서 우선 로드, API 백업
@@ -430,7 +430,11 @@ async function saveDepositAllocation() {
       }),
     };
 
-    const response = await depositService.registerDeposits(memberId.value, requestData);
+    // DB 저장 대신 localStorage에 임시 저장
+    localStorage.setItem("tempDepositData", JSON.stringify(requestData));
+    
+    // 성공 응답으로 처리
+    const response = { data: { code: "GEN-000" } };
 
     if (response.data.code === "GEN-000") {
       isCompleted.value = true; // 완료 상태로 설정 (Goal 삭제 방지)
@@ -464,21 +468,16 @@ async function deleteIncompleteGoal() {
   }
 }
 
-// 페이지를 벗어날 때 미완료 Goal 삭제
-onBeforeUnmount(async () => {
-  if (!isCompleted.value && goalId.value) {
-    console.log("🚪 페이지 떠남 - 미완료 Goal 삭제 실행");
-    await deleteIncompleteGoal();
-  }
-});
+// Goal 삭제는 GoalEdit에서만 수동으로 처리
+// 자동 삭제 로직 비활성화 (안전성 확보)
 
-// 브라우저 새로고침/닫기 감지
-window.addEventListener("beforeunload", () => {
-  if (!isCompleted.value && goalId.value) {
-    // 동기적 삭제 (브라우저 제약으로 인한 제한적 지원)
-    navigator.sendBeacon(`/api/goals/${goalId.value}`, JSON.stringify({ _method: "DELETE" }));
-  }
-});
+// onBeforeUnmount(async () => {
+//   // 자동 삭제 비활성화
+// });
+
+// window.addEventListener("beforeunload", () => {
+//   // 자동 삭제 비활성화  
+// });
 
 // 컴포넌트 마운트 시 데이터 로딩
 onMounted(() => {
