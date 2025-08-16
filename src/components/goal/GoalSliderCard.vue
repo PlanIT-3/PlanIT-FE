@@ -1,5 +1,5 @@
 <template>
-  <div class="h-[220px] w-full bg-white rounded-2xl shadow-lg p-4 relative overflow-hidden">
+  <div class="h-[220px] w-full bg-white rounded-2xl p-4 relative overflow-hidden">
     <div class="flex items-center justify-between mb-4">
       <router-link
         to="/goal/detail"
@@ -71,9 +71,11 @@
         </div>
 
         <!-- 목표 추가 버튼 -->
+        <!-- 목표 추가 버튼 -->
         <div class="min-w-full h-full flex">
-          <button
-            class="w-full h-[170px] bg-white border-2 border-dashed border-gray-300 hover:border-indigo-400 hover:bg-indigo-50 transition-colors duration-200 flex flex-col items-center justify-center group"
+          <router-link
+            to="/goal/edit"
+            class="w-full h-[170px] bg-white hover:bg-indigo-50 transition-colors duration-200 flex flex-col items-center justify-center group"
           >
             <div
               class="w-12 h-12 rounded-full bg-gray-100 group-hover:bg-indigo-100 flex items-center justify-center mb-3 transition-colors duration-200"
@@ -97,7 +99,7 @@
                 목표를 설정하고 달성해보세요
               </p>
             </div>
-          </button>
+          </router-link>
         </div>
       </div>
     </div>
@@ -113,10 +115,10 @@
     </div>
 
     <!-- Navigation Arrows -->
-    <button
+    <!-- <button
       v-if="currentSlide > 0"
       @click="previousSlide"
-      class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white rounded-full w-8 h-8 flex items-center justify-center shadow-lg hover:bg-gray-50 transition-colors z-20"
+      class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-gray-50 transition-colors z-20"
     >
       <span class="text-gray-600">‹</span>
     </button>
@@ -124,12 +126,13 @@
     <button
       v-if="currentSlide < totalSlides - 1"
       @click="nextSlide"
-      class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white rounded-full w-8 h-8 flex items-center justify-center shadow-lg hover:bg-gray-50 transition-colors z-20"
+      class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-gray-50 transition-colors z-20"
     >
       <span class="text-gray-600">›</span>
-    </button>
+    </button> -->
   </div>
 </template>
+
 <script setup>
 import { ref, computed, onMounted, watch } from "vue";
 import { use } from "echarts/core";
