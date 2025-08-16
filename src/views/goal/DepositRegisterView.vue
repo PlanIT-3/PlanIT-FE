@@ -403,11 +403,9 @@ async function saveDepositAllocation() {
       }),
     };
 
-    // DB 저장 대신 localStorage에 임시 저장
-    localStorage.setItem("tempDepositData", JSON.stringify(requestData));
-    
-    // 성공 응답으로 처리
-    const response = { data: { code: "GEN-000" } };
+    // 실제 API 호출로 DB에 저장
+    console.log("📡 예적금 할당 API 호출:", requestData);
+    const response = await depositService.saveDepositAllocation(requestData);
 
     if (response.data.code === "GEN-000") {
       isCompleted.value = true; // 완료 상태로 설정 (Goal 삭제 방지)

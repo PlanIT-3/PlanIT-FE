@@ -152,7 +152,6 @@ import DefaultLayout from "@/components/layouts/DefaultLayout.vue";
 import AddRegisterModal from "./AddRegisterModal.vue";
 import Api from "@/api/objectApi";
 import isaApi from "@/api/isaApi";
-import { depositService } from "@/api/depositApi.js";
 
 const route = useRoute();
 const router = useRouter();
@@ -322,35 +321,9 @@ const handleCompleteGoal = async () => {
 
     const res = await Api.saveGoal(goalId.value, payload);
     const ok = res?.status === 200 || res?.status === 201 || res?.data?.status === "OK";
-    
     if (ok) {
-      // localStorage에서 예적금 할당 데이터 확인 및 저장
-      const tempDepositData = localStorage.getItem("tempDepositData");
-      if (tempDepositData) {
-        try {
-          console.log("📦 localStorage에서 예적금 데이터 발견, DB 저장 시작...");
-          const depositData = JSON.parse(tempDepositData);
-          console.log("📊 예적금 할당 데이터:", depositData);
-          
-          const depositRes = await depositService.saveDepositAllocation(depositData);
-          console.log("✅ 예적금 할당 저장 응답:", depositRes);
-          
-          if (depositRes.data?.code === "GEN-000") {
-            console.log("✅ 예적금 할당 저장 완료");
-            localStorage.removeItem("tempDepositData");
-          } else {
-            throw new Error(depositRes.data?.message || "예적금 할당 저장 실패");
-          }
-        } catch (depositError) {
-          console.error("❌ 예적금 할당 저장 실패:", depositError);
-          alert("예적금 할당 저장에 실패했습니다: " + depositError.message);
-          return;
-        }
-      }
-      
-      alert("목표 설정이 완료되었습니다.");
+      alert("목표가 저장되었습니다.");
       localStorage.removeItem("currentGoalId");
-      localStorage.removeItem("tempDepositData"); // 혹시 남아있을 수 있는 데이터 정리
       router.push({ path: "/goal" });
     } else {
       console.warn("update 응답 확인:", res);
