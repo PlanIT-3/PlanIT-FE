@@ -184,7 +184,7 @@ const isaTotal = computed(() =>
 const depositTotal = computed(() => depositAccounts.value.reduce((sum, acc) => sum + Number(acc.myAmount ?? 0), 0));
 
 // 원 → 만원(절삭) 함수 →
-const toWanFloor = (n) => Math.floor(Number(n ?? 0) / 10000);
+const toWanFloor = (n) => Math.round(Number(n ?? 0) / 10000);
 const formatWan = (n) => toWanFloor(n).toLocaleString("ko-KR") + "만원";
 
 // 완료 버튼 활성 조건 1: 목표 이름 , 금액 , 날짜
