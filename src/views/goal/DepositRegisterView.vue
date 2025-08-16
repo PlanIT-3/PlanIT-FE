@@ -106,7 +106,7 @@
             />
           </div>
           <div class="flex justify-between text-xs text-gray-400">
-            <span>총액: {{ formatMoney(getAccountTotal(account.name)) }}</span>
+            <span>총액: {{ formatMoney(getAccountInfo(account.name)?.remainingAmount || 0) }}</span>
             <span>할당: {{ formatMoney(getAllocatedAmount(account)) }}</span>
           </div>
         </div>
@@ -116,7 +116,8 @@
           <div class="flex items-center justify-between mb-2">
             <h4 class="text-sm font-medium text-gray-700">계좌 할당 현황</h4>
             <span class="text-xs text-gray-500">
-              {{ formatMoney(getAccountTotal(account.name)) }} 중 {{ formatMoney(getAllocatedAmount(account)) }} 할당
+              {{ formatMoney(getAccountInfo(account.name)?.remainingAmount || 0) }} 중
+              {{ formatMoney(getAllocatedAmount(account)) }} 할당
             </span>
           </div>
 
@@ -126,28 +127,28 @@
           <div class="grid grid-cols-1 gap-2 mt-2 text-xs">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-2">
-                <div class="w-3 h-3 rounded bg-gray-400"></div>
-                <span class="text-gray-600">이미 할당됨</span>
+                <div class="w-3 h-3 rounded" style="background-color: #4a90e2"></div>
+                <span class="text-gray-600">할당된 자산</span>
               </div>
-              <span class="text-gray-800 font-medium">
+              <span class="text-black font-medium">
                 {{ formatMoney(getAccountTotal(account.name) - getAccountInfo(account.name)?.remainingAmount || 0) }}
               </span>
             </div>
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-2">
-                <div class="w-3 h-3 rounded bg-blue-500"></div>
-                <span class="text-gray-600">현재 선택</span>
+                <div class="w-3 h-3 rounded bg-gray-300"></div>
+                <span class="text-gray-600">선택된 자산</span>
               </div>
-              <span class="text-blue-600 font-medium">
+              <span class="text-black font-medium">
                 {{ formatMoney(getAllocatedAmount(account)) }}
               </span>
             </div>
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-2">
-                <div class="w-3 h-3 rounded bg-green-500"></div>
-                <span class="text-gray-600">할당 가능</span>
+                <div class="w-3 h-3 rounded" style="background-color: #5d00a8"></div>
+                <span class="text-gray-600">할당 가능자산</span>
               </div>
-              <span class="text-green-600 font-medium">
+              <span class="text-black font-medium">
                 {{
                   formatMoney(
                     Math.max(0, getAccountInfo(account.name)?.remainingAmount - getAllocatedAmount(account) || 0)
@@ -160,13 +161,15 @@
       </GraphsContainer>
 
       <!-- 계좌 추가 버튼 -->
-      <button
-        @click="addAccount"
-        :disabled="accounts.length >= accountOptions.length || loading"
-        class="w-full mb-6 py-2 rounded border border-gray-300 text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
-      >
-        ＋ 계좌 추가
-      </button>
+      <div class="mb-6">
+        <button
+          @click="addNextAccount"
+          :disabled="remainingAccountOptions.length === 0 || loading"
+          class="w-full py-2 rounded border border-gray-300 text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        >
+          <span>＋ 계좌 추가</span>
+        </button>
+      </div>
     </div>
 
     <!-- 완료 버튼 -->
@@ -212,9 +215,32 @@ import objectApi from "@/api/objectApi.js";
 const route = useRoute();
 const router = useRouter();
 
-// URL 파라미터 또는 로컬스토리지에서 goalId 가져오기
-const goalId = ref(route.params.goalId || route.query.goalId || localStorage.getItem("newGoalId"));
-const memberId = ref(1); // 임시로 하드코딩, 실제로는 로그인 사용자 정보에서 가져와야 함
+// URL 파라미터 또는 로컬스토리지에서 goalId 가져오기 (우선순위: query > localStorage > params)
+const goalId = ref(route.query.goalId || localStorage.getItem("currentGoalId") || route.params.goalId);
+
+// JWT 토큰에서 memberId 가져오기
+function getMemberIdFromToken() {
+  try {
+    const authData = localStorage.getItem("auth");
+    if (!authData) return 1; // 기본값
+
+    const auth = JSON.parse(authData);
+    const token = auth.token?.accessToken;
+    if (!token) return 1; // 기본값
+
+    // JWT 페이로드 디코딩
+    const parts = token.split(".");
+    if (parts.length !== 3) return 1; // 기본값
+
+    const payload = JSON.parse(atob(parts[1].replace(/-/g, "+").replace(/_/g, "/")));
+    return payload.memberId || payload.sub || payload.userId || payload.id || 1;
+  } catch (error) {
+    console.error("JWT에서 memberId 추출 실패:", error);
+    return 1; // 기본값
+  }
+}
+
+const memberId = ref(getMemberIdFromToken());
 
 const totalGoalAmount = ref(Number(route.query.amount || 0) || 0); // 전체 목표 금액 (원 단위) - 쿼리에서 우선 로드, API 백업
 const loading = ref(false);
@@ -229,6 +255,9 @@ const accounts = ref([]);
 
 // 완료 상태 추적 (미완료 Goal 삭제 방지용)
 const isCompleted = ref(false);
+
+// 계좌 추가 드롭다운 상태
+const showAccountDropdown = ref(false);
 
 // API 호출 함수들
 async function loadGoalAmount() {
@@ -375,8 +404,15 @@ async function saveDepositAllocation() {
     return;
   }
 
+  // 중복 클릭 방지
+  if (loading.value) {
+    console.log("⚠️ 이미 저장 중입니다. 중복 클릭 방지");
+    return;
+  }
+
   try {
     loading.value = true;
+    console.log("🚀 saveDepositAllocation 시작 - 호출 스택:", new Error().stack?.split('\n')[1]);
 
     // API 요청 형식에 맞게 데이터 변환
     const requestData = {
@@ -385,27 +421,87 @@ async function saveDepositAllocation() {
         const allocatedAmount = getAllocatedAmount(account) * 10000; // 만원을 원 단위로 변환
 
         return {
-          goalId: parseInt(goalId.value),
+          goalId: parseInt(localStorage.getItem("currentGoalId") || goalId.value),
           memberAccountId: account.memberAccountId,
           accountNumber: account.accountNumber,
-          accountType: "예적금",
-          amount: allocatedAmount,
+          accountType: "Deposit",
+          amount: Math.round(allocatedAmount), // 정수로 변환
           allocatedRate: account.percentage,
-          accountAllocatedRate: 100, // 기본값
-          actionType: "DEPOSIT",
+          accountAllocatedRate: account.percentage, // 사용자가 설정한 실제 비율
+          actionType: "DEPOSIT", // enum 값으로 변경
         };
       }),
     };
 
+    // goalId 정보 확인 및 동기화
+    const localStorageGoalId = localStorage.getItem("currentGoalId");
+    console.log("🔍 현재 goalId 정보:");
+    console.log("  - route.query.goalId:", route.query.goalId);
+    console.log("  - localStorage.currentGoalId:", localStorageGoalId);
+    console.log("  - 기존 goalId:", goalId.value);
+    
+    // localStorage에 올바른 goalId가 있으면 사용
+    if (localStorageGoalId && localStorageGoalId !== goalId.value) {
+      console.log("📝 localStorage의 goalId로 업데이트:", localStorageGoalId);
+      goalId.value = localStorageGoalId;
+    }
+    
+    console.log("  - 최종 사용 goalId:", goalId.value);
+
+    // 예적금 할당 데이터 저장
+    console.log("📡 예적금 할당 API 호출:", requestData);
     const response = await depositService.registerDeposits(memberId.value, requestData);
+    
+    console.log("✅ 저장 API 응답:", response);
+    console.log("✅ 응답 코드:", response.data?.code);
+    console.log("✅ 응답 상태:", response.status);
 
     if (response.data.code === "GEN-000") {
       isCompleted.value = true; // 완료 상태로 설정 (Goal 삭제 방지)
-      // 로컬스토리지 정리
-      localStorage.removeItem("newGoalId");
+      console.log("✅ 예적금 할당 성공 - GoalEdit으로 이동");
+      
+      // 저장 후 실제 데이터 확인 - DB에 저장된 action 테이블 데이터를 조회해보자
+      console.log("🔍 저장 확인 - goalId:", goalId.value, "memberId:", memberId.value);
+      
+      // 저장된 데이터 확인용 API 호출
+      const verifyData = async () => {
+        try {
+          const checkResponse = await depositService.getDepositAccountsByGoal(memberId.value, goalId.value);
+          console.log("✅ action 테이블 저장 확인:", checkResponse);
+          
+          // 사용자의 실제 목표 목록 확인
+          try {
+            const goalsResponse = await objectApi.getGoalList();
+            console.log("🎯 goal 테이블의 실제 목표 목록:", goalsResponse);
+            
+            const existingGoals = goalsResponse?.data || [];
+            const currentGoalExists = existingGoals.find(goal => goal.goalId == goalId.value);
+            
+            if (!currentGoalExists) {
+              console.log("❌ goalId 7491이 goal 테이블에 없습니다!");
+              console.log("💡 해결책 필요: action 테이블에만 저장되고 goal 테이블에는 없는 상태");
+              
+              if (existingGoals.length > 0) {
+                console.log("📝 실제 존재하는 첫 번째 목표:", existingGoals[0]);
+                console.log("💭 이 목표 ID를 사용하는 것을 고려해보세요:", existingGoals[0].goalId);
+              }
+            } else {
+              console.log("✅ goalId가 goal 테이블에 존재합니다:", currentGoalExists);
+            }
+          } catch (goalErr) {
+            console.error("❌ 목표 목록 조회 실패:", goalErr);
+          }
+        } catch (err) {
+          console.error("❌ DB 저장 확인 실패:", err);
+        }
+      };
+      verifyData();
+      
       alert("예적금 할당이 완료되었습니다.");
-      router.back(); // 이전 페이지로 돌아가기
+      // GoalEdit으로 돌아가서 최종 완료 처리
+      router.push({ path: "/goal/edit", query: { goalId: goalId.value } });
     } else {
+      console.error("❌ 예적금 할당 실패:", response.data);
       throw new Error(response.data.message || "알 수 없는 오류가 발생했습니다.");
     }
   } catch (err) {
@@ -432,21 +528,16 @@ async function deleteIncompleteGoal() {
   }
 }
 
-// 페이지를 벗어날 때 미완료 Goal 삭제
-onBeforeUnmount(async () => {
-  if (!isCompleted.value && goalId.value) {
-    console.log("🚪 페이지 떠남 - 미완료 Goal 삭제 실행");
-    await deleteIncompleteGoal();
-  }
-});
+// Goal 삭제는 GoalEdit에서만 수동으로 처리
+// 자동 삭제 로직 비활성화 (안전성 확보)
 
-// 브라우저 새로고침/닫기 감지
-window.addEventListener("beforeunload", () => {
-  if (!isCompleted.value && goalId.value) {
-    // 동기적 삭제 (브라우저 제약으로 인한 제한적 지원)
-    navigator.sendBeacon(`/api/goals/${goalId.value}`, JSON.stringify({ _method: "DELETE" }));
-  }
-});
+// onBeforeUnmount(async () => {
+//   // 자동 삭제 비활성화
+// });
+
+// window.addEventListener("beforeunload", () => {
+//   // 자동 삭제 비활성화
+// });
 
 // 컴포넌트 마운트 시 데이터 로딩
 onMounted(() => {
@@ -457,6 +548,7 @@ onMounted(() => {
   console.log("  - localStorage.getItem('newGoalId'):", localStorage.getItem("newGoalId"));
   console.log("  - 최종 goalId:", goalId.value);
   console.log("  - 현재 totalGoalAmount:", totalGoalAmount.value);
+  console.log("  - 현재 memberId:", memberId.value);
 
   loadGoalAmount(); // 신규면 바로 종료, 수정이면 loadExistingAllocations + loadAvailableAccounts 호출
 
@@ -477,12 +569,11 @@ function getAccountInfo(accountName) {
   return accountOptions.value.find((a) => a.name === accountName);
 }
 
-// 개별 할당 금액 계산 - 목표 금액과 계좌 잔액 중 작은 값을 기준으로 계산
+// 개별 할당 금액 계산 - 계좌 잔여액 기준으로 비율 적용
 function getAllocatedAmount(account) {
-  const goalAmountInWan = Math.floor(totalGoalAmount.value / 10000);
-  const accountTotal = getAccountTotal(account.name);
-  const maxAmount = Math.min(goalAmountInWan, accountTotal); // 목표 금액과 계좌 잔액 중 작은 값
-  return (maxAmount * account.percentage) / 100;
+  const accountInfo = getAccountInfo(account.name);
+  const availableAmount = accountInfo?.remainingAmount || 0;
+  return (availableAmount * account.percentage) / 100;
 }
 
 // 전체 할당 금액
@@ -493,31 +584,59 @@ const leftGoalAmount = computed(() => {
   return totalGoalAmount.value - totalAllocated.value * 10000; // 할당된 금액은 만원 단위이므로 원으로 변환
 });
 
-// 퍼센트 업데이트 - 목표 금액과 계좌 잔액 중 작은 값을 기준으로 변경
+// 퍼센트 업데이트 - 목표 금액과 할당 가능한 금액 중 작은 값을 기준으로 변경
 function updatePercentage(index, value) {
   const newPercent = Number(value);
   const goalAmountInWan = Math.floor(totalGoalAmount.value / 10000);
-  const accountTotal = getAccountTotal(accounts.value[index].name);
-  const maxAmount = Math.min(goalAmountInWan, accountTotal); // 목표 금액과 계좌 잔액 중 작은 값
+  const accountInfo = getAccountInfo(accounts.value[index].name);
+  const availableAmount = accountInfo?.remainingAmount || 0;
+  const maxAmount = Math.min(goalAmountInWan, availableAmount); // 목표 금액과 할당 가능한 금액 중 작은 값
 
   console.log(`🎯 계좌 ${accounts.value[index].name}:`, {
     goalAmount: goalAmountInWan,
-    accountTotal: accountTotal,
+    availableAmount: availableAmount,
     maxAmount: maxAmount,
     newPercent: newPercent,
   });
 
-  // 100% = maxAmount이므로 자동으로 잔고 초과 방지됨
+  // 100% = maxAmount이므로 자동으로 할당 가능 금액 초과 방지됨
   accounts.value[index].percentage = newPercent;
 }
 
-// 계좌 추가
+// 남은 계좌 옵션 계산
+const remainingAccountOptions = computed(() => {
+  const selectedNames = accounts.value.map((a) => a.name);
+  return accountOptions.value.filter((option) => !selectedNames.includes(option.name));
+});
+
+// 다음 계좌 자동 추가
+function addNextAccount() {
+  const remaining = remainingAccountOptions.value;
+  if (remaining.length > 0) {
+    accounts.value.push({
+      name: remaining[0].name,
+      memberAccountId: remaining[0].memberAccountId,
+      accountNumber: remaining[0].accountNumber,
+      percentage: 0,
+    });
+  }
+}
+
+// 선택된 계좌 추가 (기존 함수 유지)
+function addSelectedAccount(selectedAccount) {
+  accounts.value.push({
+    name: selectedAccount.name,
+    memberAccountId: selectedAccount.memberAccountId,
+    accountNumber: selectedAccount.accountNumber,
+    percentage: 0,
+  });
+}
+
+// 계좌 추가 (기존 함수 - 호환성 유지)
 function addAccount() {
-  const remainingOptions = accountOptions.value
-    .map((a) => a.name)
-    .filter((name) => !accounts.value.map((a) => a.name).includes(name));
-  if (remainingOptions.length > 0) {
-    accounts.value.push({ name: remainingOptions[0], percentage: 0 });
+  const remaining = remainingAccountOptions.value;
+  if (remaining.length > 0) {
+    addSelectedAccount(remaining[0]);
   }
 }
 
@@ -556,11 +675,10 @@ const isCompletionReady = computed(() => {
   });
 });
 
-// 계좌별 할당 상태 차트 데이터 생성 (백분율로 변환)
+// 계좌별 할당 상태 차트 데이터 생성 (전체 계좌 잔액 기준)
 function getAccountAllocationData(account) {
   const accountInfo = accountOptions.value.find((opt) => opt.name === account.name);
   if (!accountInfo) {
-    console.log("❌ 계좌 정보 없음:", account.name);
     return [];
   }
 
@@ -569,41 +687,29 @@ function getAccountAllocationData(account) {
   const alreadyAllocated = accountInfo.total - accountInfo.remainingAmount; // 이미 다른 목표에 할당된 금액 (만원)
   const availableAmount = Math.max(0, accountInfo.remainingAmount - currentAllocation); // 남은 사용 가능 금액
 
-  console.log(`📊 ${account.name} 할당 상태:`, {
-    totalAmount,
-    alreadyAllocated,
-    currentAllocation,
-    availableAmount,
-    remainingAmount: accountInfo.remainingAmount,
-  });
-
   if (totalAmount === 0) {
-    return [{ name: "데이터 없음", value: 100 }];
+    return [{ something: "데이터 없음", value: 100 }];
   }
 
-  // 백분율로 변환 (BarChart가 100% 기준이므로)
+  // 백분율로 변환 (전체 계좌 잔액 100% 기준)
   const alreadyAllocatedPercent = Math.round((alreadyAllocated / totalAmount) * 100);
   const currentAllocationPercent = Math.round((currentAllocation / totalAmount) * 100);
   const availableAmountPercent = Math.round((availableAmount / totalAmount) * 100);
 
-  const chartData = [
+  return [
     {
-      something: "이미 할당됨", // BarChart 컴포넌트가 찾는 속성명
-      value: alreadyAllocatedPercent || 0,
+      something: "할당된 자산", // 다른 목표에 이미 할당된 자산
+      value: Math.max(alreadyAllocatedPercent, 0),
     },
     {
-      something: "현재 선택",
-      value: currentAllocationPercent || 0,
+      something: "선택된 자산", // 현재 슬라이더로 선택한 자산
+      value: Math.max(currentAllocationPercent, 0),
     },
     {
-      something: "할당 가능",
-      value: availableAmountPercent || 0,
+      something: "할당 가능자산", // 아직 할당되지 않은 남은 자산
+      value: Math.max(availableAmountPercent, 0),
     },
-  ].filter((item) => item.value > 0); // 0보다 큰 값만 표시
-
-  console.log(`📊 ${account.name} 백분율 데이터:`, chartData);
-
-  return chartData;
+  ];
 }
 
 // 네비게이션 함수들
