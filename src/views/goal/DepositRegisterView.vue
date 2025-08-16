@@ -215,9 +215,32 @@ import objectApi from "@/api/objectApi.js";
 const route = useRoute();
 const router = useRouter();
 
-// URL 파라미터 또는 로컬스토리지에서 goalId 가져오기
-const goalId = ref(route.params.goalId || route.query.goalId || localStorage.getItem("currentGoalId"));
-const memberId = ref(1); // 임시로 하드코딩, 실제로는 로그인 사용자 정보에서 가져와야 함
+// URL 파라미터 또는 로컬스토리지에서 goalId 가져오기 (우선순위: query > localStorage > params)
+const goalId = ref(route.query.goalId || localStorage.getItem("currentGoalId") || route.params.goalId);
+
+// JWT 토큰에서 memberId 가져오기
+function getMemberIdFromToken() {
+  try {
+    const authData = localStorage.getItem("auth");
+    if (!authData) return 1; // 기본값
+
+    const auth = JSON.parse(authData);
+    const token = auth.token?.accessToken;
+    if (!token) return 1; // 기본값
+
+    // JWT 페이로드 디코딩
+    const parts = token.split(".");
+    if (parts.length !== 3) return 1; // 기본값
+
+    const payload = JSON.parse(atob(parts[1].replace(/-/g, "+").replace(/_/g, "/")));
+    return payload.memberId || payload.sub || payload.userId || payload.id || 1;
+  } catch (error) {
+    console.error("JWT에서 memberId 추출 실패:", error);
+    return 1; // 기본값
+  }
+}
+
+const memberId = ref(getMemberIdFromToken());
 
 const totalGoalAmount = ref(Number(route.query.amount || 0) || 0); // 전체 목표 금액 (원 단위) - 쿼리에서 우선 로드, API 백업
 const loading = ref(false);
@@ -381,8 +404,15 @@ async function saveDepositAllocation() {
     return;
   }
 
+  // 중복 클릭 방지
+  if (loading.value) {
+    console.log("⚠️ 이미 저장 중입니다. 중복 클릭 방지");
+    return;
+  }
+
   try {
     loading.value = true;
+    console.log("🚀 saveDepositAllocation 시작 - 호출 스택:", new Error().stack?.split('\n')[1]);
 
     // API 요청 형식에 맞게 데이터 변환
     const requestData = {
@@ -391,28 +421,87 @@ async function saveDepositAllocation() {
         const allocatedAmount = getAllocatedAmount(account) * 10000; // 만원을 원 단위로 변환
 
         return {
-          goalId: parseInt(goalId.value),
+          goalId: parseInt(localStorage.getItem("currentGoalId") || goalId.value),
           memberAccountId: account.memberAccountId,
           accountNumber: account.accountNumber,
           accountType: "Deposit",
-          amount: allocatedAmount,
+          amount: Math.round(allocatedAmount), // 정수로 변환
           allocatedRate: account.percentage,
           accountAllocatedRate: account.percentage, // 사용자가 설정한 실제 비율
-          actionType: "DEPOSIT",
+          actionType: "DEPOSIT", // enum 값으로 변경
         };
       }),
     };
 
-    // 실제 API 호출로 DB에 저장
+    // goalId 정보 확인 및 동기화
+    const localStorageGoalId = localStorage.getItem("currentGoalId");
+    console.log("🔍 현재 goalId 정보:");
+    console.log("  - route.query.goalId:", route.query.goalId);
+    console.log("  - localStorage.currentGoalId:", localStorageGoalId);
+    console.log("  - 기존 goalId:", goalId.value);
+    
+    // localStorage에 올바른 goalId가 있으면 사용
+    if (localStorageGoalId && localStorageGoalId !== goalId.value) {
+      console.log("📝 localStorage의 goalId로 업데이트:", localStorageGoalId);
+      goalId.value = localStorageGoalId;
+    }
+    
+    console.log("  - 최종 사용 goalId:", goalId.value);
+
+    // 예적금 할당 데이터 저장
     console.log("📡 예적금 할당 API 호출:", requestData);
-    const response = await depositService.saveDepositAllocation(requestData);
+    const response = await depositService.registerDeposits(memberId.value, requestData);
+    
+    console.log("✅ 저장 API 응답:", response);
+    console.log("✅ 응답 코드:", response.data?.code);
+    console.log("✅ 응답 상태:", response.status);
 
     if (response.data.code === "GEN-000") {
       isCompleted.value = true; // 완료 상태로 설정 (Goal 삭제 방지)
+      console.log("✅ 예적금 할당 성공 - GoalEdit으로 이동");
+      
+      // 저장 후 실제 데이터 확인 - DB에 저장된 action 테이블 데이터를 조회해보자
+      console.log("🔍 저장 확인 - goalId:", goalId.value, "memberId:", memberId.value);
+      
+      // 저장된 데이터 확인용 API 호출
+      const verifyData = async () => {
+        try {
+          const checkResponse = await depositService.getDepositAccountsByGoal(memberId.value, goalId.value);
+          console.log("✅ action 테이블 저장 확인:", checkResponse);
+          
+          // 사용자의 실제 목표 목록 확인
+          try {
+            const goalsResponse = await objectApi.getGoalList();
+            console.log("🎯 goal 테이블의 실제 목표 목록:", goalsResponse);
+            
+            const existingGoals = goalsResponse?.data || [];
+            const currentGoalExists = existingGoals.find(goal => goal.goalId == goalId.value);
+            
+            if (!currentGoalExists) {
+              console.log("❌ goalId 7491이 goal 테이블에 없습니다!");
+              console.log("💡 해결책 필요: action 테이블에만 저장되고 goal 테이블에는 없는 상태");
+              
+              if (existingGoals.length > 0) {
+                console.log("📝 실제 존재하는 첫 번째 목표:", existingGoals[0]);
+                console.log("💭 이 목표 ID를 사용하는 것을 고려해보세요:", existingGoals[0].goalId);
+              }
+            } else {
+              console.log("✅ goalId가 goal 테이블에 존재합니다:", currentGoalExists);
+            }
+          } catch (goalErr) {
+            console.error("❌ 목표 목록 조회 실패:", goalErr);
+          }
+        } catch (err) {
+          console.error("❌ DB 저장 확인 실패:", err);
+        }
+      };
+      verifyData();
+      
       alert("예적금 할당이 완료되었습니다.");
       // GoalEdit으로 돌아가서 최종 완료 처리
-      router.push({ path: '/goal/edit', query: { goalId: goalId.value } });
+      router.push({ path: "/goal/edit", query: { goalId: goalId.value } });
     } else {
+      console.error("❌ 예적금 할당 실패:", response.data);
       throw new Error(response.data.message || "알 수 없는 오류가 발생했습니다.");
     }
   } catch (err) {
@@ -447,7 +536,7 @@ async function deleteIncompleteGoal() {
 // });
 
 // window.addEventListener("beforeunload", () => {
-//   // 자동 삭제 비활성화  
+//   // 자동 삭제 비활성화
 // });
 
 // 컴포넌트 마운트 시 데이터 로딩
@@ -459,6 +548,7 @@ onMounted(() => {
   console.log("  - localStorage.getItem('newGoalId'):", localStorage.getItem("newGoalId"));
   console.log("  - 최종 goalId:", goalId.value);
   console.log("  - 현재 totalGoalAmount:", totalGoalAmount.value);
+  console.log("  - 현재 memberId:", memberId.value);
 
   loadGoalAmount(); // 신규면 바로 종료, 수정이면 loadExistingAllocations + loadAvailableAccounts 호출
 
@@ -479,13 +569,11 @@ function getAccountInfo(accountName) {
   return accountOptions.value.find((a) => a.name === accountName);
 }
 
-// 개별 할당 금액 계산 - 목표 금액과 할당 가능한 금액 중 작은 값을 기준으로 계산
+// 개별 할당 금액 계산 - 계좌 잔여액 기준으로 비율 적용
 function getAllocatedAmount(account) {
-  const goalAmountInWan = Math.floor(totalGoalAmount.value / 10000);
   const accountInfo = getAccountInfo(account.name);
   const availableAmount = accountInfo?.remainingAmount || 0;
-  const maxAmount = Math.min(goalAmountInWan, availableAmount); // 목표 금액과 할당 가능한 금액 중 작은 값
-  return (maxAmount * account.percentage) / 100;
+  return (availableAmount * account.percentage) / 100;
 }
 
 // 전체 할당 금액
@@ -591,7 +679,6 @@ const isCompletionReady = computed(() => {
 function getAccountAllocationData(account) {
   const accountInfo = accountOptions.value.find((opt) => opt.name === account.name);
   if (!accountInfo) {
-    console.log("❌ 계좌 정보 없음:", account.name);
     return [];
   }
 
@@ -599,14 +686,6 @@ function getAccountAllocationData(account) {
   const currentAllocation = getAllocatedAmount(account); // 현재 설정한 할당 금액 (만원)
   const alreadyAllocated = accountInfo.total - accountInfo.remainingAmount; // 이미 다른 목표에 할당된 금액 (만원)
   const availableAmount = Math.max(0, accountInfo.remainingAmount - currentAllocation); // 남은 사용 가능 금액
-
-  console.log(`📊 ${account.name} 할당 상태:`, {
-    totalAmount,
-    alreadyAllocated,
-    currentAllocation,
-    availableAmount,
-    remainingAmount: accountInfo.remainingAmount,
-  });
 
   if (totalAmount === 0) {
     return [{ something: "데이터 없음", value: 100 }];
@@ -617,9 +696,9 @@ function getAccountAllocationData(account) {
   const currentAllocationPercent = Math.round((currentAllocation / totalAmount) * 100);
   const availableAmountPercent = Math.round((availableAmount / totalAmount) * 100);
 
-  const chartData = [
+  return [
     {
-      something: "할당", // 다른 목표에 이미 할당된 자산
+      something: "할당된 자산", // 다른 목표에 이미 할당된 자산
       value: Math.max(alreadyAllocatedPercent, 0),
     },
     {
@@ -631,10 +710,6 @@ function getAccountAllocationData(account) {
       value: Math.max(availableAmountPercent, 0),
     },
   ];
-
-  console.log(`📊 ${account.name} 백분율 데이터:`, chartData);
-
-  return chartData;
 }
 
 // 네비게이션 함수들
