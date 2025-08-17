@@ -715,7 +715,7 @@ function getAccountAllocationData(account) {
 // 네비게이션 함수들
 function goToAccountLink() {
   // 계좌 연결 페이지로 이동 (실제 라우팅 경로에 맞게 수정 필요)
-  router.push("/onboarding/bank-select");
+  router.push("/bank-select");
 }
 
 function goToGoalList() {
