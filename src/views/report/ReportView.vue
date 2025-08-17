@@ -52,9 +52,6 @@
     <div v-else-if="activeTab === 'isa'">
       <IsaReport />
     </div>
-    <div v-if="activeTab === 'isa'" class="mt-2">
-      <TaxSavingsSummary />
-    </div>
   </DefaultLayout>
 </template>
 
@@ -68,7 +65,7 @@ import { ref, onMounted } from "vue";
 import api from "@/api";
 import TaxSavingsSummary from "@/components/report/TaxSavingsSummary.vue";
 
-const activeTab = ref("investment");
+const activeTab = ref("isa");
 const goals = ref([]);
 const colors = ["#3B82F6", "#EF4444", "#10B981", "#F59E0B", "#8B5CF6", "#F97316"];
 
