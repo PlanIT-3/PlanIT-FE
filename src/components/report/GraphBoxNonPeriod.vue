@@ -3,7 +3,7 @@
     <div class="flex justify-between items-center mb-2">
       <span class="font-semibold text-sm">{{ title }}</span>
     </div>
-    <div class="h-64 flex items-center justify-center text-gray-300">
+    <div class="flex items-center justify-center text-gray-300">
       <slot>[그래프 영역]</slot>
     </div>
   </div>

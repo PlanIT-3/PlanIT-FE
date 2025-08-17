@@ -1,24 +1,24 @@
 <template>
-  <div class="mb-0">
-    <div class="text-sm font-semibold mb-2 flex items-center"></div>
-
-    <!-- 로딩 상태 -->
-    <div v-if="isLoading" class="flex items-center justify-center bg-gray-50 rounded h-44">
-      <div class="flex flex-col items-center">
-        <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500 mb-2"></div>
-        <span class="text-sm text-gray-500">절세 데이터 로딩 중...</span>
+  <div class="">
+    <GraphBoxNonPeriod title="누적 절세 효과">
+      <!-- 로딩 상태 -->
+      <div v-if="isLoading" class="flex items-center justify-center bg-gray-50 rounded h-44">
+        <div class="flex flex-col items-center">
+          <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500 mb-2"></div>
+          <span class="text-sm text-gray-500">절세 데이터 로딩 중...</span>
+        </div>
       </div>
-    </div>
 
-    <!-- ECharts 차트 -->
-    <div v-else class="w-full h-44 flex justify-center">
-      <div class="w-full max-w-md">
-        <VChart :option="chartOptions" autoresize />
+      <!-- ECharts 차트 -->
+      <div v-else class="w-full h-44 flex justify-center">
+        <div class="w-full max-w-md">
+          <VChart :option="chartOptions" autoresize />
+        </div>
       </div>
-    </div>
+    </GraphBoxNonPeriod>
 
     <!-- 하단 정보 -->
-    <div class="mt-3 bg-green-50 rounded-lg p-3">
+    <div class="mt-4 bg-green-50 rounded-lg p-3">
       <div class="flex items-center justify-between mb-2">
         <div>
           <span class="text-green-700 font-semibold text-sm">{{ latestSavings.toLocaleString() }}원</span>
@@ -38,6 +38,7 @@ import { CanvasRenderer } from "echarts/renderers";
 import { LineChart } from "echarts/charts";
 import { GridComponent, TooltipComponent, LegendComponent } from "echarts/components";
 import { api } from "@/api";
+import GraphBoxNonPeriod from "./GraphBoxNonPeriod.vue";
 
 use([CanvasRenderer, LineChart, GridComponent, TooltipComponent, LegendComponent]);
 
