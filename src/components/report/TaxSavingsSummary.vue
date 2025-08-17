@@ -38,7 +38,7 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
-import api from "@/api/reprotApi";
+import api from "@/api/reportApi";
 import TaxSavingSummaryCard from "./TaxSavingSummaryCard.vue";
 
 const summary = ref({});

@@ -168,16 +168,38 @@ const load = async () => {
 
     goalDetail.value = (await api.getGoal(id)).data;
     rateList.value = await api.getGoalAccountRates(id);
-    goalProgress.value = await api.getGoalProgress(id);
+    // goalProgress.value = await api.getGoalProgress(id);
     accounts.value = await api.getGoalAccounts(id);
 
     // 새로운 API로 예금과 ISA 계좌 분리 조회
     const accountsDetail = await api.getGoalAccountsDetail(id);
-    depositAccounts.value = accountsDetail.depositAccounts;
-    isaAccounts.value = accountsDetail.isaAccounts;
+    
+    // 예금 계좌 변환
+    depositAccounts.value = (accountsDetail.goalDepositList || []).map((account) => ({
+      bankName: account.bankName,
+      productName: account.accountName,
+      percent: 0,
+      amount: Math.round(account.accountBalance),
+    }));
+
+    // ISA 계좌 변환
+    isaAccounts.value = (accountsDetail.goalIsaList || []).map((account) => ({
+      itemName: account.itemName,
+      presentAmount: Math.round(account.presentAmount),
+      quantity: account.quantity,
+      isaBalance: Math.round(account.isaBalance),
+    }));
+
+    // 예금 계좌 비율 계산
+    const totalDepositAmount = depositAccounts.value.reduce((sum, acc) => sum + acc.amount, 0);
+    depositAccounts.value.forEach((account) => {
+      account.percent = totalDepositAmount > 0 ? Math.round((account.amount / totalDepositAmount) * 100) : 0;
+    });
 
     console.log("Goal Progress Response:", goalProgress.value);
     console.log("Accounts Data:", accounts.value);
+    console.log("Deposit Accounts:", depositAccounts.value);
+    console.log("ISA Accounts:", isaAccounts.value);
   } catch (err) {
     console.log("Goal API 호출 실패", err);
   } finally {

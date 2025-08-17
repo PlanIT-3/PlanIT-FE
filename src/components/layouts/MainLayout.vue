@@ -3,7 +3,7 @@
     <MainHeader class="flex-shrink-0 relative z-10" />
     <div
       id="content"
-      class="bg-white rounded-t-3xl shadow-lg px-6 pt-10 pb-8 z-* -mt-[84px] overflow-y-auto"
+      class="bg-white rounded-t-3xl shadow px-6 pt-10 pb-8 z-* -mt-[84px]"
       :style="{ maxHeight: 'calc(852px - 148px)', minHeight: 'calc(852px - 148px)' }"
     >
       <!-- 이 부분이 고정될 박스입니다 -->
@@ -55,7 +55,7 @@ const route = useRoute();
 
 // 전체 자산 포맷팅
 const formattedTotalBalance = computed(() => {
-  return props.totalBalance.toLocaleString() + "원";
+  return Math.round(props.totalBalance).toLocaleString() + "원";
 });
 </script>
 

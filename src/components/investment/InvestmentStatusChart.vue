@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full bg-white rounded-2xl shadow-lg p-5 mt-2">
+  <div class="w-full bg-white rounded-2xl shadow p-5 mt-2">
     <!-- Header -->
     <div class="flex justify-between items-center mb-2">
       <div class="flex items-center">
@@ -44,7 +44,7 @@
     </div>
 
     <!-- Investment Chart -->
-    <div class="h-[170px]">
+    <div class="h-[200px]">
       <VChart :option="investmentChartOption" autoresize />
     </div>
   </div>

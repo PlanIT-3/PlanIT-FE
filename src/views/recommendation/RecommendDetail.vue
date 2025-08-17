@@ -2,7 +2,7 @@
   <transition name="slide-reverse">
     <div
       v-if="product"
-      class="absolute top-0 left-0 w-80 h-[704px] bg-white shadow-lg p-6 z-20 overflow-y-auto no-scrollbar"
+      class="absolute top-0 left-0 w-80 h-[704px] bg-white shadow-lg p-6 z-20 overflow-y-auto-x-hidden no-scrollbar"
     >
       <button
         class="absolute top-4 right-4 text-gray-500 hover:text-gray-900 text-xl font-bold"

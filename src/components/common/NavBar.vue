@@ -150,7 +150,16 @@ const tabRoutes = {
 
 // 경로 기반으로 탭 이름 역으로 찾기
 function getTabByPath(path) {
-  return Object.keys(tabRoutes).find((key) => tabRoutes[key] === path);
+  // 정확한 매칭 먼저 확인
+  const exactMatch = Object.keys(tabRoutes).find((key) => tabRoutes[key] === path);
+  if (exactMatch) return exactMatch;
+  
+  // goals 관련 경로들 확인
+  if (path.startsWith('/goal/detail/') || path.startsWith('/goal/')) {
+    return 'goals';
+  }
+  
+  return null;
 }
 
 const selectedTab = ref(getTabByPath(route.path) || "home");

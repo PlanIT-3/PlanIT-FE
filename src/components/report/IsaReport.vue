@@ -9,6 +9,8 @@
     <GraphBoxNonPeriod title="누적 절세 효과">
       <CumulativeTaxSavingsChart />
     </GraphBoxNonPeriod>
+
+    <TaxSavingsSummary />
   </div>
 </template>
 
@@ -19,6 +21,7 @@ import GraphBoxNonPeriod from "./GraphBoxNonPeriod.vue";
 import IsaTaxSavingStatus from "./IsaTaxSavingStatus.vue";
 import CumulativeTaxSavingsChart from "./CumulativeTaxSavingsChart.vue";
 import TaxComparisonChart from "./TaxComparisonChart.vue";
+import TaxSavingsSummary from "./TaxSavingsSummary.vue";
 </script>
 
 <style scoped></style>
