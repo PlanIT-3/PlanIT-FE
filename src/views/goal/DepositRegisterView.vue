@@ -197,7 +197,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import BaseTextInput from "@/components/base/BaseTextInput.vue";
 import GoBackButton from "@/components/base/GoBackButton.vue";
@@ -211,8 +211,13 @@ import objectApi from "@/api/objectApi.js";
 const route = useRoute();
 const router = useRouter();
 
-// URL 파라미터 또는 로컬스토리지에서 goalId 가져오기 (우선순위: query > localStorage > params)
-const goalId = ref(route.query.goalId || localStorage.getItem("currentGoalId") || route.params.goalId);
+// URL 파라미터 또는 로컬스토리지에서 goalId 가져오기 (우선순위: query > params > localStorage)
+// 신규모드: route.query.goalId가 명시적으로 없으면 localStorage 무시
+const goalId = ref(
+  route.query.goalId || 
+  route.params.goalId || 
+  (route.query.goalId === undefined ? null : localStorage.getItem("currentGoalId"))
+);
 
 // JWT 토큰에서 memberId 가져오기
 function getMemberIdFromToken() {
@@ -252,6 +257,18 @@ const accounts = ref([]);
 // 완료 상태 추적 (미완료 Goal 삭제 방지용)
 const isCompleted = ref(false);
 
+// 모드 고정 (처음 결정된 후 변경되지 않음)
+const isEditMode = ref(false);
+
+// 디버깅용: isEditMode 변경 추적
+watch(isEditMode, (newValue, oldValue) => {
+  console.log("🚨 isEditMode 변경 감지:", { 
+    old: oldValue, 
+    new: newValue,
+    stack: new Error().stack 
+  });
+}, { immediate: true });
+
 // 계좌 추가 드롭다운 상태
 const showAccountDropdown = ref(false);
 
@@ -259,66 +276,94 @@ const showAccountDropdown = ref(false);
 async function loadGoalAmount() {
   console.log("🎯 loadGoalAmount 시작:", { goalId: goalId.value, queryAmount: route.query.amount });
 
-  // 신규 생성: goalId가 없고 쿼리 파라미터에 amount가 있으면 신규모드
-  if (route.query.amount && Number(route.query.amount) > 0 && !goalId.value) {
-    totalGoalAmount.value = Number(route.query.amount);
-    console.log("🎯 쿼리에서 목표 금액 설정 (신규):", totalGoalAmount.value.toLocaleString() + "원");
-    return;
-  }
-
-  // 수정 모드: goalId가 있고 amount도 있으면 수정모드 (amount는 쿼리로 넘어옴)
-  if (goalId.value && route.query.amount && Number(route.query.amount) > 0) {
-    totalGoalAmount.value = Number(route.query.amount);
-    console.log("🎯 쿼리에서 목표 금액 설정 (수정):", totalGoalAmount.value.toLocaleString() + "원");
-    
-    // 수정 모드에서는 기존 할당된 계좌 정보도 가져오기
-    await loadExistingAllocations();
-    // 수정 모드에서도 사용 가능한 계좌 목록 필요 (계좌 추가나 변경을 위해)
-    await loadAvailableAccounts();
-    return;
-  }
-
-  // 수정: goalId만 있고 amount가 없으면 API에서 조회
+  // goalId가 없으면 에러
   if (!goalId.value) {
     console.error("❌ Goal ID 없음");
     totalGoalAmount.value = 0;
     return;
   }
 
+  // 쿼리에서 목표 금액 설정
+  if (route.query.amount && Number(route.query.amount) > 0) {
+    totalGoalAmount.value = Number(route.query.amount);
+    console.log("🎯 쿼리에서 목표 금액 설정:", totalGoalAmount.value.toLocaleString() + "원");
+  }
+
+  // 먼저 DB에서 기존 할당 정보 확인하여 신규/수정 모드 결정
+  console.log("🔍 기존 할당 정보 확인 중...");
   try {
-    console.log("📡 목표 금액 API 호출 중 (수정)...", `/goals/${goalId.value}/goal-amount`);
-    const response = await objectApi.getGoalAmount(goalId.value);
-    console.log("✅ 목표 금액 API 응답:", response);
-
-    if (response.status === "OK" && response.data) {
-      totalGoalAmount.value = response.data.targetAmount; // 원 단위 그대로 사용
-      console.log("🎯 API에서 목표 금액 설정 (수정):", totalGoalAmount.value.toLocaleString() + "원");
-
-      // 수정 모드에서는 기존 할당된 계좌 정보도 가져오기
-      await loadExistingAllocations();
-      // 수정 모드에서도 사용 가능한 계좌 목록 필요 (계좌 추가나 변경을 위해)
+    const response = await depositService.getDepositAccountsByGoal(memberId.value, goalId.value);
+    
+    if (response.data && response.data.data && response.data.data.length > 0) {
+      // 기존 할당 정보가 있음 → 수정모드
+      isEditMode.value = true;
+      console.log("📝 수정모드: 기존 할당 정보 발견", response.data.data);
+      await loadExistingAllocations(response.data.data); // 이미 가져온 데이터 전달
       await loadAvailableAccounts();
     } else {
-      console.log("❌ 목표 금액 응답 데이터 구조 문제:", response);
+      // 기존 할당 정보가 없음 → 신규모드
+      isEditMode.value = false;
+      console.log("🆕 신규모드: 기존 할당 정보 없음");
+      // 신규모드에서는 사용 가능한 계좌 목록만 로드
+      await loadAvailableAccounts();
+    }
+  } catch (error) {
+    console.error("❌ 할당 정보 확인 실패:", error);
+    // 에러 발생 시 신규모드로 처리
+    isEditMode.value = false;
+    console.log("🆕 신규모드로 처리 (에러 시 기본값)");
+    await loadAvailableAccounts();
+    return;
+  }
+
+  // 쿼리에서 목표 금액을 가져오지 못한 경우만 API에서 조회
+  if (!totalGoalAmount.value) {
+    try {
+      console.log("📡 목표 금액 API 호출 중...", `/goals/${goalId.value}/goal-amount`);
+      const response = await objectApi.getGoalAmount(goalId.value);
+      console.log("✅ 목표 금액 API 응답:", response);
+
+      if (response.status === "OK" && response.data) {
+        totalGoalAmount.value = response.data.targetAmount; // 원 단위 그대로 사용
+        console.log("🎯 API에서 목표 금액 설정:", totalGoalAmount.value.toLocaleString() + "원");
+      } else {
+        console.log("❌ 목표 금액 응답 데이터 구조 문제:", response);
+        totalGoalAmount.value = 0; // 기본값
+      }
+    } catch (err) {
+      console.error("목표 금액 로딩 실패:", err);
       totalGoalAmount.value = 0; // 기본값
     }
-  } catch (err) {
-    console.error("목표 금액 로딩 실패:", err);
-    totalGoalAmount.value = 0; // 기본값
   }
 }
 
 // 수정 모드: 기존 할당된 계좌 정보 가져오기 (DB에서 실제 저장된 데이터)
-async function loadExistingAllocations() {
+async function loadExistingAllocations(existingData = null) {
   console.log("🔍 loadExistingAllocations 시작:", { goalId: goalId.value, memberId: memberId.value });
 
-  try {
-    console.log("📡 기존 할당 정보 API 호출 중...", `/account/deposit/edit/${memberId.value}?goalId=${goalId.value}`);
-    const response = await depositService.getDepositAccountsByGoal(memberId.value, goalId.value);
-    console.log("✅ 기존 할당 정보 API 응답:", response);
+  let existingAllocations = existingData;
+  
+  // 데이터가 전달되지 않은 경우에만 API 호출
+  if (!existingAllocations) {
+    try {
+      console.log("📡 기존 할당 정보 API 호출 중...", `/account/deposit/edit/${memberId.value}?goalId=${goalId.value}`);
+      const response = await depositService.getDepositAccountsByGoal(memberId.value, goalId.value);
+      console.log("✅ 기존 할당 정보 API 응답:", response);
 
-    if (response.data && response.data.data && response.data.data.length > 0) {
-      const existingAllocations = response.data.data;
+      if (response.data && response.data.data && response.data.data.length > 0) {
+        existingAllocations = response.data.data;
+      } else {
+        console.log("❌ 기존 할당 정보 없음");
+        return;
+      }
+    } catch (error) {
+      console.error("❌ 기존 할당 정보 로딩 실패:", error);
+      return;
+    }
+  }
+
+  try {
+    if (existingAllocations && existingAllocations.length > 0) {
       console.log("📊 DB에서 가져온 기존 할당 정보:", existingAllocations);
 
       // 기존 할당 정보를 accounts에 설정
@@ -429,11 +474,10 @@ async function loadAvailableAccounts() {
       availableAccounts.value = response.data.data;
       console.log("📊 받은 계좌 데이터:", availableAccounts.value);
 
-      // 수정모드 확인 (goalId가 있고 기존 할당 정보가 로딩되어 accountOptions가 채워져 있으면 수정모드)
-      const isEditMode = goalId.value && accountOptions.value.length > 0;
+      // 수정모드 확인 (전역 isEditMode 사용)
       
       // accountOptions를 API 데이터로 변환
-      if (isEditMode) {
+      if (isEditMode.value) {
         // 수정모드: loadExistingAllocations에서 이미 accountOptions를 설정했으므로 
         // 추가 계좌만 병합 (계좌 추가 기능용)
         console.log("🔄 수정모드: 기존 accountOptions 유지하고 추가 계좌만 병합");
@@ -458,20 +502,40 @@ async function loadAvailableAccounts() {
       } else {
         // 신규모드: 할당 가능한 자산이 있는 계좌만
         console.log("🆕 신규모드: 할당 가능한 계좌만");
-        accountOptions.value = availableAccounts.value
-          .filter((account) => account.remainingAmount > 0)
-          .map((account) => ({
-            name: account.accountName,
-            accountNumber: account.accountNumber,
-            memberAccountId: account.memberAccountId,
-            total: Math.floor(account.presentAmount / 10000),
-            remainingAmount: Math.floor(account.remainingAmount / 10000),
-          }));
+        console.log("🔍 필터링 전 계좌들:", availableAccounts.value.map(acc => ({
+          name: acc.accountName, 
+          remainingAmount: acc.remainingAmount,
+          presentAmount: acc.presentAmount
+        })));
+        
+        // 만원 단위로 변환 후 필터링
+        const accountsInWan = availableAccounts.value.map((account) => ({
+          name: account.accountName,
+          accountNumber: account.accountNumber,
+          memberAccountId: account.memberAccountId,
+          total: Math.floor(account.presentAmount / 10000),
+          remainingAmount: Math.floor(account.remainingAmount / 10000),
+          originalRemainingAmount: account.remainingAmount // 디버깅용
+        }));
+        
+        console.log("🔍 만원 단위 변환 후:", accountsInWan.map(acc => ({
+          name: acc.name,
+          originalRemaining: acc.originalRemainingAmount,
+          remainingWan: acc.remainingAmount
+        })));
+        
+        const filteredAccounts = accountsInWan.filter((account) => account.remainingAmount > 0);
+        console.log("🔍 필터링 후 계좌들:", filteredAccounts.map(acc => ({
+          name: acc.name,
+          remainingAmount: acc.remainingAmount
+        })));
+        
+        accountOptions.value = filteredAccounts;
       }
       console.log("🔄 변환된 계좌 옵션:", accountOptions.value);
 
       // 수정모드에서 기존 할당된 계좌가 accountOptions에 없을 경우 전체 계좌에서 가져와서 추가
-      if (isEditMode) {
+      if (isEditMode.value) {
         console.log("🔄 수정모드: 기존 할당 계좌 확인 및 추가");
         
         try {
@@ -616,12 +680,16 @@ async function saveDepositAllocation() {
             const currentGoalExists = existingGoals.find(goal => goal.goalId == goalId.value);
             
             if (!currentGoalExists) {
-              console.log("❌ goalId 7491이 goal 테이블에 없습니다!");
+              console.log(`❌ goalId ${goalId.value}이 goal 테이블에 없습니다!`);
               console.log("💡 해결책 필요: action 테이블에만 저장되고 goal 테이블에는 없는 상태");
               
               if (existingGoals.length > 0) {
                 console.log("📝 실제 존재하는 첫 번째 목표:", existingGoals[0]);
-                console.log("💭 이 목표 ID를 사용하는 것을 고려해보세요:", existingGoals[0].goalId);
+                console.log("💭 이 목표 ID를 사용해서 이동합니다:", existingGoals[0].goalId);
+                
+                // 실제 존재하는 goalId로 변경
+                goalId.value = existingGoals[0].goalId;
+                localStorage.setItem("currentGoalId", goalId.value);
               }
             } else {
               console.log("✅ goalId가 goal 테이블에 존재합니다:", currentGoalExists);
@@ -690,8 +758,8 @@ onMounted(() => {
 
   loadGoalAmount(); // 신규면 바로 종료, 수정이면 loadExistingAllocations + loadAvailableAccounts 호출
 
-  // 신규 모드일 때만 따로 loadAvailableAccounts 호출
-  if (route.query.amount && Number(route.query.amount) > 0) {
+  // 신규 모드일 때만 따로 loadAvailableAccounts 호출 (goalId가 없는 경우만)
+  if (route.query.amount && Number(route.query.amount) > 0 && !goalId.value) {
     loadAvailableAccounts();
   }
 });
@@ -715,7 +783,7 @@ function getMaxAllocatableAmount(accountName) {
   
   // 수정모드에서는 현재 목표에 할당된 금액도 수정 가능하므로 
   // 실제 사용 가능한 금액은 remainingAmount 전체
-  const isEditMode = goalId.value && route.query.amount;
+  // 전역 isEditMode 사용
   const currentAccount = accounts.value.find(acc => acc.name === accountName);
   
   console.log(`🔍 상세 디버그 ${accountName}:`, {
@@ -723,13 +791,13 @@ function getMaxAllocatableAmount(accountName) {
     accountInfoExists: !!accountInfo,
     goalAmountInWan,
     availableAmount,
-    isEditMode,
+    isEditMode: isEditMode.value,
     currentAccount: currentAccount,
     accountOptions: accountOptions.value.map(opt => ({ name: opt.name, remaining: opt.remainingAmount, total: opt.total }))
   });
   
   let maxAllocatable = 0;
-  if (isEditMode && currentAccount) {
+  if (isEditMode.value && currentAccount) {
     // 수정모드: remainingAmount에 현재 할당분이 포함되어 있으므로 전체 사용 가능
     maxAllocatable = Math.min(goalAmountInWan, availableAmount);
   } else {
@@ -737,7 +805,7 @@ function getMaxAllocatableAmount(accountName) {
     maxAllocatable = Math.min(goalAmountInWan, availableAmount);
   }
   
-  console.log(`🎯 최대할당계산 ${accountName}: 목표=${goalAmountInWan}, 잔액=${availableAmount}, 최대할당=${maxAllocatable}, 수정모드=${isEditMode}`);
+  console.log(`🎯 최대할당계산 ${accountName}: 목표=${goalAmountInWan}, 잔액=${availableAmount}, 최대할당=${maxAllocatable}, 수정모드=${isEditMode.value}`);
   
   return isNaN(maxAllocatable) ? 0 : Math.max(0, maxAllocatable);
 }
@@ -822,9 +890,22 @@ function removeAccount(index) {
 // 계좌 옵션 필터링
 function availableAccountOptions(currentIndex) {
   const selected = accounts.value.map((a) => a.name);
-  return accountOptions.value.filter(
-    (option) => !selected.includes(option.name) || accounts.value[currentIndex].name === option.name
-  );
+  return accountOptions.value.filter((option) => {
+    // 기본 조건: 이미 선택되지 않았거나 현재 선택된 계좌
+    const isAvailableForSelection = !selected.includes(option.name) || accounts.value[currentIndex].name === option.name;
+    
+    // 신규모드에서는 할당 가능한 계좌만 (remainingAmount > 0)
+    const hasAvailableAmount = option.remainingAmount > 0;
+    
+    console.log(`🔍 드롭다운 계좌 필터링 ${option.name}:`, {
+      isAvailableForSelection,
+      hasAvailableAmount,
+      remainingAmount: option.remainingAmount,
+      final: isAvailableForSelection && hasAvailableAmount
+    });
+    
+    return isAvailableForSelection && hasAvailableAmount;
+  });
 }
 
 // 금액 포맷
@@ -864,13 +945,13 @@ function getAccountAllocationData(account) {
     percentage: account.percentage
   });
   
-  // 수정모드 확인
-  const isEditMode = goalId.value && route.query.amount;
+  // 수정모드 확인 (고정된 모드 사용)
+  // 처음 DB 조회 결과에 따라 결정된 모드를 사용
   
   // 다른 목표에 할당된 금액 계산
   let alreadyAllocated = 0;
   
-  if (isEditMode) {
+  if (isEditMode.value) {
     // 수정모드: 현재 이 목표에 할당된 계좌의 경우, 
     // 다른 목표에 할당된 금액만 "할당된 자산"으로 표시
     const currentAccount = accounts.value.find(acc => acc.name === account.name);
@@ -895,7 +976,7 @@ function getAccountAllocationData(account) {
   }
   
   console.log("📊 할당된 자산 계산:", {
-    isEditMode,
+    isEditMode: isEditMode.value,
     totalAmount,
     remainingAmount: accountInfo.remainingAmount,
     currentAllocation,
@@ -947,11 +1028,11 @@ function getLegendAllocatedAmount(accountName) {
   const accountInfo = getAccountInfo(accountName);
   if (!accountInfo) return 0;
   
-  const isEditMode = goalId.value && route.query.amount;
+  // 전역 isEditMode 사용
   const currentAccount = accounts.value.find(acc => acc.name === accountName);
   const currentAllocation = currentAccount ? getAllocatedAmount(currentAccount) : 0;
   
-  if (isEditMode && currentAccount) {
+  if (isEditMode.value && currentAccount) {
     // 수정모드: 다른 목표에만 할당된 금액
     // remainingAmount에 현재 목표 할당분이 이미 포함되어 있으므로
     return Math.max(0, accountInfo.total - accountInfo.remainingAmount);
