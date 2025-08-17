@@ -21,11 +21,11 @@
     <div class="mt-3 bg-green-50 rounded-lg p-3">
       <div class="flex items-center justify-between mb-2">
         <div>
-          <span class="text-green-700 font-bold text-base">{{ latestSavings.toLocaleString() }}원</span>
-          <span class="text-green-600 text-sm ml-2"> 일반 투자 대비 절약된 세금 </span>
+          <span class="text-green-700 font-semibold text-sm">{{ latestSavings.toLocaleString() }}원</span>
+          <span class="text-green-600 text-xs ml-2"> 일반 투자 대비 절약된 세금 </span>
         </div>
       </div>
-      <p class="text-sm text-green-600">ISA 활용으로 {{ latestSavings.toLocaleString() }}원의 세금을 절약했습니다.</p>
+      <p class="text-xs text-green-600">ISA 활용으로 {{ latestSavings.toLocaleString() }}원의 세금을 절약했습니다.</p>
     </div>
   </div>
 </template>
@@ -143,7 +143,7 @@ const generateChartData = (baseAmount) => {
 // ISA 절세 데이터 로딩
 const fetchTaxSavingsData = async () => {
   try {
-    const response = await api.get("/auth/api/isa/reports/cumulative-tax-saving");
+    const response = await api.get("http://localhost:8080/api/isa/reports/cumulative-tax-saving");
 
     if (response.data.status === "OK" && response.data.data && Array.isArray(response.data.data)) {
       const cumulativeData = response.data.data;

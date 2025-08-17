@@ -1,6 +1,6 @@
 <template>
-  <div class="flex justify-between items-center border-b py-3">
-    <p class="text-sm font-extrabold text-gray-800 ml-5">{{ title }}</p>
+  <div class="flex justify-between items-center border-b border-gray-300 py-3">
+    <p class="text-sm text-gray-800 ml-5">{{ title }}</p>
     <label class="relative inline-block w-11 h-6 cursor-pointer">
       <!-- 체크박스 (숨김) -->
       <input

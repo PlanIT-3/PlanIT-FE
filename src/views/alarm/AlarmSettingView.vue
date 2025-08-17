@@ -15,27 +15,27 @@
     <!-- 알림 콘텐츠-->
     <div class="">
       <!-- 기본설정알림 -->
-      <div class="flex justify-between items-center border-b pb-2">
-        <p class="text-sm font-bold text-gray-500">기본설정</p>
+      <div class="flex justify-between items-center border-b border-gray-300 pb-2">
+        <p class="text-sm font-semibold text-gray-600">기본설정</p>
       </div>
       <AlarmToggle title="푸시 알림 받기" v-model="pushEnabled" />
 
       <!-- 목표 달성 알림 설정 -->
-      <div class="flex justify-between items-center border-b pb-2 mt-10">
-        <p class="text-sm font-extrabold text-gray-500">목표 달성 알림 설정</p>
+      <div class="flex justify-between items-center border-b border-gray-300 pb-2 mt-6">
+        <p class="text-sm font-semibold text-gray-600">목표 달성 알림 설정</p>
       </div>
       <AlarmToggle title="목표 달성 알림 받기" v-model="goalAchievementEnabled" />
 
       <!-- 달성률 설정 아코디언 버튼 -->
 
       <!-- 상품 알림 설정 -->
-      <div class="flex justify-between items-center border-b pb-2 mt-10">
-        <p class="text-sm font-extrabold text-gray-500">상품 알림 설정</p>
+      <div class="flex justify-between items-center border-b border-gray-300 pb-2 mt-6">
+        <p class="text-sm font-semibold text-gray-600">상품 알림 설정</p>
       </div>
       <AlarmToggle title="목표금액 달성 알림 받기" v-model="productAlertEnabled" />
 
       <!-- 상품별 목표가 설정 -->
-      <div v-if="productAlertEnabled" class="ml-4 mt-2 space-y-3">
+      <div v-if="productAlertEnabled" class="ml-4 mt-6 space-y-3">
         <button
           @click="showProductOptions = !showProductOptions"
           class="flex items-center gap-1 text-sm text-[#433D8B]"
@@ -69,7 +69,7 @@
 
         <!-- 토클 열면 보유 상품 목록 -->
         <div v-if="showProductOptions" class="space-y-2">
-          <div v-for="product in ownedProducts" :key="product.code" class="border rounded-lg p-4">
+          <div v-for="product in ownedProducts" :key="product.code" class="border border-gray-300 rounded-lg p-4">
             <!-- 상품 정보 및 토글 -->
             <div class="flex justify-between items-center mb-2">
               <div class="flex-1">
