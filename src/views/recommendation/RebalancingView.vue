@@ -69,8 +69,52 @@
       </div>
     </div>
 
+<<<<<<< HEAD
     <!-- 푸터 -->
     <div class="text-center text-[9px] text-gray-400">* 리밸런싱 제안은 시장 상황에 따라 변경될 수 있습니다.</div>
+=======
+    <!-- 리밸런싱 -->
+    <div class="mb-4">
+      <h4 class="text-base font-semibold text-gray-800 mb-3">목표별 최대 수익 상품 추천</h4>
+
+      <div v-if="rebalanceLoading" class="text-center py-8">
+        <div class="text-gray-500">리밸런싱 데이터 로딩 중...</div>
+      </div>
+
+      <div v-else-if="rebalanceError" class="text-center py-8">
+        <div class="text-red-500">리밸런싱 데이터를 불러오는 중 오류가 발생했습니다.</div>
+      </div>
+
+      <div v-else class="space-y-4">
+        <template v-for="goal in rebalanceData" :key="goal.goalName">
+          <div v-if="goal.rebalanceInfo && goal.rebalanceInfo.length > 0">
+            <template v-for="rebalanceItem in goal.rebalanceInfo" :key="rebalanceItem.memberProductId">
+              <RebalanceCard
+                :goal="goal.goalName"
+                :PreProd="rebalanceItem.previousProductName"
+                :NextProd="rebalanceItem.nextProductName"
+                :expected-yield="rebalanceItem.expectedReturnRate.toFixed(2) + '%'"
+                :risk-level="getRiskLevel(rebalanceItem.investType)"
+                :risk-color="getRiskColor(rebalanceItem.investType)"
+                :comment="parseComment(rebalanceItem.comment).part1"
+                :comment2="parseComment(rebalanceItem.comment).part2"
+              />
+            </template>
+          </div>
+        </template>
+
+        <div
+          v-if="
+            rebalanceData.length === 0 ||
+            rebalanceData.every((goal) => !goal.rebalanceInfo || goal.rebalanceInfo.length === 0)
+          "
+          class="text-center py-8"
+        >
+          <div class="text-gray-500">현재 추천할 리밸런싱이 없습니다.</div>
+        </div>
+      </div>
+    </div>
+>>>>>>> c4b6b08 (feat: 상품 목표별 추천)
   </div>
 </template>
 
@@ -103,6 +147,7 @@ import { getRebalance } from "@/api/rebalanceApi";
 //   }, {});
 // });
 
+<<<<<<< HEAD
 // 임시 데이터
 const apiData = ref([
   {
@@ -115,6 +160,81 @@ const apiData = ref([
     mpTotal: 4588585.0,
     deposit: 327378.5,
     reason: "ISA 목표금액 초과 → 수익률 높은 종목 매도",
+=======
+// API 호출 함수
+const loadInvestmentData = async () => {
+  loading.value = true;
+  error.value = false;
+
+  try {
+    const data = await fetchInvestmentData();
+    investmentData.value = data;
+  } catch (err) {
+    console.error("투자 내역 조회 실패:", err);
+    error.value = true;
+  } finally {
+    loading.value = false;
+  }
+};
+
+// 목 데이터
+const mockRebalanceData = {
+  code: "GEN-000",
+  message: "Success!",
+  status: "OK",
+  data: {
+    rebalancingInfo: [
+      {
+        goalName: "테스트",
+        rebalanceInfo: [],
+      },
+      {
+        goalName: "test",
+        rebalanceInfo: [
+          {
+            productCode: "0023A0",
+            memberProductId: 25940,
+            goalId: 18092,
+            comment: "만약 이 상품으로 교체했다면,\n수익이 +4.13%p 높아지고\n구조 지표는 1034만큼 개선됐을 거예요.",
+            expectedReturnRate: -14.36,
+            previousProductName: "KBSTAR 팔라듐선물(H)",
+            nextProductName: "SOL 미국양자컴퓨팅TOP10",
+            investType: "MODERATE",
+          },
+        ],
+      },
+      {
+        goalName: "goalname1-2",
+        rebalanceInfo: [
+          {
+            productCode: "0007N0",
+            memberProductId: 25941,
+            goalId: 8093,
+            comment: "만약 이 상품으로 교체했다면,\n수익이 +4.13%p 높아지고\n구조 지표는 1034만큼 개선됐을 거예요.",
+            expectedReturnRate: -0.52,
+            previousProductName: "TIGER 글로벌멀티에셋TIF액티브",
+            nextProductName: "아이엠에셋 200",
+            investType: "CONSERVATIVE",
+          },
+        ],
+      },
+      {
+        goalName: "goalname1-1",
+        rebalanceInfo: [
+          {
+            productCode: "0007N0",
+            memberProductId: 25939,
+            goalId: 8092,
+            comment: "만약 이 상품으로 교체했다면,\n수익이 +4.13%p 높아지고\n구조 지표는 1034만큼 개선됐을 거예요.",
+            expectedReturnRate: -0.52,
+            previousProductName: "KODEX Top5PlusTR",
+            nextProductName: "아이엠에셋 200",
+            investType: "CONSERVATIVE",
+          },
+        ],
+      },
+    ],
+>>>>>>> c4b6b08 (feat: 상품 목표별 추천)
   },
   {
     goalName: "goalname1-1",
@@ -129,6 +249,7 @@ const apiData = ref([
   },
 ]);
 
+<<<<<<< HEAD
 // 목표별 그룹핑
 const groupedData = computed(() => {
   return apiData.value.reduce((acc, item) => {
@@ -136,5 +257,68 @@ const groupedData = computed(() => {
     acc[item.goalName].push(item);
     return acc;
   }, {});
+=======
+// comment를 분리하는 함수
+const parseComment = (commentText) => {
+  const lines = commentText.split("\n");
+  const part1 = lines[0] || "";
+  const part2 = lines.slice(1).join("\n");
+  return { part1, part2 };
+};
+
+// 리밸런싱 데이터 로드
+const loadRebalanceData = async () => {
+  rebalanceLoading.value = true;
+  rebalanceError.value = false;
+
+  try {
+    // 목 데이터 사용
+    rebalanceData.value = mockRebalanceData.data.rebalancingInfo || [];
+    console.log("리밸런싱 데이터:", rebalanceData.value);
+
+    // 실제 API 사용시 아래 주석 해제
+    // const response = await fetchYieldData();
+    // rebalanceData.value = response.data.rebalancingInfo || [];
+  } catch (err) {
+    console.error("수익률 추천 데이터 조회 실패:", err);
+    rebalanceError.value = true;
+  } finally {
+    rebalanceLoading.value = false;
+  }
+};
+
+// 위험도 색상 매핑
+const getRiskColor = (investType) => {
+  switch (investType) {
+    case "CONSERVATIVE":
+      return "text-green-600";
+    case "MODERATE":
+      return "text-orange-600";
+    case "AGGRESSIVE":
+      return "text-red-600";
+    default:
+      return "text-gray-600";
+  }
+};
+
+// 위험도 레벨 텍스트 매핑
+const getRiskLevel = (investType) => {
+  switch (investType) {
+    case "CONSERVATIVE":
+      return "낮음";
+    case "MODERATE":
+      return "중간";
+    case "AGGRESSIVE":
+      return "높음";
+    default:
+      return "알수없음";
+  }
+};
+
+// 컴포넌트 마운트 시 데이터 로드
+onMounted(() => {
+  loadInvestmentData();
+  loadRebalanceData();
+>>>>>>> c4b6b08 (feat: 상품 목표별 추천)
 });
 </script>
