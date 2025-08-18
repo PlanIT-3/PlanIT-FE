@@ -61,7 +61,7 @@
           :rate="goalDetail.goalRate ?? 0"
           :showLegend="false"
           :barChartData="rateList"
-          :totalAmount="goalDetail.totalAmount ?? 0"
+          :totalAmount="currentAmount ?? 0"
           :targetAmount="goalDetail.targetAmount ?? 0"
         />
       </div>
@@ -173,7 +173,7 @@ const load = async () => {
 
     // 새로운 API로 예금과 ISA 계좌 분리 조회
     const accountsDetail = await api.getGoalAccountsDetail(id);
-    
+
     // 예금 계좌 변환
     depositAccounts.value = (accountsDetail.goalDepositList || []).map((account) => ({
       bankName: account.bankName,
