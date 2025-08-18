@@ -107,6 +107,14 @@ const answers = ref([]); // 각 문항별 선택 인덱스
 const scores = ref([0, 0, 0, 0, 0]);
 
 const resultType = computed(() => {
+  // 모든 답이 4번(인덱스 3)인지 확인
+  const allAnswersAreFour = answers.value.length === questions.length && answers.value.every((answer) => answer === 3);
+
+  if (allAnswersAreFour) {
+    return "김동윤";
+  }
+
+  // 기존 점수 계산 로직
   const max = Math.max(...scores.value);
   const idx = scores.value.findIndex((s) => s === max);
   return types[idx];

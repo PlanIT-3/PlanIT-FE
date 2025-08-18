@@ -162,13 +162,14 @@ const load = async () => {
     isLoading.value = true;
 
     goalDetail.value = (await api.getGoal(id)).data;
+    console.log("Goal Detail Response:", goalDetail.value);
     rateList.value = await api.getGoalAccountRates(id);
     // goalProgress.value = await api.getGoalProgress(id);
     accounts.value = await api.getGoalAccounts(id);
 
     // 새로운 API로 예금과 ISA 계좌 분리 조회
     const accountsDetail = await api.getGoalAccountsDetail(id);
-    
+
     // 예금 계좌 변환
     depositAccounts.value = (accountsDetail.goalDepositList || []).map((account) => ({
       bankName: account.bankName,
@@ -209,6 +210,6 @@ const currentAmount = computed(() => {
 });
 
 const remainingAmount = computed(() => (goalDetail.value?.targetAmount || 0) - currentAmount.value);
-
+console.log((isaAccounts.value[0]?.isaBalance / (goalDetail.value?.targetAmount || 1)) * 100);
 onMounted(load);
 </script>
