@@ -4,7 +4,6 @@ import BarChart from "../graph/BarChart.vue";
 
 const props = defineProps({
   title: { type: String, required: true },
-  icon: { type: [String, Object] },
   iconColor: { type: String, default: "text-blue-600" },
   rate: { type: [Number, String], required: true },
   bgColor: { type: String, default: "bg-white" },
@@ -48,8 +47,18 @@ const badgeBgColorComputed = computed(() => {
     <!-- 상단 제목 + 진행률 -->
     <div class="flex justify-between items-center mb-0.5">
       <div class="flex items-center">
-        <component :is="icon" class="h-4 w-4" :class="iconColor" />
-        <span class="text-sm font-semibold text-gray-800 truncate">📌 {{ title }}</span>
+        <!-- SVG 아이콘 -->
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-4 w-4 text-green-500 mr-1"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+
+        <span class="text-sm font-semibold text-gray-800 truncate">{{ title }}</span>
       </div>
       <span :class="badgeBgColorComputed + ' text-white text-xs px-2 py-0.5 rounded-full font-medium'">
         {{ badgeText }} 달성
@@ -61,7 +70,6 @@ const badgeBgColorComputed = computed(() => {
       {{ statusText }}
     </div>
 
-    <!-- 그래프 -->
     <!-- 그래프 -->
     <div class="relative w-full h-6 overflow-visible">
       <div class="absolute" style="top: -45px; left: 50%; transform: translateX(-50%); width: 200px">
