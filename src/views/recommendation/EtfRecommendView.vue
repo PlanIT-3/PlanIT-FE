@@ -17,7 +17,7 @@
         v-if="showDetail && selectedProduct"
         :product="selectedProduct"
         @close="closeDetail"
-        class="absolute top-[-112px] left-[-15px] w-80 h-[704px] bg-white shadow-lg z-20"
+        class="absolute top-[-112px] left-[-25px] w-80 h-[730px] bg-white shadow-lg z-20"
       />
     </transition>
   </div>
