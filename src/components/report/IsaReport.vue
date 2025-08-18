@@ -6,10 +6,7 @@
       <TaxComparisonChart />
     </GraphBoxNonPeriod>
 
-    <GraphBoxNonPeriod title="누적 절세 효과">
-      <CumulativeTaxSavingsChart />
-    </GraphBoxNonPeriod>
-
+    <CumulativeTaxSavingsChart />
     <TaxSavingsSummary />
   </div>
 </template>

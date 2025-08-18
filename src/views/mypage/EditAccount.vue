@@ -32,11 +32,12 @@
           </div>
         </template>
         <!-- 새 계좌 연결하기 -->
-        <div
+        <router-link
+          to="/bank-select"
           class="w-full border-2 border-dashed border-gray-200 rounded-xl py-4 flex items-center justify-center text-gray-400 cursor-pointer hover:bg-gray-50 transition"
         >
           + 새 계좌 연결하기
-        </div>
+        </router-link>
       </div>
     </DefaultLayout>
   </div>
