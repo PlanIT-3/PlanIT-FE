@@ -84,8 +84,8 @@ const statusTextColorComputed = computed(() => {
       <BarChart :data="barChartData" :labelValues="props.labelValues" />
       <!-- 바 차트 밑 텍스트 -->
       <div class="flex justify-between text-xs font-medium mt-1">
-        <span>현재 금액: {{ Math.round(props.totalAmount).toLocaleString() }}원</span>
-        <span>목표 금액: {{ Math.round(props.targetAmount).toLocaleString() }}원</span>
+        <span>{{ props.totalAmount }}</span>
+        <span>{{ props.targetAmount }}</span>
       </div>
     </div>
   </div>

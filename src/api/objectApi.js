@@ -3,31 +3,32 @@ import api from "@/api";
 const BASE_URL = "/auth/api/goals";
 
 export default {
-  // 목표 생성
+  //목표 생성
   async createNewGoal(goalData) {
     return api.post(BASE_URL, goalData);
   },
 
-  // 목표 저장
+  //목표 저장
   async saveGoal(goalId, goalData) {
     return api.put(`${BASE_URL}/${goalId}`, goalData);
   },
 
-  // 목표 리스트
+  //목표 리스트
   async getGoalList() {
     const { data } = await api.get(`${BASE_URL}`);
     console.log("GET GOAL List", data);
     return data;
   },
 
-  // 목표 세부
+  //목표 세부
   async getGoal(goalId, payload) {
     const { data } = await api.get(`${BASE_URL}/${goalId}`, payload);
+
     console.log("GET GOAL", data);
     return data;
   },
 
-  // 목표 삭제
+  //목표 삭제
   async deleteGoal(goalId) {
     const { data } = await api.delete(`${BASE_URL}/${goalId}`);
     return data;
@@ -41,13 +42,14 @@ export default {
   },
 
   // (목표 대비 계좌별 진행률 조회)
+  // 목표 대비 계좌별 진행률 조회 (차트용 변환)
   async getGoalAccountRates(goalId) {
     const { data } = await api.get(`${BASE_URL}/${goalId}/rate`);
     console.log("RAW RESPONSE", data);
 
     return data.data.map((item) => ({
       name: item.bankName,
-      value: Number(item.progressRate), // 원본 값 그대로
+      value: Number(item.progressRate.toFixed(2)),
     }));
   },
 
@@ -62,22 +64,22 @@ export default {
         bankName: account.bankName,
         productName: account.accountName,
         percent: 0, // 비율은 계산 필요
-        amount: account.accountBalance, // 원본 값 그대로
+        amount: Math.round(account.accountBalance), // 만원 단위로 변환
       })),
       ...data.goalIsaList.map((account) => ({
         bankName: account.bankName,
         productName: account.accountName,
-        percent: 0,
-        amount: account.accountBalance,
+        percent: 0, // 비율은 계산 필요
+        amount: Math.round(account.accountBalance), // 만원 단위로 변환
       })),
     ];
 
     console.log("모든 계좌 데이터:", allAccounts);
 
-    // 총 금액 계산하여 비율 설정 (소수점 그대로 사용)
+    // 총 금액 계산하여 비율 설정
     const totalAmount = allAccounts.reduce((sum, acc) => sum + acc.amount, 0);
     allAccounts.forEach((account) => {
-      account.percent = totalAmount > 0 ? (account.amount / totalAmount) * 100 : 0;
+      account.percent = totalAmount > 0 ? Math.round((account.amount / totalAmount) * 100) : 0;
     });
 
     return allAccounts;
