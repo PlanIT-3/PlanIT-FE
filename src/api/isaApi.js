@@ -12,7 +12,7 @@ export async function getTaxExemption() {
   return res.data; // { status, data: { taxSavedAmount, ... } }
 }
 
-/** ISA 계좌 할당 등록 */
+/** ISA 계좌 처음 할당 등록 */
 export async function registerIsaAllocation(goalId, memberProductIds) {
   const body = {
     isaAccountProductRegisterReqs: memberProductIds.map((id) => ({
@@ -22,10 +22,10 @@ export async function registerIsaAllocation(goalId, memberProductIds) {
     })),
   };
   const res = await api.post("/auth/api/account/isa", body);
-  return res.data; // { status, message, ... }
+  return res.data; //
 }
 
-//isa 편집용 전체 보는 리스트 (할당된 / 안된 전부 )
+//isa 편집용 전체 보는 리스트 (할당된 / 안된 전부)
 export async function getIsaProductsForEdit(goalId) {
   const res = await api.get("/auth/api/account/isa/edit", {
     params: { goalId }, //get query params로
@@ -37,12 +37,12 @@ export async function getIsaProductsForEdit(goalId) {
 export async function editIsaAllocation(goalId, allItems, selectedIds) {
   const editReqs = allItems.map((p) => ({
     goalId,
-    memberProductId: p.memberProductId ?? p.id, // 둘 중 있는 키 사용
+    memberProductId: p.memberProductId ?? p.id,
     accountType: "ISA",
     checked: selectedIds.includes(p.memberProductId ?? p.id),
   }));
 
-  const body = { editReqs }; // ✅ 백엔드 DTO: IsaAccountProductEditListReq.editReqs
+  const body = { editReqs }; // IsaAccountProductEditListReq.editReqs
   const res = await api.put("/auth/api/account/isa", body);
   return res.data;
 }
