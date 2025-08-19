@@ -14,11 +14,11 @@ import { use } from "echarts/core";
 
 use([CanvasRenderer, LineChart, TitleComponent, TooltipComponent, LegendComponent, GridComponent]);
 
-// props로 진행 데이터 배열 받음
+// props로 진행 데이터 받음 (API 응답 구조 전체)
 const props = defineProps({
   progressData: {
-    type: Array,
-    default: () => [],
+    type: Object,
+    default: () => ({}),
   },
 });
 
@@ -27,44 +27,50 @@ const chartOption = ref({});
 watch(
   () => props.progressData,
   (newVal) => {
-    console.log("GoalProgress received data:", newVal);
-
     if (!newVal) {
       chartOption.value = {};
       return;
     }
 
-    // API 응답 구조에 따라 데이터 추출
-    let rawData = [];
-    if (Array.isArray(newVal)) {
-      rawData = newVal;
-    } else if (newVal.data && Array.isArray(newVal.data)) {
-      rawData = newVal.data;
-    } else {
-      console.log("No valid data found");
-      chartOption.value = {};
-      return;
-    }
-
-    console.log("Raw data for chart:", rawData);
-
+    // 배열 데이터 가져오기
+    const rawData = Array.isArray(newVal) ? newVal : newVal.data || [];
     if (rawData.length === 0) {
       chartOption.value = {};
       return;
     }
 
-    const dates = rawData
-      .map((item) => {
-        if (!item.progressDate) return null;
-        const [y, m, d] = item.progressDate;
-        return `${String(m).padStart(2, "0")}/${String(d).padStart(2, "0")}`;
-      })
-      .filter(Boolean);
+    // 최근 6개월만 필터링
+    const today = new Date();
+    const sixMonthsAgo = new Date(today.getFullYear(), today.getMonth() - 5, 1); // 이번달 포함 최근 6개월
+    const filteredData = rawData.filter((item) => {
+      if (!item.createdAt) return false;
+      const itemDate = new Date(item.createdAt);
+      return itemDate >= sixMonthsAgo && itemDate <= today;
+    });
 
-    const depositData = rawData.map((item) => item.depositProgress || 0);
-    const isaData = rawData.map((item) => item.isaProgress || 0);
+    // 월별 평균 계산
+    const monthMap = {};
+    filteredData.forEach((item) => {
+      const date = new Date(item.createdAt);
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+      if (!monthMap[monthKey]) {
+        monthMap[monthKey] = { depositSum: 0, isaSum: 0, count: 0 };
+      }
+      monthMap[monthKey].depositSum += item.depositProgress || 0;
+      monthMap[monthKey].isaSum += item.isaProgress || 0;
+      monthMap[monthKey].count += 1;
+    });
 
-    console.log("Chart data - dates:", dates, "deposit:", depositData, "isa:", isaData);
+    // x축 월, y축 평균 데이터
+    const months = Object.keys(monthMap).sort();
+    const depositData = months.map((m) => +(monthMap[m].depositSum / monthMap[m].count).toFixed(2));
+    const isaData = months.map((m) => +(monthMap[m].isaSum / monthMap[m].count).toFixed(2));
+
+    // x축 표시용 "MM월" 포맷
+    const monthLabels = months.map((m) => {
+      const parts = m.split("-");
+      return `${parseInt(parts[1], 10)}월`;
+    });
 
     chartOption.value = {
       tooltip: {
@@ -72,14 +78,12 @@ watch(
         backgroundColor: "rgba(255, 255, 255, 0.95)",
         borderColor: "#e5e7eb",
         borderWidth: 1,
-        textStyle: {
-          color: "#374151",
-        },
+        textStyle: { color: "#374151" },
         formatter: function (params) {
           let result = `<div style="font-weight: 600; margin-bottom: 8px;">${params[0].axisValue}</div>`;
           params.forEach((param) => {
             result += `<div style="margin: 4px 0;">
-              <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: ${param.color}; margin-right: 8px;"></span>
+              <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${param.color};margin-right:8px;"></span>
               ${param.seriesName}: <strong>${param.value}%</strong>
             </div>`;
           });
@@ -89,61 +93,24 @@ watch(
       legend: {
         data: ["적금 진행률", "ISA 진행률"],
         bottom: -5,
-        textStyle: {
-          fontSize: 13,
-          color: "#6b7280",
-        },
+        textStyle: { fontSize: 13, color: "#6b7280" },
       },
-      grid: {
-        left: "5%",
-        right: "5%",
-        bottom: "15%",
-        top: "15%",
-        containLabel: true,
-      },
+      grid: { left: "5%", right: "5%", bottom: "15%", top: "15%", containLabel: true },
       xAxis: {
         type: "category",
         boundaryGap: false,
-        data: dates,
-        axisLabel: {
-          formatter: (value) => value.replace("2025-", ""),
-          color: "#6b7280",
-          fontSize: 12,
-        },
-        axisLine: {
-          lineStyle: {
-            color: "#e5e7eb",
-          },
-        },
-        axisTick: {
-          lineStyle: {
-            color: "#e5e7eb",
-          },
-        },
+        data: monthLabels,
+        axisLabel: { color: "#6b7280", fontSize: 12 },
+        axisLine: { lineStyle: { color: "#e5e7eb" } },
+        axisTick: { lineStyle: { color: "#e5e7eb" } },
       },
       yAxis: {
         type: "value",
         name: "진행률 (%)",
-        nameTextStyle: {
-          color: "#6b7280",
-          fontSize: 12,
-        },
-        axisLabel: {
-          formatter: "{value}%",
-          color: "#6b7280",
-          fontSize: 12,
-        },
-        axisLine: {
-          lineStyle: {
-            color: "#e5e7eb",
-          },
-        },
-        splitLine: {
-          lineStyle: {
-            color: "#f3f4f6",
-            type: "dashed",
-          },
-        },
+        nameTextStyle: { color: "#6b7280", fontSize: 12 },
+        axisLabel: { formatter: "{value}%", color: "#6b7280", fontSize: 12 },
+        axisLine: { lineStyle: { color: "#e5e7eb" } },
+        splitLine: { lineStyle: { color: "#f3f4f6", type: "dashed" } },
       },
       series: [
         {
@@ -151,15 +118,8 @@ watch(
           type: "line",
           data: depositData,
           smooth: true,
-          lineStyle: {
-            width: 3,
-            color: "#3b82f6",
-          },
-          itemStyle: {
-            color: "#3b82f6",
-            borderWidth: 2,
-            borderColor: "#ffffff",
-          },
+          lineStyle: { width: 3, color: "#3b82f6" },
+          itemStyle: { color: "#3b82f6", borderWidth: 2, borderColor: "#ffffff" },
           symbol: "circle",
           symbolSize: 6,
         },
@@ -168,15 +128,8 @@ watch(
           type: "line",
           data: isaData,
           smooth: true,
-          lineStyle: {
-            width: 3,
-            color: "#ef4444",
-          },
-          itemStyle: {
-            color: "#ef4444",
-            borderWidth: 2,
-            borderColor: "#ffffff",
-          },
+          lineStyle: { width: 3, color: "#ef4444" },
+          itemStyle: { color: "#ef4444", borderWidth: 2, borderColor: "#ffffff" },
           symbol: "circle",
           symbolSize: 6,
         },
