@@ -120,7 +120,7 @@
         <h3 class="text-lg font-semibold text-gray-800">목표 진행 추이</h3>
         <GoalProgress :progressData="goalProgress"></GoalProgress>
       </div>
-      <!-- <GoalProgressAdvice :goalId="id" /> -->
+      <GoalProgressAdvice :goalId="id" />
     </div>
 
     <!-- 로딩 -->
