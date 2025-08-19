@@ -770,24 +770,49 @@ async function saveDepositAllocation() {
     loading.value = true;
     console.log("🚀 saveDepositAllocation 시작 - 호출 스택:", new Error().stack?.split("\n")[1]);
 
-    // API 요청 형식에 맞게 데이터 변환
-    const requestData = {
-      depositAccountRegisterReqs: accounts.value.map((account) => {
-        const accountInfo = accountOptions.value.find((opt) => opt.name === account.name);
-        const allocatedAmount = getAllocatedAmount(account) * 10000; // 만원을 원 단위로 변환
+    // API 요청 형식에 맞게 데이터 변환 (신규/수정 모드 구분)
+    let requestData;
+    
+    if (isEditMode.value) {
+      // 수정 모드: editReqs 형식 사용
+      requestData = {
+        editReqs: accounts.value.map((account) => {
+          const accountInfo = accountOptions.value.find((opt) => opt.name === account.name);
+          const allocatedAmount = getAllocatedAmount(account) * 10000; // 만원을 원 단위로 변환
 
-        return {
-          goalId: parseInt(localStorage.getItem("currentGoalId") || goalId.value),
-          memberAccountId: account.memberAccountId,
-          accountNumber: account.accountNumber,
-          accountType: "DEPOSIT",
-          amount: Math.round(allocatedAmount), // 정수로 변환
-          allocatedRate: account.percentage,
-          accountAllocatedRate: account.percentage, // 사용자가 설정한 실제 비율
-          actionType: "DEPOSIT", // enum 값으로 변경
-        };
-      }),
-    };
+          return {
+            goalId: parseInt(localStorage.getItem("currentGoalId") || goalId.value),
+            memberAccountId: account.memberAccountId,
+            accountNumber: account.accountNumber,
+            accountType: "DEPOSIT",
+            amount: Math.round(allocatedAmount), // 정수로 변환
+            allocatedRate: account.percentage,
+            accountAllocatedRate: account.percentage, // 사용자가 설정한 실제 비율
+            checked: true, // 수정 모드에서는 모든 선택된 계좌를 checked로 설정
+            actionType: "DEPOSIT", // enum 값으로 변경
+          };
+        }),
+      };
+    } else {
+      // 신규 모드: depositAccountRegisterReqs 형식 사용
+      requestData = {
+        depositAccountRegisterReqs: accounts.value.map((account) => {
+          const accountInfo = accountOptions.value.find((opt) => opt.name === account.name);
+          const allocatedAmount = getAllocatedAmount(account) * 10000; // 만원을 원 단위로 변환
+
+          return {
+            goalId: parseInt(localStorage.getItem("currentGoalId") || goalId.value),
+            memberAccountId: account.memberAccountId,
+            accountNumber: account.accountNumber,
+            accountType: "DEPOSIT",
+            amount: Math.round(allocatedAmount), // 정수로 변환
+            allocatedRate: account.percentage,
+            accountAllocatedRate: account.percentage, // 사용자가 설정한 실제 비율
+            actionType: "DEPOSIT", // enum 값으로 변경
+          };
+        }),
+      };
+    }
 
     // goalId 정보 확인 및 동기화
     const localStorageGoalId = localStorage.getItem("currentGoalId");
@@ -804,9 +829,17 @@ async function saveDepositAllocation() {
 
     console.log("  - 최종 사용 goalId:", goalId.value);
 
-    // 예적금 할당 데이터 저장
-    console.log("📡 예적금 할당 API 호출:", requestData);
-    const response = await depositService.registerDeposits(memberId.value, requestData);
+    // 예적금 할당 데이터 저장 (신규/수정 모드 구분)
+    console.log(`📡 예적금 할당 API 호출 (${isEditMode.value ? '수정' : '신규'}):`, requestData);
+    
+    let response;
+    if (isEditMode.value) {
+      // 수정 모드: updateDeposits API 사용
+      response = await depositService.updateDeposits(memberId.value, requestData);
+    } else {
+      // 신규 모드: registerDeposits API 사용  
+      response = await depositService.registerDeposits(memberId.value, requestData);
+    }
 
     console.log("✅ 저장 API 응답:", response);
     console.log("✅ 응답 코드:", response.data?.code);
