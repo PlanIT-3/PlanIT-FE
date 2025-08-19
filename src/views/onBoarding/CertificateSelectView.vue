@@ -102,12 +102,12 @@ function onComplete() {
 
     <!-- 증권사 선택 그리드 -->
     <div class="flex-1 px-8 pb-24 overflow-y-auto">
-      <div class="grid grid-cols-2 gap-6">
+      <div class="grid grid-cols-2 gap-2">
         <div
           v-for="security in securities"
           :key="security.name"
           @click="selectSecurity(security)"
-          class="flex items-center px-6 py-4 rounded-lg transition-all duration-200 cursor-pointer"
+          class="flex items-center p-2 rounded-lg transition-all duration-200 cursor-pointer mb-2"
           :class="selectedSecurities.some((s) => s === security.name) ? 'bg-[#433D8B]/5' : 'bg-white hover:bg-gray-50'"
         >
           <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center mr-3 flex-shrink-0">
@@ -119,7 +119,7 @@ function onComplete() {
     </div>
 
     <!-- 다음 버튼 -->
-    <div class="absolute bottom-0 left-0 right-0 p-6 bg-white border-t border-gray-200">
+    <div class="absolute bottom-0 left-0 right-0 p-6 bg-white">
       <button
         @click="onComplete"
         class="w-full bg-[#433D8B] text-white py-4 rounded-lg font-semibold text-lg hover:bg-[#433D8B]/90 transition-colors"

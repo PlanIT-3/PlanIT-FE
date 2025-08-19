@@ -374,9 +374,6 @@ async function login() {
 
 <template>
   <div class="flex flex-col min-h-screen bg-white px-6 pt-6 pb-0 items-center relative">
-    <!-- 상단 뒤로가기 -->
-    <GoBackButton />
-
     <div class="h-10"></div>
     <h2 class="text-2xl font-semibold text-center mb-3 mt-6">증권사 로그인</h2>
     <span class="text-sm text-center mb-6">실제 증권사 아이디와 비밀번호를 입력하세요.</span>
