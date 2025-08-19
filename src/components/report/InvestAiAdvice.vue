@@ -56,17 +56,7 @@ const adviceList = computed(() => {
 const fetchAdvice = async () => {
   loading.value = true;
   error.value = false;
-<<<<<<< HEAD
-  try {
-    const response = await api.get("/api/openai/invest-type-advice");
-    adviceData.value = response.data;
-  } catch (err) {
-    console.error("AI 투자 제언 가져오기 실패:", err);
-    error.value = true;
-  } finally {
-    loading.value = false;
-  }
-=======
+
 
   // try {
   //   const response = await api.get("/api/openai/invest-type-advice");
@@ -77,7 +67,6 @@ const fetchAdvice = async () => {
   // } finally {
   //   loading.value = false;
   // }
->>>>>>> c4b6b08 (feat: 상품 목표별 추천)
 };
 
 onMounted(() => {
