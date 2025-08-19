@@ -653,7 +653,7 @@ watch(
   { immediate: true } //처음 마운트 될 때 바로 한번 실행
 );
 
-// + 버튼: 생성 모드면 먼저 생성, 편집 모드면 모달만 오픈
+// + 버튼: 생성 모드면 먼저 생성, 편집 모드면 할당 비율 저장 후 모달 오픈
 const handleOpenModal = async () => {
   if (!isEditMode.value) {
     const payload = {
@@ -682,6 +682,23 @@ const handleOpenModal = async () => {
       isLoading.value = false;
     }
   } else {
+    // 편집 모드: 현재 설정된 할당 비율을 먼저 저장
+    try {
+      const payload = {
+        goalName: goalName.value,
+        targetAmount: Number(goalAmount.value),
+        startDate: startDate.value,
+        endDate: endDate.value,
+        depositRate: Number(depositRatio.value),
+        isaRate: Number(100 - depositRatio.value),
+      };
+      
+      await Api.updateGoal(goalId.value, payload);
+      console.log("할당 비율 저장 완료:", `예적금 ${depositRatio.value}%, ISA ${100 - depositRatio.value}%`);
+    } catch (e) {
+      console.error("할당 비율 저장 실패:", e);
+    }
+    
     showModal.value = true;
   }
 };
@@ -702,7 +719,7 @@ const handleCompleteGoal = async () => {
       isaRate: Number(100 - depositRatio.value),
     };
 
-    const res = await Api.saveGoal(goalId.value, payload);
+    const res = await Api.updateGoal(goalId.value, payload);
     const ok = res?.status === 200 || res?.status === 201 || res?.data?.status === "OK";
     
     if (ok) {
