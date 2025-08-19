@@ -74,7 +74,7 @@ export default [
   {
     path: "/agree-condition",
     name: "agreeCondition",
-    component: () => import("../views/onBoarding/AgreeConditionView.vue"),
-    meta: { layout: "noHeader", requiresAuth: true },
+    component: () => import("../views/auth/AgreementView.vue"),
+    meta: { layout: "noHeader", requiresAuth: false },
   },
 ];

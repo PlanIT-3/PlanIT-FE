@@ -11,7 +11,7 @@ const banks = [
   { name: "대구은행", icon: "/src/assets/icons/bank/대구은행.svg", code: "0031" },
   { name: "부산은행", icon: "/src/assets/icons/bank/부산은행.svg", code: "0032" },
   { name: "새마을금고", icon: "/src/assets/icons/bank/새마을금고.svg", code: "0045" },
-  { name: "신협", icon: "/src/assets/icons/bank/신협.svg", code: "0048" },
+  { name: "신협은행", icon: "/src/assets/icons/bank/신협.svg", code: "0048" },
   { name: "신한은행", icon: "/src/assets/icons/bank/신한은행.svg", code: "0088" },
   { name: "우리은행", icon: "/src/assets/icons/bank/우리은행.svg", code: "0020" },
   { name: "우체국", icon: "/src/assets/icons/bank/우체국.svg", code: "0071" },
@@ -75,12 +75,12 @@ function onNext() {
 
     <!-- 은행 선택 그리드 -->
     <div class="flex-1 px-8 pb-24 overflow-y-auto">
-      <div class="grid grid-cols-2 gap-6">
+      <div class="grid grid-cols-2 gap-2">
         <div
           v-for="bank in banks"
           :key="bank.name"
           @click="selectBank(bank)"
-          class="flex items-center p-4 rounded-lg transition-all duration-200 cursor-pointer"
+          class="flex items-center p-2 rounded-lg transition-all duration-200 cursor-pointer mb-2"
           :class="selectedBanks.includes(bank.name) ? 'bg-[#433D8B]/5' : 'bg-white hover:bg-gray-50'"
         >
           <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center mr-3 flex-shrink-0">
@@ -92,7 +92,7 @@ function onNext() {
     </div>
 
     <!-- 다음 버튼 -->
-    <div class="absolute bottom-0 left-0 right-0 p-6 bg-white border-t border-gray-200">
+    <div class="absolute bottom-0 left-0 right-0 p-6 bg-white">
       <button
         @click="onNext"
         class="w-full bg-[#433D8B] text-white py-4 rounded-lg font-semibold text-lg hover:bg-[#433D8B]/90 transition-colors"

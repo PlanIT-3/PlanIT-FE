@@ -210,7 +210,7 @@ const mockRebalanceData = {
             productCode: "0007N0",
             memberProductId: 25941,
             goalId: 8093,
-            comment: "만약 이 상품으로 교체했다면,\n수익이 +4.13%p 높아지고\n구조 지표는 1034만큼 개선됐을 거예요.",
+            comment: "만약 이 상품으로 교체했다면,\n수익이 +4.13%p 높아지고\n구조 지표는 1034원만큼 개선됐을 거예요.",
             expectedReturnRate: -0.52,
             previousProductName: "TIGER 글로벌멀티에셋TIF액티브",
             nextProductName: "아이엠에셋 200",

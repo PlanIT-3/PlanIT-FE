@@ -1,5 +1,6 @@
 <template>
   <div class="bg-blue-50 rounded-2xl border border-blue-200 p-6 shadow">
+<<<<<<< HEAD
     <!-- 헤더 -->
     <div class="flex flex-col mb-4 items-start">
       <div class="flex items-center">
@@ -21,6 +22,11 @@
         <h3 class="text-medium font-bold text-gray-800">AI 투자 제언</h3>
       </div>
       <p class="text-xs text-gray-500 ml-8">투자 성향 분석 결과 기반 맞춤 제언</p>
+=======
+    <div class="flex flex-col mb-4">
+      <h3 class="text-medium font-bold text-gray-800">🔍 AI 투자 제언</h3>
+      <p class="text-xs text-gray-500 ml-2">투자 성향 분석 결과 기반 맞춤 제언</p>
+>>>>>>> 8c0c9dc (feat: 회원가입 후 약관동의 연결)
     </div>
 
     <!-- 로딩 상태 -->

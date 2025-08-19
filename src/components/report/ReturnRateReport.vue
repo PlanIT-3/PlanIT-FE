@@ -1,4 +1,4 @@
-<template>
+``<template>
   <div class="w-full h-full">
     <VChart :option="chartOptions" autoresize />
   </div>
