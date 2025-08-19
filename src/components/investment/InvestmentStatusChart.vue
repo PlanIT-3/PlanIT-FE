@@ -69,16 +69,16 @@ const investmentChartOption = ref({});
 // Mock 데이터 (API 실패 시 fallback)
 const investmentData = {
   daily: {
-    labels: ["-6일", "-5일", "-4일", "-3일", "-2일", "-1일", "오늘"],
-    returns: [7.5, 7.8, 8.0, 7.9, 8.2, 8.1, 8.2],
+    labels: [],
+    returns: [],
   },
   weekly: {
-    labels: ["-6주", "-5주", "-4주", "-3주", "-2주", "-1주", "이번주"],
-    returns: [5.5, 6.2, 6.8, 7.0, 7.5, 8.0, 8.2],
+    labels: [],
+    returns: [],
   },
   monthly: {
-    labels: ["-6달", "-5달", "-4달", "-3달", "-2달", "-1달", "이번달"],
-    returns: [2.1, 3.5, 4.0, 5.8, 6.5, 7.2, 8.2],
+    labels: [],
+    returns: [],
   },
 };
 
