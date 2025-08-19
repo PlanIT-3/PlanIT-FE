@@ -60,23 +60,14 @@
           <p class="text-sm text-gray-500">총 할당할 금액</p>
         </div>
         
-        <div>
-          <div class="flex justify-between items-center mb-2">
-            <span class="text-sm text-gray-600">남은 금액</span>
-            <span 
-              class="text-sm font-semibold"
-              :class="leftGoalAmount >= 0 ? 'text-blue-600' : 'text-red-600'"
-            >
-              {{ leftGoalAmount.toLocaleString() }}원
-            </span>
-          </div>
-          <div class="w-full bg-gray-200 rounded-full h-2">
-            <div 
-              class="h-2 rounded-full transition-all duration-300"
-              :class="leftGoalAmount >= 0 ? 'bg-blue-500' : 'bg-red-500'"
-              :style="{ width: `${Math.min(100, Math.max(0, ((totalGoalAmount - leftGoalAmount) / totalGoalAmount) * 100))}%` }"
-            ></div>
-          </div>
+        <div class="flex justify-between items-center text-sm">
+          <span class="text-gray-600">남은 금액</span>
+          <span 
+            class="font-semibold"
+            :class="leftGoalAmount >= 0 ? 'text-blue-600' : 'text-red-600'"
+          >
+            {{ leftGoalAmount.toLocaleString() }}원
+          </span>
         </div>
       </div>
     </section>
@@ -121,7 +112,7 @@
 
     <!-- 연속형 계좌 할당 설정 -->
     <div v-else-if="!loading && !error && accounts.length > 0" class="px-4">
-      <h2 class="text-lg font-bold text-gray-900 mb-6">
+      <h2 v-if="accounts.length > 1" class="text-lg font-bold text-gray-900 mb-6">
         계좌 할당 설정 <span class="text-blue-500">({{ accounts.length }}개)</span>
       </h2>
       
@@ -258,31 +249,36 @@
 
             <!-- 토스 스타일 범례 -->
             <div class="space-y-3">
+              <!-- 1. 진한색: 다른 목표 할당액 -->
               <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
                 <div class="flex items-center gap-3">
-                  <div class="w-3 h-3 rounded-full bg-blue-500"></div>
+                  <div class="w-3 h-3 rounded-full bg-blue-600"></div>
                   <span class="text-sm text-gray-700">다른 목표 할당액</span>
                 </div>
                 <span class="text-sm font-semibold text-gray-900">
                   {{ formatMoney(getLegendAllocatedAmount(account.name)) }}
                 </span>
               </div>
+              
+              <!-- 2. 연한색: 남은 할당가능액 -->
               <div class="flex items-center justify-between p-3 bg-blue-50 rounded-xl">
+                <div class="flex items-center gap-3">
+                  <div class="w-3 h-3 rounded-full bg-blue-200"></div>
+                  <span class="text-sm text-gray-700">남은 할당가능액</span>
+                </div>
+                <span class="text-sm font-semibold text-gray-900">
+                  {{ formatMoney(getLegendAvailableAmount(account.name)) }}
+                </span>
+              </div>
+              
+              <!-- 3. 회색: 현재 선택액 -->
+              <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
                 <div class="flex items-center gap-3">
                   <div class="w-3 h-3 rounded-full bg-gray-400"></div>
                   <span class="text-sm text-gray-700">현재 선택액</span>
                 </div>
                 <span class="text-sm font-bold text-blue-600">
                   {{ formatMoney(getAllocatedAmount(account)) }}
-                </span>
-              </div>
-              <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
-                <div class="flex items-center gap-3">
-                  <div class="w-3 h-3 rounded-full bg-purple-500"></div>
-                  <span class="text-sm text-gray-700">남은 할당가능액</span>
-                </div>
-                <span class="text-sm font-semibold text-gray-900">
-                  {{ formatMoney(getLegendAvailableAmount(account.name)) }}
                 </span>
               </div>
               
@@ -1199,19 +1195,19 @@ function getAccountAllocationData(account) {
   // 할당된 자산: 파란색(#4a90e2) → 첫 번째 위치
   // 선택된 자산: 회색 → 보라색(#5D00A8)으로 대체, 세 번째 위치
   // 할당 가능자산: 보라색 → 주황색(#ff7f50)으로 대체, 두 번째 위치
-  // 금액 그대로 반환 (만원 단위)
+  // 금액 그대로 반환 (만원 단위) - 범례 순서에 맞게 정렬: 진한색 → 연한색 → 회색
   const result = [
     {
-      name: "할당된 자산",
+      name: "다른 목표 할당액", // 1. 진한 파란색 (blue-600)
       value: alreadyAllocatedAmount,
     },
     {
-      name: "선택된 자산", 
-      value: currentAllocationAmount,
+      name: "남은 할당가능액", // 2. 연한 파란색 (blue-200)
+      value: availableAmountDisplay,
     },
     {
-      name: "할당 가능자산",
-      value: availableAmountDisplay,
+      name: "현재 선택액", // 3. 회색 (gray-400)
+      value: currentAllocationAmount,
     },
   ];
   
@@ -1282,12 +1278,12 @@ function getItemStartPosition(item, account, itemIndex) {
 
 function getItemColor(itemName) {
   const colorMap = {
-    "다른 목표 할당액": "#4a90e2",
-    "할당된 자산": "#4a90e2",
-    "현재 선택액": "#d1d5db",
-    "선택된 자산": "#d1d5db", 
-    "남은 할당가능액": "#5d00a8",
-    "할당 가능자산": "#5d00a8"
+    "다른 목표 할당액": "#2563eb", // 진한 파란색 (blue-600)
+    "할당된 자산": "#2563eb",
+    "현재 선택액": "#9ca3af", // 회색 (gray-400)
+    "선택된 자산": "#9ca3af", 
+    "남은 할당가능액": "#bfdbfe", // 연한 파란색 (blue-200)
+    "할당 가능자산": "#bfdbfe"
   };
   return colorMap[itemName] || "#e5e7eb";
 }
