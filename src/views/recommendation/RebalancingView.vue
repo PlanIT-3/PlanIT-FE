@@ -61,7 +61,7 @@
             </div>
 
             <!-- 제안 이유 -->
-            <div class="bg-gray-50 border border-gray-200 rounded-lg p-2">
+            <div class="bg-blue-50 border border-gray-200 rounded-lg p-2">
               <p class="text-xs text-gray-600">{{ item.reason }}</p>
             </div>
           </div>
@@ -71,7 +71,6 @@
 
     <!-- 푸터 -->
     <div class="text-center text-[9px] text-gray-400">* 리밸런싱 제안은 시장 상황에 따라 변경될 수 있습니다.</div>
-
   </div>
 </template>
 
@@ -116,7 +115,6 @@ const apiData = ref([
     mpTotal: 4588585.0,
     deposit: 327378.5,
     reason: "ISA 목표금액 초과 → 수익률 높은 종목 매도",
-
   },
   {
     goalName: "goalname1-1",
@@ -138,6 +136,5 @@ const groupedData = computed(() => {
     acc[item.goalName].push(item);
     return acc;
   }, {});
-
 });
 </script>
