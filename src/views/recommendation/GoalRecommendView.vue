@@ -1,100 +1,40 @@
 <template>
-  <div class="">
-    <!-- 헤더 -->
-    <div class="bg-white rounded-lg shadow-sm p-3 mb-4 border border-gray-200">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center">
-          <div class="bg-indigo-500 p-1.5 rounded-lg">
-            <PieChart class="h-4 w-4 text-white" />
-          </div>
-          <div class="ml-2">
-            <h1 class="text-base font-semibold text-gray-900">리밸런싱 제안</h1>
-            <p class="text-xs text-gray-500">포트폴리오 최적화</p>
-          </div>
-        </div>
-        <div class="text-right">
-          <div class="text-xs text-gray-500">총 제안</div>
-          <div class="text-sm font-semibold text-gray-900">{{ apiData.length }}건</div>
-        </div>
+  <div>
+    <!-- 나의 투자 내역 -->
+    <div class="mb-8 custom-scroll">
+      <h4 class="text-base font-semibold text-gray-800 mb-4">나의 투자 내역</h4>
+
+      <div v-if="loading" class="text-center py-8">
+        <div class="text-gray-500">로딩 중...</div>
       </div>
-    </div>
 
-    <!-- 목표별 섹션 -->
-    <div class="space-y-4">
-      <div
-        v-for="(items, goalName) in groupedData"
-        :key="goalName"
-        class="bg-white rounded-lg shadow-sm border border-gray-200"
-      >
-        <!-- 목표 헤더 -->
-        <div class="bg-gray-50 p-2 border-b border-gray-200">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center">
-              <Target class="h-4 w-4 text-gray-600 mr-2" />
-              <h2 class="text-sm font-semibold text-gray-900">{{ goalName }}</h2>
-            </div>
-            <span class="text-xs text-gray-500">{{ items.length }}개</span>
-          </div>
-        </div>
+      <div v-else-if="error" class="text-center py-8">
+        <div class="text-red-500">데이터를 불러오는 중 오류가 발생했습니다.</div>
+      </div>
 
-        <!-- 제안 카드 -->
-        <div class="p-3 space-y-3">
-          <div
-            v-for="item in items"
-            :key="item.mpCode"
-            class="border border-gray-200 rounded-lg p-3 hover:shadow-sm transition-shadow"
-          >
-            <!-- 카드 헤더 -->
-            <div class="flex items-start justify-between mb-3">
-              <div class="flex items-center">
-                <div
-                  :class="[
-                    'flex items-center px-2 py-1 rounded text-white text-xs font-medium',
-                    item.action === 'BUY' ? 'bg-green-500' : 'bg-red-500',
-                  ]"
-                >
-                  <TrendingUp v-if="item.action === 'BUY'" class="h-3 w-3 mr-1" />
-                  <TrendingDown v-else class="h-3 w-3 mr-1" />
-                  {{ item.action === "BUY" ? "매수" : "매도" }}
-                </div>
-                <div class="ml-2">
-                  <h3 class="text-sm font-semibold text-gray-900">{{ item.mpName }}</h3>
-                  <p class="text-xs text-gray-500">{{ item.mpCode }}</p>
-                </div>
+      <div v-else class="space-y-4 max-h-60 overflow-y-auto">
+        <div v-for="(item, index) in investmentData" :key="index" class="bg-white border-b border-gray-300 p-2">
+          <div class="flex justify-between items-start mb-1 gap-1">
+            <div class="flex-1">
+              <h5 class="font-semibold text-gray-800 text-sm mb-1">{{ item.itemName }}</h5>
+              <div class="text-xs text-gray-600">
+                {{ item.quantity }}주 · 현재가 {{ formatNumber(item.valuationAmount) }}원
               </div>
             </div>
-
-            <!-- 금액 정보 -->
-            <div class="grid grid-cols-2 gap-2 mb-3">
-              <div class="bg-gray-50 rounded p-2">
-                <div class="text-xs text-gray-600 mb-1">현재 투자금액</div>
-                <div class="text-sm font-semibold text-gray-900">{{ formatCurrency(item.mpTotal) }}</div>
+            <div class="text-right">
+              <div class="text-base font-semibold text-gray-800 mb-1">
+                {{ formatNumber(item.totalValuationAmount) }}원
               </div>
-
-              <div class="bg-gray-50 rounded p-2">
-                <div class="text-xs text-gray-600 mb-1">ISA 목표금액</div>
-                <div class="text-sm font-semibold text-gray-900">{{ formatCurrency(item.targetIsaAmount) }}</div>
-              </div>
-
-              <div class="bg-gray-50 rounded p-2">
-                <div class="text-xs text-gray-600 mb-1">{{ item.action === "BUY" ? "매수" : "매도" }} 필요금액</div>
-                <div class="text-sm font-semibold text-gray-900">{{ formatCurrency(item.tradeAmount) }}</div>
-              </div>
-
-              <div class="bg-gray-50 rounded p-2">
-                <div class="text-xs text-gray-600 mb-1">사용가능 현금</div>
-                <div class="text-sm font-semibold text-gray-900">{{ formatCurrency(item.deposit) }}</div>
-              </div>
-            </div>
-
-            <!-- 제안 이유 -->
-            <div class="bg-blue-50 border border-blue-200 rounded p-2">
-              <div class="flex items-start">
-                <DollarSign class="h-3 w-3 text-blue-600 mr-2 mt-0.5 flex-shrink-0" />
-                <div>
-                  <div class="text-xs font-semibold text-blue-800 mb-1">제안 이유</div>
-                  <p class="text-xs text-blue-700">{{ item.reason }}</p>
-                </div>
+              <div
+                :class="[
+                  'text-sm font-medium flex items-center justify-end',
+                  item.earningsRate >= 0 ? 'text-green-600' : 'text-red-600',
+                ]"
+              >
+                <span :class="item.earningsRate >= 0 ? 'text-green-600' : 'text-red-600'">
+                  {{ item.earningsRate >= 0 ? "↗" : "↘" }}
+                </span>
+                <span class="ml-1"> {{ item.earningsRate >= 0 ? "+" : "" }}{{ item.earningsRate.toFixed(2) }}% </span>
               </div>
             </div>
           </div>
@@ -145,37 +85,14 @@
     </div>
   </div>
 </template>
-
 <script setup>
 import RebalanceCard from "@/components/goal/RebalanceCard.vue";
 import { ref, onMounted } from "vue";
 import { fetchInvestmentData, fetchYieldData } from "@/api/rebalanceApi";
-import { ref, computed } from "vue";
 
-const apiData = ref([
-  {
-    goalName: "goalname1-2",
-    action: "SELL",
-    mpName: "ACE 중장기국공채액티브",
-    mpCode: "KR7272910001",
-    tradeAmount: 2130603,
-    targetIsaAmount: 2457982,
-    mpTotal: 4588585.0,
-    deposit: 327378.5,
-    reason: "ISA 목표금액 초과 → 수익률 높은 종목 매도",
-  },
-  {
-    goalName: "goalname1-1",
-    action: "BUY",
-    mpName: "KBSTAR Fn창업투자회사",
-    mpCode: "KR7427110002",
-    tradeAmount: 75392,
-    targetIsaAmount: 251987,
-    mpTotal: 176595.0,
-    deposit: 327378.5,
-    reason: "ISA 목표금액 미달 → 수익률 높은 종목 매수",
-  },
-]);
+// 리밸런싱 기간
+const periods = ref(["한달", "3개월", "6개월", "1년"]);
+const selectedPeriod = ref("한달");
 
 // 투자 내역 데이터
 const investmentData = ref([]);
@@ -322,6 +239,33 @@ onMounted(() => {
   loadInvestmentData();
   loadRebalanceData();
 });
-
-const formatCurrency = (num) => (!num && num !== 0 ? "-" : num.toLocaleString("ko-KR") + "원");
 </script>
+<style scoped>
+.custom-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+}
+
+.custom-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scroll::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 2px;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.5);
+  border-radius: 2px;
+  transition: background-color 0.2s ease;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.8);
+}
+
+.custom-scroll::-webkit-scrollbar-corner {
+  background: transparent;
+}
+</style>
