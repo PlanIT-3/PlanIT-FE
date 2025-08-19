@@ -12,7 +12,7 @@
           <BaseTextInput v-model="formData.email" type="text" placeholder="Email" />
           <BaseTextInput v-model="formData.password" type="password" placeholder="Password" />
           <BaseTextInput v-model="formData.confirmPassword" type="password" placeholder="Confirm Password" />
-          <Button label="Sign Up" type="button" class="mt-4" @click="handleRegister" />
+          <Button label="Sign Up" type="submit" class="mt-4" />
         </form>
 
         <div class="text-center mb-6">
@@ -39,10 +39,7 @@ import goBackButton from "@/components/base/GoBackButton.vue";
 import BaseTextInput from "@/components/base/BaseTextInput.vue";
 import authApi from "@/api/authApi";
 
-import { useUserStore } from "@/stores/user";
-
 const router = useRouter();
-// const auth = useAuthStore();
 
 const formData = reactive({
   username: "",
