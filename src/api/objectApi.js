@@ -13,6 +13,13 @@ export default {
     return api.put(`${BASE_URL}/${goalId}`, goalData);
   },
 
+  //목표 수정
+  async updateGoal(goalId, goalData) {
+    const response = await api.put(`${BASE_URL}/${goalId}`, goalData);
+    console.log("UPDATE GOAL RESPONSE", response.data);
+    return response;
+  },
+
   //목표 리스트
   async getGoalList() {
     const { data } = await api.get(`${BASE_URL}`);
