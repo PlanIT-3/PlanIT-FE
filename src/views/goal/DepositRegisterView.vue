@@ -4,10 +4,9 @@
     <header class="relative bg-white">
       <div class="flex items-center justify-between px-4 py-4">
         <GoBackButton />
-        <h1 class="text-lg font-bold text-gray-900 absolute left-1/2 transform -translate-x-1/2">
-          예적금 계좌 할당
-        </h1>
-        <div class="w-10"></div> <!-- 오른쪽 공간 균형용 -->
+        <h1 class="text-lg font-bold text-gray-900 absolute left-1/2 transform -translate-x-1/2">예적금 계좌 할당</h1>
+        <div class="w-10"></div>
+        <!-- 오른쪽 공간 균형용 -->
       </div>
     </header>
 
@@ -30,8 +29,8 @@
         <p class="text-red-800 font-medium">오류가 발생했어요</p>
       </div>
       <p class="text-red-700 text-sm leading-relaxed">{{ error }}</p>
-      <button 
-        @click="loadAvailableAccounts" 
+      <button
+        @click="loadAvailableAccounts"
         class="mt-4 px-4 py-2 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors duration-200"
         aria-label="계좌 정보 다시 불러오기"
       >
@@ -40,32 +39,18 @@
     </div>
 
     <!-- 목표 할당 금액 -->
-    <section 
-      class="px-4 mb-8" 
-      v-if="!loading && !error"
-      aria-labelledby="goal-amount-title"
-    >
-      <h2 
-        id="goal-amount-title" 
-        class="text-lg font-bold text-gray-900 mb-5"
-      >
-        목표 할당 금액
-      </h2>
-      
+    <section class="px-4 mb-8" v-if="!loading && !error" aria-labelledby="goal-amount-title">
+      <h2 id="goal-amount-title" class="text-lg font-bold text-gray-900 mb-5">목표 할당 금액</h2>
+
       <div class="space-y-4">
         <div>
-          <p class="text-3xl font-bold text-gray-900 mb-1">
-            {{ totalGoalAmount.toLocaleString() }}원
-          </p>
+          <p class="text-3xl font-bold text-gray-900 mb-1">{{ totalGoalAmount.toLocaleString() }}원</p>
           <p class="text-sm text-gray-500">총 할당할 금액</p>
         </div>
-        
+
         <div class="flex justify-between items-center text-sm">
           <span class="text-gray-600">남은 금액</span>
-          <span 
-            class="font-semibold"
-            :class="leftGoalAmount >= 0 ? 'text-blue-600' : 'text-red-600'"
-          >
+          <span class="font-semibold" :class="leftGoalAmount >= 0 ? 'text-blue-600' : 'text-red-600'">
             {{ leftGoalAmount.toLocaleString() }}원
           </span>
         </div>
@@ -73,8 +58,8 @@
     </section>
 
     <!-- 토스 스타일 Empty State -->
-    <div 
-      v-if="!loading && !error && accountOptions.length === 0" 
+    <div
+      v-if="!loading && !error && accountOptions.length === 0"
       class="mx-4 p-6 bg-white rounded-2xl border border-gray-100"
       role="region"
       aria-labelledby="empty-state-title"
@@ -82,24 +67,21 @@
       <div class="text-center py-8">
         <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
           <svg class="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+            />
           </svg>
         </div>
-        
-        <h3 class="text-lg font-bold text-gray-900 mb-2">
-          할당 가능한 예적금 계좌가 없어요
-        </h3>
-        
-        <p class="text-sm text-gray-500 mb-6">
-          계좌를 연결하거나 다른 목표를 확인해보세요
-        </p>
-        
+
+        <h3 class="text-lg font-bold text-gray-900 mb-2">할당 가능한 예적금 계좌가 없어요</h3>
+
+        <p class="text-sm text-gray-500 mb-6">계좌를 연결하거나 다른 목표를 확인해보세요</p>
+
         <div class="space-y-3">
-          <Button 
-            label="계좌 연결하러 가기" 
-            @click="goToAccountLink" 
-            class="w-full"
-          />
+          <Button label="계좌 연결하러 가기" @click="goToAccountLink" class="w-full" />
           <button
             @click="goToGoalList"
             class="w-full px-4 py-3 text-sm font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-xl border border-gray-200 transition-colors"
@@ -115,22 +97,17 @@
       <h2 v-if="accounts.length > 1" class="text-lg font-bold text-gray-900 mb-6">
         계좌 할당 설정 <span class="text-blue-500">({{ accounts.length }}개)</span>
       </h2>
-      
+
       <div class="space-y-8">
         <div
-          v-for="(account, index) in accounts" 
-          :key="`account-${index}-${account.name}`" 
+          v-for="(account, index) in accounts"
+          :key="`account-${index}-${account.name}`"
           :aria-labelledby="`account-title-${index}`"
           role="group"
         >
           <!-- 계좌 헤더 -->
           <div class="flex items-center justify-between mb-5">
-            <h3 
-              :id="`account-title-${index}`" 
-              class="text-lg font-bold text-gray-900"
-            >
-              계좌 {{ index + 1 }}
-            </h3>
+            <h3 :id="`account-title-${index}`" class="text-lg font-bold text-gray-900">계좌 {{ index + 1 }}</h3>
             <button
               v-if="accounts.length > 1"
               @click="removeAccount(index)"
@@ -138,17 +115,18 @@
               :aria-label="`계좌 ${index + 1} 삭제`"
             >
               <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                <path
+                  fill-rule="evenodd"
+                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                  clip-rule="evenodd"
+                />
               </svg>
             </button>
           </div>
 
           <!-- 계좌 선택 -->
           <div class="mb-5">
-            <label 
-              :for="`account-select-${index}`" 
-              class="block text-sm font-medium text-gray-700 mb-2"
-            >
+            <label :for="`account-select-${index}`" class="block text-sm font-medium text-gray-700 mb-2">
               계좌 선택
             </label>
             <div class="relative">
@@ -159,11 +137,7 @@
                 @change="onAccountChange(index, $event)"
               >
                 <option value="" disabled>계좌를 선택해주세요</option>
-                <option 
-                  v-for="option in availableAccountOptions(index)" 
-                  :key="option.name" 
-                  :value="option.name"
-                >
+                <option v-for="option in availableAccountOptions(index)" :key="option.name" :value="option.name">
                   {{ option.name }}
                 </option>
               </select>
@@ -174,19 +148,17 @@
               </div>
             </div>
             <p v-if="account.name" class="mt-2 text-xs text-gray-500">
-              사용 가능: <span class="font-medium text-blue-600">{{ formatMoney(getAccountInfo(account.name)?.remainingAmount || 0) }}</span>
+              사용 가능:
+              <span class="font-medium text-blue-600">{{
+                formatMoney(getAccountInfo(account.name)?.remainingAmount || 0)
+              }}</span>
             </p>
           </div>
 
           <!-- 할당 비율 설정 -->
           <div class="mb-5">
             <div class="flex items-center justify-between mb-3">
-              <label 
-                :for="`allocation-slider-${index}`" 
-                class="text-sm font-medium text-gray-700"
-              >
-                할당 비율
-              </label>
+              <label :for="`allocation-slider-${index}`" class="text-sm font-medium text-gray-700"> 할당 비율 </label>
               <div class="text-right">
                 <div class="text-lg font-bold text-blue-600">{{ account.percentage }}%</div>
                 <div class="text-xs text-gray-500">
@@ -194,18 +166,18 @@
                 </div>
               </div>
             </div>
-            
+
             <!-- 토스 스타일 드래그 가능한 슬라이더 -->
             <div class="relative mb-4">
               <!-- 배경 트랙 -->
               <div class="h-3 bg-gray-200 rounded-full overflow-hidden">
                 <!-- 활성 부분 -->
-                <div 
+                <div
                   class="h-full bg-blue-500 rounded-full transition-all duration-200"
                   :style="{ width: `${account.percentage}%` }"
                 ></div>
               </div>
-              
+
               <!-- 실제 range input (투명) -->
               <input
                 :id="`allocation-slider-${index}`"
@@ -216,11 +188,11 @@
                 :value="account.percentage"
                 @input="updatePercentage(index, $event.target.value)"
                 class="absolute inset-0 w-full h-3 opacity-0 cursor-pointer z-10"
-                style="-webkit-appearance: none; -moz-appearance: none;"
+                style="-webkit-appearance: none; -moz-appearance: none"
               />
-              
+
               <!-- 슬라이더 핸들 -->
-              <div 
+              <div
                 class="absolute top-1/2 -translate-y-1/2 w-6 h-6 bg-white border-2 border-blue-500 rounded-full shadow-lg transition-all duration-200 pointer-events-none"
                 :style="{ left: `calc(${account.percentage}% - 12px)` }"
               >
@@ -232,17 +204,17 @@
           <!-- 토스 스타일 할당 현황 -->
           <div class="mb-6">
             <h4 class="text-sm font-semibold text-gray-900 mb-4">할당 현황</h4>
-            
+
             <!-- 토스 스타일 바 차트 -->
             <div class="relative h-3 bg-gray-100 rounded-full overflow-hidden mb-4">
-              <div 
-                v-for="(item, itemIndex) in getAccountAllocationData(account).filter(i => i.value > 0)" 
+              <div
+                v-for="(item, itemIndex) in getAccountAllocationData(account).filter((i) => i.value > 0)"
                 :key="`${item.name}-${itemIndex}`"
                 class="absolute top-0 h-full transition-all duration-300"
-                :style="{ 
+                :style="{
                   left: `${getItemStartPosition(item, account, itemIndex)}%`,
-                  width: `${getAmountPercentage(item, account)}%`, 
-                  backgroundColor: getItemColor(item.name)
+                  width: `${getAmountPercentage(item, account)}%`,
+                  backgroundColor: getItemColor(item.name),
                 }"
               />
             </div>
@@ -259,7 +231,7 @@
                   {{ formatMoney(getLegendAllocatedAmount(account.name)) }}
                 </span>
               </div>
-              
+
               <!-- 2. 연한색: 남은 할당가능액 -->
               <div class="flex items-center justify-between p-3 bg-blue-50 rounded-xl">
                 <div class="flex items-center gap-3">
@@ -270,7 +242,7 @@
                   {{ formatMoney(getLegendAvailableAmount(account.name)) }}
                 </span>
               </div>
-              
+
               <!-- 3. 회색: 현재 선택액 -->
               <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
                 <div class="flex items-center gap-3">
@@ -281,19 +253,21 @@
                   {{ formatMoney(getAllocatedAmount(account)) }}
                 </span>
               </div>
-              
+
               <!-- 총액 표시 -->
               <div class="pt-2 border-t border-gray-200">
                 <div class="flex items-center justify-between">
                   <span class="text-sm font-semibold text-gray-700">계좌 총액</span>
-                  <span class="text-sm font-bold text-gray-900">{{ formatMoney(getAccountInfo(account.name)?.total || 0) }}</span>
+                  <span class="text-sm font-bold text-gray-900">{{
+                    formatMoney(getAccountInfo(account.name)?.total || 0)
+                  }}</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-      
+
       <!-- 토스 스타일 계좌 추가 버튼 -->
       <div class="mx-4 mt-6 mb-6">
         <button
@@ -305,7 +279,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
           </svg>
           <span class="font-medium">
-            {{ remainingAccountOptions.length === 0 ? '추가할 계좌가 없어요' : `계좌 추가하기` }}
+            {{ remainingAccountOptions.length === 0 ? "추가할 계좌가 없어요" : `계좌 추가하기` }}
           </span>
         </button>
       </div>
@@ -314,14 +288,15 @@
     <!-- 토스 스타일 완료 섹션 -->
     <div v-if="!loading && !error && accounts.length > 0 && accountOptions.length > 0" class="mx-4 mt-8 mb-8">
       <!-- 미완료 상태 -->
-      <div 
-        v-if="!isCompletionReady" 
-        class="mb-6 p-4 bg-orange-50 rounded-2xl border border-orange-100"
-      >
+      <div v-if="!isCompletionReady" class="mb-6 p-4 bg-orange-50 rounded-2xl border border-orange-100">
         <div class="flex items-start gap-3">
           <div class="w-5 h-5 bg-orange-100 rounded-full flex items-center justify-center mt-0.5">
             <svg class="w-3 h-3 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+              <path
+                fill-rule="evenodd"
+                d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                clip-rule="evenodd"
+              />
             </svg>
           </div>
           <div class="flex-1">
@@ -330,16 +305,17 @@
           </div>
         </div>
       </div>
-      
+
       <!-- 완료 상태 -->
-      <div 
-        v-else 
-        class="mb-6 p-4 bg-blue-50 rounded-2xl border border-blue-100"
-      >
+      <div v-else class="mb-6 p-4 bg-blue-50 rounded-2xl border border-blue-100">
         <div class="flex items-start gap-3">
           <div class="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center mt-0.5">
             <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+              <path
+                fill-rule="evenodd"
+                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                clip-rule="evenodd"
+              />
             </svg>
           </div>
           <div class="flex-1">
@@ -377,9 +353,9 @@ const router = useRouter();
 // URL 파라미터 또는 로컬스토리지에서 goalId 가져오기 (우선순위: query > params > localStorage)
 // 신규모드: route.query.goalId가 명시적으로 없으면 localStorage 무시
 const goalId = ref(
-  route.query.goalId || 
-  route.params.goalId || 
-  (route.query.goalId === undefined ? null : localStorage.getItem("currentGoalId"))
+  route.query.goalId ||
+    route.params.goalId ||
+    (route.query.goalId === undefined ? null : localStorage.getItem("currentGoalId"))
 );
 
 // JWT 토큰에서 memberId 가져오기
@@ -424,13 +400,17 @@ const isCompleted = ref(false);
 const isEditMode = ref(false);
 
 // 디버깅용: isEditMode 변경 추적
-watch(isEditMode, (newValue, oldValue) => {
-  console.log("🚨 isEditMode 변경 감지:", { 
-    old: oldValue, 
-    new: newValue,
-    stack: new Error().stack 
-  });
-}, { immediate: true });
+watch(
+  isEditMode,
+  (newValue, oldValue) => {
+    console.log("🚨 isEditMode 변경 감지:", {
+      old: oldValue,
+      new: newValue,
+      stack: new Error().stack,
+    });
+  },
+  { immediate: true }
+);
 
 // 계좌 추가 드롭다운 상태
 const showAccountDropdown = ref(false);
@@ -456,7 +436,7 @@ async function loadGoalAmount() {
   console.log("🔍 기존 할당 정보 확인 중...");
   try {
     const response = await depositService.getDepositAccountsByGoal(memberId.value, goalId.value);
-    
+
     if (response.data && response.data.data && response.data.data.length > 0) {
       // 기존 할당 정보가 있음 → 수정모드
       isEditMode.value = true;
@@ -505,7 +485,7 @@ async function loadExistingAllocations(existingData = null) {
   console.log("🔍 loadExistingAllocations 시작:", { goalId: goalId.value, memberId: memberId.value });
 
   let existingAllocations = existingData;
-  
+
   // 데이터가 전달되지 않은 경우에만 API 호출
   if (!existingAllocations) {
     try {
@@ -533,36 +513,36 @@ async function loadExistingAllocations(existingData = null) {
       accounts.value = existingAllocations.map((allocation) => {
         const goalAmountInWan = Math.floor(totalGoalAmount.value / 10000);
         const allocatedAmountInWan = Math.floor(allocation.amount / 10000);
-        
+
         console.log(`🔍 비율계산 디버그 ${allocation.accountName}:`, {
           totalGoalAmount: totalGoalAmount.value,
           goalAmountInWan,
           allocationAmount: allocation.amount,
           allocatedAmountInWan,
-          division: allocatedAmountInWan / goalAmountInWan
+          division: allocatedAmountInWan / goalAmountInWan,
         });
-        
+
         // 수정모드에서는 최대 할당 가능 금액 대비 비율로 계산해야 함
         // 최대 할당 가능 금액 = min(목표 금액, 계좌 사용가능 잔액)
         const accountTotalInWan = Math.floor((allocation.presentAmount || allocation.accountBalance || 0) / 10000);
         const apiRemainingInWan = Math.floor((allocation.remainingAmount || 0) / 10000);
         const correctedRemainingInWan = apiRemainingInWan + allocatedAmountInWan; // 현재 할당분 추가
         const maxAllocatableInWan = Math.min(goalAmountInWan, correctedRemainingInWan);
-        
+
         // 기존 할당 비율 계산: (할당 금액 / 최대 할당 가능 금액) * 100
         let percentage = 0;
         if (maxAllocatableInWan > 0 && !isNaN(allocatedAmountInWan) && !isNaN(maxAllocatableInWan)) {
           percentage = Math.round((allocatedAmountInWan / maxAllocatableInWan) * 100);
         }
-        
+
         // NaN 방지
         percentage = isNaN(percentage) ? 0 : percentage;
-        
+
         console.log(`📊 수정모드 비율계산 ${allocation.accountName}:`, {
           goalAmount: goalAmountInWan,
           allocated: allocatedAmountInWan,
           maxAllocatable: maxAllocatableInWan,
-          percentage: percentage
+          percentage: percentage,
         });
 
         console.log(`💰 ${allocation.accountName}: ${allocatedAmountInWan}만원 (${percentage}%)`);
@@ -580,18 +560,18 @@ async function loadExistingAllocations(existingData = null) {
         const totalAmount = Math.floor((allocation.presentAmount || allocation.accountBalance || 0) / 10000);
         const allocatedAmount = Math.floor(allocation.amount / 10000); // 현재 목표에 할당된 금액
         const apiRemainingAmount = Math.floor((allocation.remainingAmount || 0) / 10000);
-        
+
         // 수정모드에서는 현재 할당 금액을 다시 사용 가능하게 만들어야 함
-        const correctedRemainingAmount = (isNaN(apiRemainingAmount) ? 0 : apiRemainingAmount) + 
-                                       (isNaN(allocatedAmount) ? 0 : allocatedAmount);
-        
+        const correctedRemainingAmount =
+          (isNaN(apiRemainingAmount) ? 0 : apiRemainingAmount) + (isNaN(allocatedAmount) ? 0 : allocatedAmount);
+
         console.log(`🔧 계좌 정보 수정: ${allocation.accountName}`, {
           total: totalAmount,
-          apiRemaining: apiRemainingAmount, 
+          apiRemaining: apiRemainingAmount,
           allocated: allocatedAmount,
-          correctedRemaining: correctedRemainingAmount
+          correctedRemaining: correctedRemainingAmount,
         });
-        
+
         return {
           name: allocation.accountName,
           accountNumber: allocation.accountNumber,
@@ -638,39 +618,42 @@ async function loadAvailableAccounts() {
       console.log("📊 받은 계좌 데이터:", availableAccounts.value);
 
       // 수정모드 확인 (전역 isEditMode 사용)
-      
+
       // accountOptions를 API 데이터로 변환
       if (isEditMode.value) {
-        // 수정모드: loadExistingAllocations에서 이미 accountOptions를 설정했으므로 
+        // 수정모드: loadExistingAllocations에서 이미 accountOptions를 설정했으므로
         // 추가 계좌만 병합 (계좌 추가 기능용)
         console.log("🔄 수정모드: 기존 accountOptions 유지하고 추가 계좌만 병합");
         console.log("🔍 현재 accountOptions:", accountOptions.value);
         console.log("🔍 사용 가능한 추가 계좌:", availableAccounts.value);
-        
+
         // 기존 accountOptions에 없는 계좌만 추가
-        const existingAccountNames = accountOptions.value.map(acc => acc.name);
+        const existingAccountNames = accountOptions.value.map((acc) => acc.name);
         const additionalAccounts = availableAccounts.value
-          .filter(account => !existingAccountNames.includes(account.accountName) && account.remainingAmount > 0)
-          .map(account => ({
+          .filter((account) => !existingAccountNames.includes(account.accountName) && account.remainingAmount > 0)
+          .map((account) => ({
             name: account.accountName,
             accountNumber: account.accountNumber,
             memberAccountId: account.memberAccountId,
             total: Math.floor(account.presentAmount / 10000),
             remainingAmount: Math.floor(account.remainingAmount / 10000),
           }));
-        
+
         // 기존 계좌 + 추가 계좌 병합
         accountOptions.value = [...accountOptions.value, ...additionalAccounts];
         console.log("✅ 병합된 accountOptions:", accountOptions.value);
       } else {
         // 신규모드: 할당 가능한 자산이 있는 계좌만
         console.log("🆕 신규모드: 할당 가능한 계좌만");
-        console.log("🔍 필터링 전 계좌들:", availableAccounts.value.map(acc => ({
-          name: acc.accountName, 
-          remainingAmount: acc.remainingAmount,
-          presentAmount: acc.presentAmount
-        })));
-        
+        console.log(
+          "🔍 필터링 전 계좌들:",
+          availableAccounts.value.map((acc) => ({
+            name: acc.accountName,
+            remainingAmount: acc.remainingAmount,
+            presentAmount: acc.presentAmount,
+          }))
+        );
+
         // 만원 단위로 변환 후 필터링
         const accountsInWan = availableAccounts.value.map((account) => ({
           name: account.accountName,
@@ -678,21 +661,27 @@ async function loadAvailableAccounts() {
           memberAccountId: account.memberAccountId,
           total: Math.floor(account.presentAmount / 10000),
           remainingAmount: Math.floor(account.remainingAmount / 10000),
-          originalRemainingAmount: account.remainingAmount // 디버깅용
+          originalRemainingAmount: account.remainingAmount, // 디버깅용
         }));
-        
-        console.log("🔍 만원 단위 변환 후:", accountsInWan.map(acc => ({
-          name: acc.name,
-          originalRemaining: acc.originalRemainingAmount,
-          remainingWan: acc.remainingAmount
-        })));
-        
+
+        console.log(
+          "🔍 만원 단위 변환 후:",
+          accountsInWan.map((acc) => ({
+            name: acc.name,
+            originalRemaining: acc.originalRemainingAmount,
+            remainingWan: acc.remainingAmount,
+          }))
+        );
+
         const filteredAccounts = accountsInWan.filter((account) => account.remainingAmount > 0);
-        console.log("🔍 필터링 후 계좌들:", filteredAccounts.map(acc => ({
-          name: acc.name,
-          remainingAmount: acc.remainingAmount
-        })));
-        
+        console.log(
+          "🔍 필터링 후 계좌들:",
+          filteredAccounts.map((acc) => ({
+            name: acc.name,
+            remainingAmount: acc.remainingAmount,
+          }))
+        );
+
         accountOptions.value = filteredAccounts;
       }
       console.log("🔄 변환된 계좌 옵션:", accountOptions.value);
@@ -700,37 +689,39 @@ async function loadAvailableAccounts() {
       // 수정모드에서 기존 할당된 계좌가 accountOptions에 없을 경우 전체 계좌에서 가져와서 추가
       if (isEditMode.value) {
         console.log("🔄 수정모드: 기존 할당 계좌 확인 및 추가");
-        
+
         try {
           // 전체 계좌 정보 가져오기
           const allAccountsResponse = await depositService.getDepositAccounts(memberId.value);
           console.log("📊 전체 계좌 정보:", allAccountsResponse);
-          
+
           if (allAccountsResponse.data.data) {
             const allAccounts = allAccountsResponse.data.data;
-            
+
             // 기존 할당된 계좌 중에서 accountOptions에 없는 것들을 찾아서 추가
             for (const allocatedAccount of accounts.value) {
-              const existsInOptions = accountOptions.value.some(opt => opt.name === allocatedAccount.name);
-              
+              const existsInOptions = accountOptions.value.some((opt) => opt.name === allocatedAccount.name);
+
               if (!existsInOptions) {
                 // 전체 계좌에서 해당 계좌 정보 찾기
-                const realAccountInfo = allAccounts.find(acc => acc.accountName === allocatedAccount.name);
-                
+                const realAccountInfo = allAccounts.find((acc) => acc.accountName === allocatedAccount.name);
+
                 if (realAccountInfo) {
                   console.log(`🔄 기존 할당 계좌 추가: ${allocatedAccount.name}`);
-                  
+
                   accountOptions.value.push({
                     name: realAccountInfo.accountName,
                     accountNumber: realAccountInfo.accountNumber,
                     memberAccountId: realAccountInfo.memberAccountId || allocatedAccount.memberAccountId,
                     total: Math.floor((realAccountInfo.presentAmount || realAccountInfo.accountBalance || 0) / 10000),
-                    remainingAmount: Math.floor((realAccountInfo.remainingAmount || realAccountInfo.accountBalance || 0) / 10000),
+                    remainingAmount: Math.floor(
+                      (realAccountInfo.remainingAmount || realAccountInfo.accountBalance || 0) / 10000
+                    ),
                   });
                 }
               }
             }
-            
+
             console.log("✅ 수정모드: 최종 계좌 옵션:", accountOptions.value);
           }
         } catch (error) {
@@ -849,7 +840,7 @@ async function saveDepositAllocation() {
               if (existingGoals.length > 0) {
                 console.log("📝 실제 존재하는 첫 번째 목표:", existingGoals[0]);
                 console.log("💭 이 목표 ID를 사용해서 이동합니다:", existingGoals[0].goalId);
-                
+
                 // 실제 존재하는 goalId로 변경
                 goalId.value = existingGoals[0].goalId;
                 localStorage.setItem("currentGoalId", goalId.value);
@@ -943,12 +934,12 @@ function getMaxAllocatableAmount(accountName) {
   const accountInfo = getAccountInfo(accountName);
   const goalAmountInWan = Math.floor(totalGoalAmount.value / 10000) || 0;
   const availableAmount = accountInfo?.remainingAmount || 0;
-  
-  // 수정모드에서는 현재 목표에 할당된 금액도 수정 가능하므로 
+
+  // 수정모드에서는 현재 목표에 할당된 금액도 수정 가능하므로
   // 실제 사용 가능한 금액은 remainingAmount 전체
   // 전역 isEditMode 사용
-  const currentAccount = accounts.value.find(acc => acc.name === accountName);
-  
+  const currentAccount = accounts.value.find((acc) => acc.name === accountName);
+
   console.log(`🔍 상세 디버그 ${accountName}:`, {
     accountInfo: accountInfo,
     accountInfoExists: !!accountInfo,
@@ -956,9 +947,13 @@ function getMaxAllocatableAmount(accountName) {
     availableAmount,
     isEditMode: isEditMode.value,
     currentAccount: currentAccount,
-    accountOptions: accountOptions.value.map(opt => ({ name: opt.name, remaining: opt.remainingAmount, total: opt.total }))
+    accountOptions: accountOptions.value.map((opt) => ({
+      name: opt.name,
+      remaining: opt.remainingAmount,
+      total: opt.total,
+    })),
   });
-  
+
   let maxAllocatable = 0;
   if (isEditMode.value && currentAccount) {
     // 수정모드: remainingAmount에 현재 할당분이 포함되어 있으므로 전체 사용 가능
@@ -967,9 +962,11 @@ function getMaxAllocatableAmount(accountName) {
     // 신규모드: 기존 로직
     maxAllocatable = Math.min(goalAmountInWan, availableAmount);
   }
-  
-  console.log(`🎯 최대할당계산 ${accountName}: 목표=${goalAmountInWan}, 잔액=${availableAmount}, 최대할당=${maxAllocatable}, 수정모드=${isEditMode.value}`);
-  
+
+  console.log(
+    `🎯 최대할당계산 ${accountName}: 목표=${goalAmountInWan}, 잔액=${availableAmount}, 최대할당=${maxAllocatable}, 수정모드=${isEditMode.value}`
+  );
+
   return isNaN(maxAllocatable) ? 0 : Math.max(0, maxAllocatable);
 }
 
@@ -978,9 +975,9 @@ function getAllocatedAmount(account) {
   const maxAmount = getMaxAllocatableAmount(account.name) || 0;
   const percentage = account.percentage || 0;
   const result = (maxAmount * percentage) / 100;
-  
+
   console.log(`💰 할당금액 계산 ${account.name}: 최대=${maxAmount}, 비율=${percentage}%, 결과=${result}`);
-  
+
   return isNaN(result) ? 0 : result;
 }
 
@@ -995,18 +992,18 @@ const totalAllocated = computed(() => {
 
 // Computed property for validation status
 const validationStatus = computed(() => {
-  const accountsWithoutPercentage = accounts.value.filter(acc => !acc.percentage || acc.percentage <= 0);
-  const totalOverallocation = accounts.value.some(acc => {
+  const accountsWithoutPercentage = accounts.value.filter((acc) => !acc.percentage || acc.percentage <= 0);
+  const totalOverallocation = accounts.value.some((acc) => {
     const maxAmount = getMaxAllocatableAmount(acc.name);
     const allocated = getAllocatedAmount(acc);
     return allocated > maxAmount;
   });
-  
+
   return {
     hasIncompleteAccounts: accountsWithoutPercentage.length > 0,
     incompleteAccounts: accountsWithoutPercentage,
     hasOverallocation: totalOverallocation,
-    isValid: accountsWithoutPercentage.length === 0 && !totalOverallocation
+    isValid: accountsWithoutPercentage.length === 0 && !totalOverallocation,
   };
 });
 
@@ -1078,18 +1075,19 @@ function availableAccountOptions(currentIndex) {
   const selected = accounts.value.map((a) => a.name);
   return accountOptions.value.filter((option) => {
     // 기본 조건: 이미 선택되지 않았거나 현재 선택된 계좌
-    const isAvailableForSelection = !selected.includes(option.name) || accounts.value[currentIndex].name === option.name;
-    
+    const isAvailableForSelection =
+      !selected.includes(option.name) || accounts.value[currentIndex].name === option.name;
+
     // 신규모드에서는 할당 가능한 계좌만 (remainingAmount > 0)
     const hasAvailableAmount = option.remainingAmount > 0;
-    
+
     console.log(`🔍 드롭다운 계좌 필터링 ${option.name}:`, {
       isAvailableForSelection,
       hasAvailableAmount,
       remainingAmount: option.remainingAmount,
-      final: isAvailableForSelection && hasAvailableAmount
+      final: isAvailableForSelection && hasAvailableAmount,
     });
-    
+
     return isAvailableForSelection && hasAvailableAmount;
   });
 }
@@ -1102,14 +1100,14 @@ function formatMoney(totalGoalAmount) {
 // Enhanced completion readiness with better validation
 const isCompletionReady = computed(() => {
   if (accounts.value.length === 0) return false;
-  
+
   return accounts.value.every((account) => {
-    const hasValidName = account.name && account.name.trim() !== '';
+    const hasValidName = account.name && account.name.trim() !== "";
     const hasValidPercentage = account.percentage > 0 && account.percentage <= 100;
     const maxAmount = getMaxAllocatableAmount(account.name);
     const allocatedAmount = getAllocatedAmount(account);
     const isWithinLimits = allocatedAmount <= maxAmount;
-    
+
     return hasValidName && hasValidPercentage && isWithinLimits;
   });
 });
@@ -1124,35 +1122,35 @@ function getAccountAllocationData(account) {
 
   const totalAmount = accountInfo.total || 0; // 전체 계좌 잔액 (만원)
   const currentAllocation = getAllocatedAmount(account) || 0; // 현재 설정한 할당 금액 (만원)
-  
+
   console.log("📊 BarChart 데이터 계산:", {
     accountName: account.name,
     accountInfo,
     totalAmount,
     currentAllocation,
-    percentage: account.percentage
+    percentage: account.percentage,
   });
-  
+
   // 수정모드 확인 (고정된 모드 사용)
   // 처음 DB 조회 결과에 따라 결정된 모드를 사용
-  
+
   // 다른 목표에 할당된 금액 계산
   let alreadyAllocated = 0;
-  
+
   if (isEditMode.value) {
-    // 수정모드: 현재 이 목표에 할당된 계좌의 경우, 
+    // 수정모드: 현재 이 목표에 할당된 계좌의 경우,
     // 다른 목표에 할당된 금액만 "할당된 자산"으로 표시
-    const currentAccount = accounts.value.find(acc => acc.name === account.name);
+    const currentAccount = accounts.value.find((acc) => acc.name === account.name);
     if (currentAccount) {
       // 수정모드에서는 remainingAmount에 현재 목표 할당분이 이미 포함되어 있음
       // 다른 목표에 할당된 금액 = 전체 - 현재 사용가능한 금액 (현재 목표 할당분 포함)
       alreadyAllocated = Math.max(0, accountInfo.total - accountInfo.remainingAmount);
-      
+
       console.log(`🔍 수정모드 할당계산 ${account.name}:`, {
         total: accountInfo.total,
         remainingAmount: accountInfo.remainingAmount,
         alreadyAllocated,
-        현재할당분포함여부: "remainingAmount에 이미 포함됨"
+        현재할당분포함여부: "remainingAmount에 이미 포함됨",
       });
     } else {
       // 이 계좌가 현재 목표에 할당되지 않은 경우 (계좌 추가할 때)
@@ -1162,15 +1160,15 @@ function getAccountAllocationData(account) {
     // 신규모드: 전체 할당된 금액
     alreadyAllocated = accountInfo.total - accountInfo.remainingAmount;
   }
-  
+
   console.log("📊 할당된 자산 계산:", {
     isEditMode: isEditMode.value,
     totalAmount,
     remainingAmount: accountInfo.remainingAmount,
     currentAllocation,
-    alreadyAllocated
+    alreadyAllocated,
   });
-  
+
   const availableAmount = Math.max(0, accountInfo.remainingAmount - currentAllocation); // 남은 사용 가능 금액
 
   if (totalAmount === 0) {
@@ -1181,12 +1179,12 @@ function getAccountAllocationData(account) {
   const alreadyAllocatedAmount = Math.max(0, isNaN(alreadyAllocated) ? 0 : alreadyAllocated);
   const currentAllocationAmount = Math.max(0, isNaN(currentAllocation) ? 0 : currentAllocation);
   const availableAmountDisplay = Math.max(0, isNaN(availableAmount) ? 0 : availableAmount);
-  
+
   console.log("📊 금액 계산 (만원 단위):", {
     alreadyAllocatedAmount: alreadyAllocatedAmount + "만원",
-    currentAllocationAmount: currentAllocationAmount + "만원", 
+    currentAllocationAmount: currentAllocationAmount + "만원",
     availableAmountDisplay: availableAmountDisplay + "만원",
-    totalAmount: totalAmount + "만원"
+    totalAmount: totalAmount + "만원",
   });
 
   // BarChart colors 순서에 맞춰 데이터 재배열
@@ -1210,10 +1208,16 @@ function getAccountAllocationData(account) {
       value: currentAllocationAmount,
     },
   ];
-  
+
   console.log("📊 최종 BarChart 데이터 (금액 기준):", result);
-  console.log("📊 각 항목별 상세:", result.map(item => `${item.name}: ${item.value}만원`));
-  console.log("📊 0보다 큰 항목들:", result.filter(item => item.value > 0));
+  console.log(
+    "📊 각 항목별 상세:",
+    result.map((item) => `${item.name}: ${item.value}만원`)
+  );
+  console.log(
+    "📊 0보다 큰 항목들:",
+    result.filter((item) => item.value > 0)
+  );
   return result;
 }
 
@@ -1221,11 +1225,11 @@ function getAccountAllocationData(account) {
 function getLegendAllocatedAmount(accountName) {
   const accountInfo = getAccountInfo(accountName);
   if (!accountInfo) return 0;
-  
+
   // 전역 isEditMode 사용
-  const currentAccount = accounts.value.find(acc => acc.name === accountName);
+  const currentAccount = accounts.value.find((acc) => acc.name === accountName);
   const currentAllocation = currentAccount ? getAllocatedAmount(currentAccount) : 0;
-  
+
   if (isEditMode.value && currentAccount) {
     // 수정모드: 다른 목표에만 할당된 금액
     // remainingAmount에 현재 목표 할당분이 이미 포함되어 있으므로
@@ -1239,17 +1243,17 @@ function getLegendAllocatedAmount(accountName) {
 function getLegendAvailableAmount(accountName) {
   const accountInfo = getAccountInfo(accountName);
   if (!accountInfo) return 0;
-  
-  const currentAccount = accounts.value.find(acc => acc.name === accountName);
+
+  const currentAccount = accounts.value.find((acc) => acc.name === accountName);
   const currentAllocation = currentAccount ? getAllocatedAmount(currentAccount) : 0;
-  
+
   return Math.max(0, accountInfo.remainingAmount - currentAllocation);
 }
 
 // 네비게이션 함수들
 function goToAccountLink() {
   // 계좌 연결 페이지로 이동 (실제 라우팅 경로에 맞게 수정 필요)
-  router.push("/bank-select");
+  router.push("/mypage/edit-account");
 }
 
 function goToGoalList() {
@@ -1266,13 +1270,13 @@ function getAmountPercentage(item, account) {
 
 // Calculate start position for stacked bar chart segments
 function getItemStartPosition(item, account, itemIndex) {
-  const data = getAccountAllocationData(account).filter(i => i.value > 0);
+  const data = getAccountAllocationData(account).filter((i) => i.value > 0);
   let startPosition = 0;
-  
+
   for (let i = 0; i < itemIndex; i++) {
     startPosition += getAmountPercentage(data[i], account);
   }
-  
+
   return startPosition;
 }
 
@@ -1281,9 +1285,9 @@ function getItemColor(itemName) {
     "다른 목표 할당액": "#2563eb", // 진한 파란색 (blue-600)
     "할당된 자산": "#2563eb",
     "현재 선택액": "#9ca3af", // 회색 (gray-400)
-    "선택된 자산": "#9ca3af", 
+    "선택된 자산": "#9ca3af",
     "남은 할당가능액": "#bfdbfe", // 연한 파란색 (blue-200)
-    "할당 가능자산": "#bfdbfe"
+    "할당 가능자산": "#bfdbfe",
   };
   return colorMap[itemName] || "#e5e7eb";
 }
@@ -1292,12 +1296,12 @@ function getItemColor(itemName) {
 function onAccountChange(index, event) {
   const newAccountName = event.target.value;
   console.log(`계좌 변경: 인덱스 ${index}, 새 계좌: ${newAccountName}`);
-  
+
   // Reset percentage when account changes
   if (accounts.value[index].name !== newAccountName) {
     accounts.value[index].percentage = 0;
   }
-  
+
   // Provide user feedback
   console.log(`계좌이 ${newAccountName}로 변경되었습니다. 할당 비율을 설정해주세요.`);
 }
@@ -1392,40 +1396,40 @@ function onAccountChange(index, event) {
   .space-y-6 > * + * {
     margin-top: 1rem;
   }
-  
+
   /* Adjust font sizes for mobile */
   h1 {
     font-size: 1.125rem;
     line-height: 1.75rem;
   }
-  
+
   h2 {
     font-size: 1rem;
     line-height: 1.5rem;
   }
-  
+
   /* Adjust padding for mobile */
   .p-6 {
     padding: 1rem;
   }
-  
+
   .p-4 {
     padding: 0.75rem;
   }
-  
+
   /* Improve button sizes for touch */
   button {
     min-height: 44px;
     min-width: 44px;
   }
-  
+
   /* Adjust slider for touch interfaces */
   .slider-purple::-webkit-slider-thumb {
     height: 2rem;
     width: 2rem;
     margin-top: -0.625rem;
   }
-  
+
   .slider-purple::-moz-range-thumb {
     height: 2rem;
     width: 2rem;
@@ -1438,12 +1442,12 @@ function onAccountChange(index, event) {
     font-size: 1.125rem;
     line-height: 1.75rem;
   }
-  
+
   .text-lg {
     font-size: 1rem;
     line-height: 1.5rem;
   }
-  
+
   /* Compact legend on small screens */
   .grid-cols-1 {
     gap: 0.5rem;
@@ -1536,11 +1540,11 @@ function onAccountChange(index, event) {
   .border-gray-200 {
     border-color: #000000;
   }
-  
+
   .text-gray-600 {
     color: #000000;
   }
-  
+
   .bg-gray-50 {
     background-color: #ffffff;
   }
@@ -1562,7 +1566,7 @@ function onAccountChange(index, event) {
   .no-print {
     display: none !important;
   }
-  
+
   .print-break-inside-avoid {
     break-inside: avoid;
   }

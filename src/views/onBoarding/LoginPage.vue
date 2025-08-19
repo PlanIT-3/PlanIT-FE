@@ -63,7 +63,17 @@ const login = async () => {
   try {
     isLoading.value = true;
     await auth.login(userData);
-    router.push({ name: "main" });
+    //semi_user , user 따라 라우팅
+    const authData = JSON.parse(localStorage.getItem("auth"));
+    const userRole = authData?.user?.role;
+
+    console.log("User role:", userRole);
+
+    if (userRole === "USER") {
+      router.push({ name: "main" });
+    } else {
+      router.push({ name: "surveyLoading" });
+    }
   } catch (error) {
     console.error("Error during login:", error);
     alert("Login failed. Please try again.");

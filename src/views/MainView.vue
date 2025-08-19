@@ -1,5 +1,10 @@
 <template>
-  <MainLayout :chart-option="chartOption" :total-balance="totalBalance" :goal-count="goalRatioData.length">
+  <MainLayout
+    :chart-option="chartOption"
+    :total-balance="totalBalance"
+    :goal-count="goalRatioData.length"
+    :is-loading="isLoading"
+  >
     <GoalSliderCard :goal-list="goalListData" />
     <InvestmentStatusChart />
   </MainLayout>
@@ -24,6 +29,12 @@ const goalRatioData = ref([]);
 const totalBalance = ref(0);
 // 목표 리스트 데이터
 const goalListData = ref([]);
+// 기간별 데이터
+const dailyData = ref([]);
+const weeklyData = ref([]);
+const monthlyData = ref([]);
+// 로딩 상태
+const isLoading = ref(false);
 
 // 일자 버튼 클릭 시 API 호출
 const fetchDailyData = async () => {
@@ -31,10 +42,12 @@ const fetchDailyData = async () => {
     const data = await mainApi.getPeriod("day");
     if (data.status === "OK" && data.data && data.data.balanceResList) {
       dailyData.value = data.data.balanceResList;
-      updateInvestmentChart();
+    } else {
+      dailyData.value = [];
     }
   } catch (error) {
     console.error("일별 데이터 불러오기 실패:", error);
+    dailyData.value = [];
     // 인증 관련 에러인 경우 처리
     if (error.response?.status === 401) {
       console.warn("인증이 필요합니다. 로그인 페이지로 이동합니다.");
@@ -50,10 +63,12 @@ const fetchWeeklyData = async () => {
     const data = await mainApi.getPeriod("week");
     if (data.status === "OK" && data.data && data.data.balanceResList) {
       weeklyData.value = data.data.balanceResList;
-      updateInvestmentChart();
+    } else {
+      weeklyData.value = [];
     }
   } catch (error) {
     console.error("주별 데이터 불러오기 실패:", error);
+    weeklyData.value = [];
     // 인증 관련 에러인 경우 처리
     if (error.response?.status === 401) {
       console.warn("인증이 필요합니다. 로그인 페이지로 이동합니다.");
@@ -68,10 +83,12 @@ const fetchMonthlyData = async () => {
     const data = await mainApi.getPeriod("month");
     if (data.status === "OK" && data.data && data.data.balanceResList) {
       monthlyData.value = data.data.balanceResList;
-      updateInvestmentChart();
+    } else {
+      monthlyData.value = [];
     }
   } catch (error) {
     console.error("월별 데이터 불러오기 실패:", error);
+    monthlyData.value = [];
     // 인증 관련 에러인 경우 처리
     if (error.response?.status === 401) {
       console.warn("인증이 필요합니다. 로그인 페이지로 이동합니다.");
@@ -82,20 +99,32 @@ const fetchMonthlyData = async () => {
 
 // 목표 비율 데이터 API 호출
 const fetchGoalRatioData = async () => {
+  isLoading.value = true;
   try {
     const data = await mainApi.getGoalRatio();
-    if (data.status === "OK" && data.data) {
-      totalBalance.value = data.data.totalBalance;
+    if (data.status === "OK" && data.data && data.data.goalRatios && data.data.goalRatios.length > 0) {
+      totalBalance.value = data.data.totalBalance || 0;
       goalRatioData.value = data.data.goalRatios;
+      updateChartOption();
+    } else {
+      // 데이터가 없는 경우 기본값 설정
+      totalBalance.value = 0;
+      goalRatioData.value = [];
       updateChartOption();
     }
   } catch (error) {
     console.error("목표 비율 데이터 불러오기 실패:", error);
+    // 에러 발생 시 기본값 설정
+    totalBalance.value = 0;
+    goalRatioData.value = [];
+    updateChartOption();
     // 인증 관련 에러인 경우 처리
     if (error.response?.status === 401) {
       console.warn("인증이 필요합니다. 로그인 페이지로 이동합니다.");
       throw error;
     }
+  } finally {
+    isLoading.value = false;
   }
 };
 
@@ -103,14 +132,16 @@ const fetchGoalRatioData = async () => {
 const fetchGoalListData = async () => {
   try {
     const data = await goalApi.getGoalList();
-    if (data.status === "OK" && data.data) {
+    if (data.status === "OK" && data.data && data.data.length > 0) {
       goalListData.value = data.data;
+    } else {
+      goalListData.value = [];
     }
   } catch (error) {
     console.error("목표 리스트 데이터 불러오기 실패:", error);
+    goalListData.value = [];
   }
 };
-
 
 onMounted(() => {
   fetchDailyData();
@@ -135,7 +166,7 @@ const chartOption = ref({
       name: "목표 현황",
       type: "pie",
       radius: ["35%", "65%"],
-      center: ["40%", "50%"],
+      center: ["50%", "50%"],
       avoidLabelOverlap: true,
       itemStyle: {
         borderRadius: 2,
@@ -182,6 +213,9 @@ const updateChartOption = () => {
     }));
 
     chartOption.value.series[0].data = chartData;
+  } else {
+    // 데이터가 없는 경우 빈 차트 표시
+    chartOption.value.series[0].data = [];
   }
 };
 </script>

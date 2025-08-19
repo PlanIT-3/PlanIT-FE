@@ -1,181 +1,143 @@
 <template>
-  <div>
-    <!-- 나의 투자 내역 -->
-    <div class="mb-8 custom-scroll">
-      <h4 class="text-base font-semibold text-gray-800 mb-4">나의 투자 내역</h4>
-
-      <div v-if="loading" class="text-center py-8">
-        <div class="text-gray-500">로딩 중...</div>
+  <div class="space-y-4">
+    <!-- 헤더 -->
+    <div class="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-lg font-semibold text-gray-900">리밸런싱 제안</h1>
+          <p class="text-xs text-gray-500 mt-1">포트폴리오 최적화</p>
+        </div>
+        <div class="text-right">
+          <div class="text-xs text-gray-500">총 제안</div>
+          <div class="text-sm font-bold text-gray-900">{{ apiData.length }}건</div>
+        </div>
       </div>
+    </div>
 
-      <div v-else-if="error" class="text-center py-8">
-        <div class="text-red-500">데이터를 불러오는 중 오류가 발생했습니다.</div>
-      </div>
+    <!-- 목표별 섹션 -->
+    <div class="space-y-4">
+      <div
+        v-for="(items, goalName) in groupedData"
+        :key="goalName"
+        class="bg-white rounded-lg shadow-sm border border-gray-200"
+      >
+        <!-- 목표 헤더 -->
+        <div class="bg-gray-50 p-2 border-b border-gray-200 rounded-t-lg">
+          <div class="flex items-center justify-between">
+            <h2 class="text-sm font-semibold text-gray-900">{{ goalName }}</h2>
+            <span class="text-xs text-gray-500">{{ items.length }}개</span>
+          </div>
+        </div>
 
-      <div v-else class="space-y-4 max-h-60 overflow-y-auto">
-        <div v-for="(item, index) in investmentData" :key="index" class="bg-white border-b border-gray-300 p-2">
-          <div class="flex justify-between items-start mb-1 gap-1">
-            <div class="flex-1">
-              <h5 class="font-semibold text-gray-800 text-sm mb-1">{{ item.itemName }}</h5>
-              <div class="text-xs text-gray-600">
-                {{ item.quantity }}주 · 현재가 {{ formatNumber(item.valuationAmount) }}원
-              </div>
-            </div>
-            <div class="text-right">
-              <div class="text-base font-semibold text-gray-800 mb-1">
-                {{ formatNumber(item.totalValuationAmount) }}원
-              </div>
+        <!-- 제안 카드 -->
+        <div class="p-3 space-y-3">
+          <div
+            v-for="item in items"
+            :key="item.mpCode"
+            class="border border-gray-200 rounded-lg p-3 hover:shadow transition-shadow bg-white"
+          >
+            <!-- 카드 헤더 -->
+            <div class="flex items-center justify-between mb-3">
               <div
                 :class="[
-                  'text-sm font-medium flex items-center justify-end',
-                  item.earningsRate >= 0 ? 'text-green-600' : 'text-red-600',
+                  'px-2 py-0.5 rounded-full text-xs font-medium text-white',
+                  item.action === 'BUY' ? 'bg-emerald-500' : 'bg-rose-500',
                 ]"
               >
-                <span :class="item.earningsRate >= 0 ? 'text-green-600' : 'text-red-600'">
-                  {{ item.earningsRate >= 0 ? "↗" : "↘" }}
-                </span>
-                <span class="ml-1"> {{ item.earningsRate >= 0 ? "+" : "" }}{{ item.earningsRate.toFixed(2) }}% </span>
+                {{ item.action === "BUY" ? "매수" : "매도" }}
               </div>
+              <div class="ml-3">
+                <h3 class="text-sm font-semibold text-gray-900">{{ item.mpName }}</h3>
+                <p class="text-[10px] text-gray-500">{{ item.mpCode }}</p>
+              </div>
+            </div>
+
+            <!-- 금액 정보 -->
+            <div class="grid grid-cols-2 gap-2 mb-3">
+              <InfoCard title="현재 투자금액" :value="item.mpTotal" />
+              <InfoCard title="ISA 목표금액" :value="item.targetIsaAmount" />
+              <InfoCard :title="item.action === 'BUY' ? '매수 필요금액' : '매도 필요금액'" :value="item.tradeAmount" />
+              <InfoCard title="사용가능 현금" :value="item.deposit" />
+            </div>
+
+            <!-- 제안 이유 -->
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-2">
+              <p class="text-xs text-gray-600">{{ item.reason }}</p>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- 리밸런싱 -->
-    <div class="mb-4">
-      <h4 class="text-base font-semibold text-gray-800 mb-3">특정 기간 리밸런싱</h4>
-      <div class="flex gap-2 mb-4">
-        <button
-          v-for="period in periods"
-          :key="period"
-          @click="selectedPeriod = period"
-          :class="[
-            'px-3 py-1 text-xs rounded-md border transition-colors',
-            selectedPeriod === period
-              ? 'bg-indigo-600 text-white border-indigo-600'
-              : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50',
-          ]"
-        >
-          {{ period }}
-        </button>
-      </div>
-      <RebalanceCard
-        title="한달"
-        expected-yield="8.2%"
-        yield-change="1.5%"
-        goal-period="6개월"
-        risk-level="중간"
-        risk-color="text-orange-600"
-        comment="현재 포트폴리오 비중이 목표와 잘 맞습니다."
-        comment-emoji="✅"
-      />
-    </div>
+    <!-- 푸터 -->
+    <div class="text-center text-[9px] text-gray-400">* 리밸런싱 제안은 시장 상황에 따라 변경될 수 있습니다.</div>
 
-    <!-- 포트폴리오 & 코인 -->
-    <div class="mb-4">
-      <h4 class="text-base font-semibold text-gray-800 mb-3">QQQ + QLD 포트폴리오</h4>
-      <div class="bg-gray-50 rounded-lg p-4">
-        <div class="grid grid-cols-2 gap-4 text-sm">
-          <div>
-            <span class="text-gray-600">예상 수익률:</span>
-            <span class="font-semibold text-green-600 ml-2">4.3%</span>
-          </div>
-          <div>
-            <span class="text-gray-600">4.5개월:</span>
-            <span class="font-semibold ml-2">목표 달성</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="mb-4">
-      <h4 class="text-base font-semibold text-gray-800 mb-3">코인 보유 종목</h4>
-      <div class="bg-gray-50 rounded-lg p-4">
-        <div class="grid grid-cols-3 gap-4 text-sm">
-          <div>
-            <span class="text-gray-600">비중:</span>
-            <span class="font-semibold ml-2">15.0%</span>
-          </div>
-          <div>
-            <span class="text-gray-600">4.3%:</span>
-            <span class="font-semibold text-orange-600 ml-2">위험도 높음</span>
-          </div>
-          <div>
-            <span class="text-gray-600">현재 보유:</span>
-            <span class="font-semibold text-red-600 ml-2">주의 필요</span>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
+
 <script setup>
-import RebalanceCard from "@/components/goal/RebalanceCard.vue";
-import { ref, onMounted } from "vue";
-import api from "@/api";
+import { ref, computed } from "vue";
+import InfoCard from "@/components/rebalance/InfoCard.vue";
 
-// 리밸런싱 기간
-const periods = ref(["한달", "3개월", "6개월", "1년"]);
-const selectedPeriod = ref("한달");
+import { getRebalance } from "@/api/rebalanceApi";
 
-// 투자 내역 데이터
-const investmentData = ref([]);
-const loading = ref(false);
-const error = ref(false);
+// API 데이터 저장
+// const apiData = ref([]);
 
-// 숫자 포맷팅 함수
-const formatNumber = (number) => {
-  return new Intl.NumberFormat("ko-KR").format(Math.floor(number));
-};
+// 컴포넌트 마운트 시 데이터 불러오기
+// onMounted(async () => {
+//   try {
+//     const result = await getRebalance();
+//     apiData.value = result; // API에서 받아온 데이터 저장
+//     console.log("리밸런싱 데이터:", result);
+//   } catch (error) {
+//     console.error("리밸런싱 데이터 불러오기 실패:", error);
+//   }
+// });
 
-// API 호출 함수
-const fetchInvestmentData = async () => {
-  loading.value = true;
-  error.value = false;
+// 목표별 그룹핑
+// const groupedData = computed(() => {
+//   return apiData.value.reduce((acc, item) => {
+//     if (!acc[item.goalName]) acc[item.goalName] = [];
+//     acc[item.goalName].push(item);
+//     return acc;
+//   }, {});
+// });
 
-  try {
-    const response = await api.get("/auth/rebalance/invest/info");
-    investmentData.value = response.data;
-  } catch (err) {
-    console.error("투자 내역 조회 실패:", err);
-    error.value = true;
-  } finally {
-    loading.value = false;
-  }
-};
+// 임시 데이터
+const apiData = ref([
+  {
+    goalName: "goalname1-2",
+    action: "SELL",
+    mpName: "ACE 중장기국공채액티브",
+    mpCode: "KR7272910001",
+    tradeAmount: 2130603,
+    targetIsaAmount: 2457982,
+    mpTotal: 4588585.0,
+    deposit: 327378.5,
+    reason: "ISA 목표금액 초과 → 수익률 높은 종목 매도",
 
-// 컴포넌트 마운트 시 데이터 로드
-onMounted(() => {
-  fetchInvestmentData();
+  },
+  {
+    goalName: "goalname1-1",
+    action: "BUY",
+    mpName: "KBSTAR Fn창업투자회사",
+    mpCode: "KR7427110002",
+    tradeAmount: 75392,
+    targetIsaAmount: 251987,
+    mpTotal: 176595.0,
+    deposit: 327378.5,
+    reason: "ISA 목표금액 미달 → 수익률 높은 종목 매수",
+  },
+]);
+
+// 목표별 그룹핑
+const groupedData = computed(() => {
+  return apiData.value.reduce((acc, item) => {
+    if (!acc[item.goalName]) acc[item.goalName] = [];
+    acc[item.goalName].push(item);
+    return acc;
+  }, {});
+
 });
 </script>
-<style scoped>
-.custom-scroll {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
-}
-
-.custom-scroll::-webkit-scrollbar {
-  width: 4px;
-}
-
-.custom-scroll::-webkit-scrollbar-track {
-  background: transparent;
-  border-radius: 2px;
-}
-
-.custom-scroll::-webkit-scrollbar-thumb {
-  background: rgba(156, 163, 175, 0.5);
-  border-radius: 2px;
-  transition: background-color 0.2s ease;
-}
-
-.custom-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgba(156, 163, 175, 0.8);
-}
-
-.custom-scroll::-webkit-scrollbar-corner {
-  background: transparent;
-}
-</style>

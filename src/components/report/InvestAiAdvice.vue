@@ -1,20 +1,24 @@
 <template>
   <div class="bg-blue-50 rounded-2xl border border-blue-200 p-6 shadow">
+
     <div class="flex flex-col mb-4">
-      <h3 class="text-medium font-bold text-gray-800">🤖 AI 투자 제언</h3>
+      <h3 class="text-medium font-bold text-gray-800">🔍 AI 투자 제언</h3>
       <p class="text-xs text-gray-500 ml-2">투자 성향 분석 결과 기반 맞춤 제언</p>
     </div>
 
+    <!-- 로딩 상태 -->
     <div v-if="loading" class="flex items-center justify-center py-8">
       <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
       <span class="ml-3 text-gray-600">AI가 분석 중입니다...</span>
     </div>
 
+    <!-- 에러 상태 -->
     <div v-else-if="error" class="text-center py-8">
       <p class="text-red-600 mb-2">⚠️ 제언을 불러오는데 실패했습니다</p>
       <button @click="fetchAdvice" class="text-blue-600 hover:text-blue-800 underline">다시 시도</button>
     </div>
 
+    <!-- 제언 리스트 -->
     <div v-else-if="adviceData" class="space-y-4">
       <div
         v-for="(advice, index) in adviceList"
@@ -42,7 +46,6 @@ const adviceData = ref(null);
 
 const adviceList = computed(() => {
   if (!adviceData.value) return [];
-
   return [
     adviceData.value.investTypeAdvice1,
     adviceData.value.investTypeAdvice2,
@@ -54,15 +57,16 @@ const fetchAdvice = async () => {
   loading.value = true;
   error.value = false;
 
-  try {
-    const response = await api.get("/api/openai/invest-type-advice");
-    adviceData.value = response.data;
-  } catch (err) {
-    console.error("AI 투자 제언 가져오기 실패:", err);
-    error.value = true;
-  } finally {
-    loading.value = false;
-  }
+
+  // try {
+  //   const response = await api.get("/api/openai/invest-type-advice");
+  //   adviceData.value = response.data;
+  // } catch (err) {
+  //   console.error("AI 투자 제언 가져오기 실패:", err);
+  //   error.value = true;
+  // } finally {
+  //   loading.value = false;
+  // }
 };
 
 onMounted(() => {

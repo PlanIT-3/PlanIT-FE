@@ -34,19 +34,37 @@ export async function getIsaProductsForEdit(goalId) {
 }
 
 //수정 버튼 put
-export async function editIsaAllocation(goalId, allItems, selectedIds) {
-  const editReqs = allItems.map((p) => ({
-    goalId,
-    memberProductId: p.memberProductId ?? p.id, // 둘 중 있는 키 사용
-    accountType: "ISA",
-    checked: selectedIds.includes(p.memberProductId ?? p.id),
-  }));
+// export async function editIsaAllocation(goalId, allItems, selectedIds) {
+//   const editReqs = allItems.map((p) => ({
+//     goalId,
+//     memberProductId: p.memberProductId ?? p.id, // 둘 중 있는 키 사용
+//     accountType: "ISA",
+//     checked: selectedIds.includes(p.memberProductId ?? p.id),
+//   }));
 
-  const body = { editReqs }; // ✅ 백엔드 DTO: IsaAccountProductEditListReq.editReqs
+//   const body = { editReqs }; //
+//   const res = await api.put("/auth/api/account/isa", body);
+//   return res.data;
+// }
+// 수정: 변경된 것만 보냄 (추가/해제 분리)
+export async function editIsaAllocation(goalId, addedIds = [], removedIds = []) {
+  const add = Array.isArray(addedIds) ? addedIds.map(Number) : [];
+  const remove = Array.isArray(removedIds) ? removedIds.map(Number) : [];
+
+  // 변경 없으면 요청 생략 가능
+  if (add.length === 0 && remove.length === 0) {
+    return { status: "OK", message: "No changes" };
+  }
+
+  const editReqs = [
+    ...add.map((id) => ({ goalId, memberProductId: id, accountType: "ISA", checked: true })),
+    ...remove.map((id) => ({ goalId, memberProductId: id, accountType: "ISA", checked: false })),
+  ];
+
+  const body = { editReqs }; // IsaAccountProductEditListReq.editReqs
   const res = await api.put("/auth/api/account/isa", body);
   return res.data;
 }
-
 export default {
   getIsaProducts,
   getTaxExemption,

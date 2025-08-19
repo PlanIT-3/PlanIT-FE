@@ -12,7 +12,7 @@
           <BaseTextInput v-model="formData.email" type="text" placeholder="Email" />
           <BaseTextInput v-model="formData.password" type="password" placeholder="Password" />
           <BaseTextInput v-model="formData.confirmPassword" type="password" placeholder="Confirm Password" />
-          <Button label="Sign Up" type="button" class="mt-4" @click="handleRegister" />
+          <Button label="Sign Up" type="button" class="mt-4" @click="handleRegister" :disabled="isRegistering" />
         </form>
 
         <div class="text-center mb-6">
@@ -32,17 +32,19 @@
 </template>
 
 <script setup>
-import { reactive } from "vue";
+import { reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import Button from "@/components/base/Button.vue";
 import goBackButton from "@/components/base/GoBackButton.vue";
 import BaseTextInput from "@/components/base/BaseTextInput.vue";
 import authApi from "@/api/authApi";
 
-import { useUserStore } from "@/stores/user";
+
+// import { useUserStore } from "@/stores/user";
 
 const router = useRouter();
 // const auth = useAuthStore();
+const isRegistering = ref(false);
 
 const formData = reactive({
   username: "",
@@ -52,6 +54,8 @@ const formData = reactive({
 });
 
 const handleRegister = async () => {
+  if (isRegistering.value) return;
+  
   if (!formData.username || !formData.email || !formData.password) {
     alert("모든 필드를 입력해주세요.");
     return;
@@ -61,17 +65,20 @@ const handleRegister = async () => {
     return;
   }
 
+  isRegistering.value = true;
+  
   try {
     await authApi.signup({
       email: formData.email,
       password: formData.password,
       nickname: formData.username,
     });
-    alert("회원가입이 완료되었습니다!");
-    router.push("/login");
+    router.push("/agree-condition");
   } catch (error) {
     const msg = error?.response?.data?.message || "회원 가입 실패";
     alert("회원 가입 실패: " + msg);
+  } finally {
+    isRegistering.value = false;
   }
 };
 </script>
