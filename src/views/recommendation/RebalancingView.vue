@@ -1,20 +1,15 @@
 <template>
-  <div class="">
+  <div class="space-y-4">
     <!-- 헤더 -->
-    <div class="bg-white rounded-lg shadow-sm p-3 mb-4 border border-gray-200">
+    <div class="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
       <div class="flex items-center justify-between">
-        <div class="flex items-center">
-          <div class="bg-indigo-500 p-1.5 rounded-lg">
-            <PieChart class="h-4 w-4 text-white" />
-          </div>
-          <div class="ml-2">
-            <h1 class="text-base font-semibold text-gray-900">리밸런싱 제안</h1>
-            <p class="text-xs text-gray-500">포트폴리오 최적화</p>
-          </div>
+        <div>
+          <h1 class="text-lg font-semibold text-gray-900">리밸런싱 제안</h1>
+          <p class="text-xs text-gray-500 mt-1">포트폴리오 최적화</p>
         </div>
         <div class="text-right">
           <div class="text-xs text-gray-500">총 제안</div>
-          <div class="text-sm font-semibold text-gray-900">{{ apiData.length }}건</div>
+          <div class="text-sm font-bold text-gray-900">{{ apiData.length }}건</div>
         </div>
       </div>
     </div>
@@ -27,12 +22,9 @@
         class="bg-white rounded-lg shadow-sm border border-gray-200"
       >
         <!-- 목표 헤더 -->
-        <div class="bg-gray-50 p-2 border-b border-gray-200">
+        <div class="bg-gray-50 p-2 border-b border-gray-200 rounded-t-lg">
           <div class="flex items-center justify-between">
-            <div class="flex items-center">
-              <Target class="h-4 w-4 text-gray-600 mr-2" />
-              <h2 class="text-sm font-semibold text-gray-900">{{ goalName }}</h2>
-            </div>
+            <h2 class="text-sm font-semibold text-gray-900">{{ goalName }}</h2>
             <span class="text-xs text-gray-500">{{ items.length }}개</span>
           </div>
         </div>
@@ -42,116 +34,76 @@
           <div
             v-for="item in items"
             :key="item.mpCode"
-            class="border border-gray-200 rounded-lg p-3 hover:shadow-sm transition-shadow"
+            class="border border-gray-200 rounded-lg p-3 hover:shadow transition-shadow bg-white"
           >
             <!-- 카드 헤더 -->
-            <div class="flex items-start justify-between mb-3">
-              <div class="flex items-center">
-                <div
-                  :class="[
-                    'flex items-center px-2 py-1 rounded text-white text-xs font-medium',
-                    item.action === 'BUY' ? 'bg-green-500' : 'bg-red-500',
-                  ]"
-                >
-                  <TrendingUp v-if="item.action === 'BUY'" class="h-3 w-3 mr-1" />
-                  <TrendingDown v-else class="h-3 w-3 mr-1" />
-                  {{ item.action === "BUY" ? "매수" : "매도" }}
-                </div>
-                <div class="ml-2">
-                  <h3 class="text-sm font-semibold text-gray-900">{{ item.mpName }}</h3>
-                  <p class="text-xs text-gray-500">{{ item.mpCode }}</p>
-                </div>
+            <div class="flex items-center justify-between mb-3">
+              <div
+                :class="[
+                  'px-2 py-0.5 rounded-full text-xs font-medium text-white',
+                  item.action === 'BUY' ? 'bg-emerald-500' : 'bg-rose-500',
+                ]"
+              >
+                {{ item.action === "BUY" ? "매수" : "매도" }}
+              </div>
+              <div class="ml-3">
+                <h3 class="text-sm font-semibold text-gray-900">{{ item.mpName }}</h3>
+                <p class="text-[10px] text-gray-500">{{ item.mpCode }}</p>
               </div>
             </div>
 
             <!-- 금액 정보 -->
             <div class="grid grid-cols-2 gap-2 mb-3">
-              <div class="bg-gray-50 rounded p-2">
-                <div class="text-xs text-gray-600 mb-1">현재 투자금액</div>
-                <div class="text-sm font-semibold text-gray-900">{{ formatCurrency(item.mpTotal) }}</div>
-              </div>
-
-              <div class="bg-gray-50 rounded p-2">
-                <div class="text-xs text-gray-600 mb-1">ISA 목표금액</div>
-                <div class="text-sm font-semibold text-gray-900">{{ formatCurrency(item.targetIsaAmount) }}</div>
-              </div>
-
-              <div class="bg-gray-50 rounded p-2">
-                <div class="text-xs text-gray-600 mb-1">{{ item.action === "BUY" ? "매수" : "매도" }} 필요금액</div>
-                <div class="text-sm font-semibold text-gray-900">{{ formatCurrency(item.tradeAmount) }}</div>
-              </div>
-
-              <div class="bg-gray-50 rounded p-2">
-                <div class="text-xs text-gray-600 mb-1">사용가능 현금</div>
-                <div class="text-sm font-semibold text-gray-900">{{ formatCurrency(item.deposit) }}</div>
-              </div>
+              <InfoCard title="현재 투자금액" :value="item.mpTotal" />
+              <InfoCard title="ISA 목표금액" :value="item.targetIsaAmount" />
+              <InfoCard :title="item.action === 'BUY' ? '매수 필요금액' : '매도 필요금액'" :value="item.tradeAmount" />
+              <InfoCard title="사용가능 현금" :value="item.deposit" />
             </div>
 
             <!-- 제안 이유 -->
-            <div class="bg-blue-50 border border-blue-200 rounded p-2">
-              <div class="flex items-start">
-                <DollarSign class="h-3 w-3 text-blue-600 mr-2 mt-0.5 flex-shrink-0" />
-                <div>
-                  <div class="text-xs font-semibold text-blue-800 mb-1">제안 이유</div>
-                  <p class="text-xs text-blue-700">{{ item.reason }}</p>
-                </div>
-              </div>
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-2">
+              <p class="text-xs text-gray-600">{{ item.reason }}</p>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- 리밸런싱 -->
-    <div class="mb-4">
-      <h4 class="text-base font-semibold text-gray-800 mb-3">목표별 최대 수익 상품 추천</h4>
-
-      <div v-if="rebalanceLoading" class="text-center py-8">
-        <div class="text-gray-500">리밸런싱 데이터 로딩 중...</div>
-      </div>
-
-      <div v-else-if="rebalanceError" class="text-center py-8">
-        <div class="text-red-500">리밸런싱 데이터를 불러오는 중 오류가 발생했습니다.</div>
-      </div>
-
-      <div v-else class="space-y-4">
-        <template v-for="goal in rebalanceData" :key="goal.goalName">
-          <div v-if="goal.rebalanceInfo && goal.rebalanceInfo.length > 0">
-            <template v-for="rebalanceItem in goal.rebalanceInfo" :key="rebalanceItem.memberProductId">
-              <RebalanceCard
-                :goal="goal.goalName"
-                :PreProd="rebalanceItem.previousProductName"
-                :NextProd="rebalanceItem.nextProductName"
-                :expected-yield="rebalanceItem.expectedReturnRate.toFixed(2) + '%'"
-                :risk-level="getRiskLevel(rebalanceItem.investType)"
-                :risk-color="getRiskColor(rebalanceItem.investType)"
-                :comment="rebalanceItem.comment"
-                comment-emoji="🔄"
-              />
-            </template>
-          </div>
-        </template>
-
-        <div
-          v-if="
-            rebalanceData.length === 0 ||
-            rebalanceData.every((goal) => !goal.rebalanceInfo || goal.rebalanceInfo.length === 0)
-          "
-          class="text-center py-8"
-        >
-          <div class="text-gray-500">현재 추천할 리밸런싱이 없습니다.</div>
-        </div>
-      </div>
-    </div>
+    <!-- 푸터 -->
+    <div class="text-center text-[9px] text-gray-400">* 리밸런싱 제안은 시장 상황에 따라 변경될 수 있습니다.</div>
   </div>
 </template>
 
 <script setup>
-import RebalanceCard from "@/components/goal/RebalanceCard.vue";
-import { ref, onMounted } from "vue";
-import { fetchInvestmentData, fetchYieldData } from "@/api/rebalanceApi";
 import { ref, computed } from "vue";
+import InfoCard from "@/components/rebalance/InfoCard.vue";
 
+import { getRebalance } from "@/api/rebalanceApi";
+
+// API 데이터 저장
+// const apiData = ref([]);
+
+// 컴포넌트 마운트 시 데이터 불러오기
+// onMounted(async () => {
+//   try {
+//     const result = await getRebalance();
+//     apiData.value = result; // API에서 받아온 데이터 저장
+//     console.log("리밸런싱 데이터:", result);
+//   } catch (error) {
+//     console.error("리밸런싱 데이터 불러오기 실패:", error);
+//   }
+// });
+
+// 목표별 그룹핑
+// const groupedData = computed(() => {
+//   return apiData.value.reduce((acc, item) => {
+//     if (!acc[item.goalName]) acc[item.goalName] = [];
+//     acc[item.goalName].push(item);
+//     return acc;
+//   }, {});
+// });
+
+// 임시 데이터
 const apiData = ref([
   {
     goalName: "goalname1-2",
@@ -177,151 +129,12 @@ const apiData = ref([
   },
 ]);
 
-// 투자 내역 데이터
-const investmentData = ref([]);
-const loading = ref(false);
-const error = ref(false);
-
-// 리밸런싱 데이터
-const rebalanceData = ref([]);
-const rebalanceLoading = ref(false);
-const rebalanceError = ref(false);
-
-// 숫자 포맷팅 함수
-const formatNumber = (number) => {
-  return new Intl.NumberFormat("ko-KR").format(Math.floor(number));
-};
-
-// API 호출 함수
-const loadInvestmentData = async () => {
-  loading.value = true;
-  error.value = false;
-
-  try {
-    const data = await fetchInvestmentData();
-    investmentData.value = data;
-  } catch (err) {
-    console.error("투자 내역 조회 실패:", err);
-    error.value = true;
-  } finally {
-    loading.value = false;
-  }
-};
-
-// 목 데이터
-const mockRebalanceData = {
-  code: "GEN-000",
-  message: "Success!",
-  status: "OK",
-  data: {
-    rebalancingInfo: [
-      {
-        goalName: "테스트",
-        rebalanceInfo: [],
-      },
-      {
-        goalName: "test",
-        rebalanceInfo: [
-          {
-            productCode: "0023A0",
-            memberProductId: 25940,
-            goalId: 18092,
-            comment: "Rotate KBSTAR 팔라듐선물(H) → SOL 미국양자컴퓨팅TOP10 | ΔExp=4.13%, ΔDiff=+1095",
-            expectedReturnRate: -14.36,
-            previousProductName: "KBSTAR 팔라듐선물(H)",
-            nextProductName: "SOL 미국양자컴퓨팅TOP10",
-            investType: "MODERATE",
-          },
-        ],
-      },
-      {
-        goalName: "goalname1-2",
-        rebalanceInfo: [
-          {
-            productCode: "0007N0",
-            memberProductId: 25941,
-            goalId: 8093,
-            comment: "Rotate TIGER 글로벌멀티에셋TIF액티브 → 아이엠에셋 200 | ΔExp=-2.78%, ΔDiff=+630",
-            expectedReturnRate: -0.52,
-            previousProductName: "TIGER 글로벌멀티에셋TIF액티브",
-            nextProductName: "아이엠에셋 200",
-            investType: "CONSERVATIVE",
-          },
-        ],
-      },
-      {
-        goalName: "goalname1-1",
-        rebalanceInfo: [
-          {
-            productCode: "0007N0",
-            memberProductId: 25939,
-            goalId: 8092,
-            comment: "Rotate KODEX Top5PlusTR → 아이엠에셋 200 | ΔExp=1.46%, ΔDiff=+670",
-            expectedReturnRate: -0.52,
-            previousProductName: "KODEX Top5PlusTR",
-            nextProductName: "아이엠에셋 200",
-            investType: "CONSERVATIVE",
-          },
-        ],
-      },
-    ],
-  },
-};
-
-// 리밸런싱 데이터 로드
-const loadRebalanceData = async () => {
-  rebalanceLoading.value = true;
-  rebalanceError.value = false;
-
-  try {
-    // 목 데이터 사용
-    rebalanceData.value = mockRebalanceData.data.rebalancingInfo || [];
-    console.log("리밸런싱 데이터:", rebalanceData.value);
-
-    // 실제 API 사용시 아래 주석 해제
-    // const response = await fetchYieldData();
-    // rebalanceData.value = response.data.rebalancingInfo || [];
-  } catch (err) {
-    console.error("수익률 추천 데이터 조회 실패:", err);
-    rebalanceError.value = true;
-  } finally {
-    rebalanceLoading.value = false;
-  }
-};
-
-// 위험도 색상 매핑
-const getRiskColor = (investType) => {
-  switch (investType) {
-    case "CONSERVATIVE":
-      return "text-green-600";
-    case "MODERATE":
-      return "text-orange-600";
-    case "AGGRESSIVE":
-      return "text-red-600";
-    default:
-      return "text-gray-600";
-  }
-};
-
-// 위험도 레벨 텍스트 매핑
-const getRiskLevel = (investType) => {
-  switch (investType) {
-    case "CONSERVATIVE":
-      return "낮음";
-    case "MODERATE":
-      return "중간";
-    case "AGGRESSIVE":
-      return "높음";
-    default:
-      return "알수없음";
-  }
-};
-
-// 컴포넌트 마운트 시 데이터 로드
-onMounted(() => {
-  loadInvestmentData();
-  loadRebalanceData();
+// 목표별 그룹핑
+const groupedData = computed(() => {
+  return apiData.value.reduce((acc, item) => {
+    if (!acc[item.goalName]) acc[item.goalName] = [];
+    acc[item.goalName].push(item);
+    return acc;
+  }, {});
 });
-
-const formatCurrency = (num) => (!num && num !== 0 ? "-" : num.toLocaleString("ko-KR") + "원");
 </script>
