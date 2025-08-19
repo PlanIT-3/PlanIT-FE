@@ -125,7 +125,7 @@ async function goHome() {
 
     if (response.status === 200) {
       console.log("투자 성향이 성공적으로 저장되었습니다.");
-      router.push("/");
+      router.push("/bank-select");
     }
   } catch (error) {
     console.error("투자 성향 저장 중 오류가 발생했습니다:", error);

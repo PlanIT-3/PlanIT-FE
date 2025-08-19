@@ -43,7 +43,7 @@ import GraphBoxNonPeriod from "./GraphBoxNonPeriod.vue";
 use([CanvasRenderer, LineChart, GridComponent, TooltipComponent, LegendComponent]);
 
 const taxSavingsData = ref([]);
-const latestSavings = ref(803000);
+const latestSavings = ref(0);
 const isLoading = ref(true);
 
 // ECharts 차트 옵션
@@ -161,17 +161,17 @@ const fetchTaxSavingsData = async () => {
         }));
       } else {
         // 데이터가 1개 이하일 때: 기본 금액으로 8분기 데이터 생성
-        const baseAmount = cumulativeData.length === 1 ? cumulativeData[0].cumulativeTaxSaved : 803000;
+        const baseAmount = cumulativeData.length === 1 ? cumulativeData[0].cumulativeTaxSaved : 0;
         generateChartData(baseAmount);
       }
     } else {
       // API 응답 형식이 올바르지 않을 때
-      generateChartData(803000);
+      generateChartData(0);
     }
   } catch (error) {
     console.error("누적 절세 데이터 로딩 실패:", error);
     // API 실패 시
-    generateChartData(803000);
+    generateChartData(0);
   } finally {
     isLoading.value = false;
   }

@@ -63,7 +63,8 @@ const login = async () => {
   try {
     isLoading.value = true;
     await auth.login(userData);
-    router.push({ name: "main" });
+    //router.push({ name: "main" });
+    router.push({ name: "surveyLoading" });
   } catch (error) {
     console.error("Error during login:", error);
     alert("Login failed. Please try again.");

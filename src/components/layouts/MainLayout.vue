@@ -20,10 +20,14 @@
           <div
             :class="[
               'text-xs text-left',
-              (balanceStore.monthlyGrowthRate ?? 0) >= 0 ? 'text-green-600' : 'text-red-600',
+              totalBalance > 0
+                ? (balanceStore.monthlyGrowthRate ?? 0) >= 0
+                  ? 'text-green-500'
+                  : 'text-red-600'
+                : 'text-gray-500',
             ]"
           >
-            {{ balanceStore.formattedMonthlyGrowthRate ?? "전월 대비 +0.0%" }}
+            {{ getGrowthRateText() }}
           </div>
         </div>
         <div class="ml-4 h-56 w-full flex items-center justify-center">
@@ -58,6 +62,10 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
+  isLoading: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const route = useRoute();
@@ -65,9 +73,21 @@ const balanceStore = useBalanceStore();
 
 // 전체 자산 포맷팅
 const formattedTotalBalance = computed(() => {
-  return Math.round(props.totalBalance).toLocaleString() + "원";
+  if (props.isLoading) {
+    return "로딩 중...";
+  } else {
+    return Math.round(props.totalBalance).toLocaleString() + "원";
+  }
 });
-
+const getGrowthRateText = () => {
+  if (props.isLoading) {
+    return "데이터 로딩 중...";
+  } else if (props.totalBalance > 0) {
+    return balanceStore.formattedMonthlyGrowthRate ?? "전월 대비 +0.0%";
+  } else {
+    return "전월 대비 +0.0%";
+  }
+};
 // balance store에서 수익률 데이터 가져오기
 
 // 컴포넌트 마운트 시 월별 데이터 로드
