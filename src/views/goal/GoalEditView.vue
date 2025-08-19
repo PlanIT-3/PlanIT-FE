@@ -19,7 +19,7 @@
         </div>
         <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden">
           <div 
-            class="h-full bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-full transition-all duration-500 ease-out"
+            class="h-full bg-indigo-500 rounded-full transition-all duration-500 ease-out"
             :style="{ width: `${progressPercentage}%` }"
           ></div>
         </div>
@@ -205,12 +205,12 @@
               <div class="h-3 bg-gray-200 rounded-full overflow-hidden">
                 <!-- 예적금 영역 (파란색) -->
                 <div 
-                  class="h-full bg-gradient-to-r from-blue-500 to-blue-400 transition-all duration-200 absolute left-0"
+                  class="h-full bg-blue-500 transition-all duration-200 absolute left-0"
                   :style="{ width: `${depositRatio}%` }"
                 ></div>
                 <!-- ISA 영역 (보라색) -->
                 <div 
-                  class="h-full bg-gradient-to-r from-purple-500 to-purple-400 transition-all duration-200 absolute right-0"
+                  class="h-full bg-purple-500 transition-all duration-200 absolute right-0"
                   :style="{ width: `${isaRate}%` }"
                 ></div>
               </div>
@@ -234,13 +234,13 @@
                 :class="isDragging ? 'border-purple-600 scale-110' : 'border-purple-500'"
                 :style="{ left: `calc(${depositRatio}% - 12px)` }"
               >
-                <div class="absolute inset-1 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full"></div>
+                <div class="absolute inset-1 bg-purple-500 rounded-full"></div>
               </div>
             </div>
 
             <!-- 금액 표시 카드 -->
             <div class="grid grid-cols-2 gap-3">
-              <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-200">
+              <div class="bg-blue-50 rounded-xl p-4 border border-blue-200">
                 <div class="flex items-center justify-between mb-2">
                   <span class="text-xs font-medium text-blue-600">예적금</span>
                   <svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
@@ -250,7 +250,7 @@
                 </div>
                 <p class="text-lg font-bold text-blue-900">{{ formattedDepositAmount }}</p>
               </div>
-              <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4 border border-purple-200">
+              <div class="bg-purple-50 rounded-xl p-4 border border-purple-200">
                 <div class="flex items-center justify-between mb-2">
                   <span class="text-xs font-medium text-purple-600">ISA</span>
                   <svg class="w-4 h-4 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
