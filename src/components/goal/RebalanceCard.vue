@@ -2,8 +2,8 @@
   <div class="border border-gray-200 rounded-xl px-5 py-2 bg-white shadow-sm flex flex-col gap-0 w-full">
     <div class="font-semibold text-base text-gray-90">{{ goal }}</div>
 
-    <div class="flex flex-row items-center justify-between w-full py-2 mt-2">
-      <div class="text-sm text-gray-90 text-center flex-1">
+    <div class="flex flex-row items-center justify-between w-full py-2">
+      <div class="text-sm font-semibold text-gray-700 text-center flex-1">
         {{ PreProd }}
       </div>
 
@@ -19,7 +19,7 @@
           clip-rule="evenodd"
         />
       </svg>
-      <div class="text-sm text-gray-90 text-center flex-1">
+      <div class="text-sm font-semibold text-gray-90 text-center flex-1">
         {{ NextProd }}
       </div>
     </div>
@@ -38,11 +38,13 @@
         <div class="font-bold text-lg" :class="riskColor">{{ riskLevel }}</div>
       </div>
     </div>
-    <div class="mt-1 text-sm flex items-center justify-center gap-1 text-gray-600">
-      <span class="mr-1">{{ commentEmoji }}</span>
+    <div
+      class="mt-1 text-xs flex flex-col items-center justify-center text-center text-gray-600 bg-blue-50 p-2 rounded-lg whitespace-break-spaces"
+    >
       <span>
         {{ comment }}
       </span>
+      <span class="font-semibold text-blue-700">{{ comment2 }}</span>
     </div>
   </div>
 </template>
@@ -58,5 +60,6 @@ const props = defineProps({
   riskColor: { type: String, default: "text-red-600" },
   commentEmoji: { type: String, default: "⚠️" },
   comment: { type: String, default: "no_comment" },
+  comment2: { type: String, default: "" },
 });
 </script>

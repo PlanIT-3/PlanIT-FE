@@ -16,9 +16,9 @@
     <GraphBoxNonPeriod title="투자 성향 vs 실제 투자 행동">
       <RadarChart :survey-data="investScoreData?.surveyInvestmentType" :real-data="investScoreData?.realInvestType" />
     </GraphBoxNonPeriod>
-    <InvestAiAdvice />
+    <!-- <InvestAiAdvice />
 
-    <GraphBoxNonPeriod title="월별 권장 투자 금액">
+   <GraphBoxNonPeriod title="월별 권장 투자 금액">
       <MonthlyRecommendChart :monthly-data="monthlyData || {}" :recommend-data="recommendData || {}" />
     </GraphBoxNonPeriod>
 
@@ -27,7 +27,7 @@
       :loading="recommendLoading"
       :error="recommendError"
       @retry="fetchRecommendData"
-    />
+    /> -->
   </div>
 </template>
 

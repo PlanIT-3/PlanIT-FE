@@ -13,7 +13,7 @@
         </div>
       </div>
       <div class="text-right">
-        <p class="text-xs text-blue-600 font-medium">목표 대비 {{ percent }}%</p>
+        <p class="text-xs text-blue-600 font-medium">전체 대비 {{ percent }}%</p>
         <p class="text-base font-medium text-gray-800">{{ formattedIsaBalance }}원</p>
       </div>
     </div>
