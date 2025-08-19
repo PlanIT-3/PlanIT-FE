@@ -12,11 +12,7 @@
           <BaseTextInput v-model="formData.email" type="text" placeholder="Email" />
           <BaseTextInput v-model="formData.password" type="password" placeholder="Password" />
           <BaseTextInput v-model="formData.confirmPassword" type="password" placeholder="Confirm Password" />
-<<<<<<< HEAD
-          <Button label="Sign Up" type="submit" class="mt-4" />
-=======
           <Button label="Sign Up" type="button" class="mt-4" @click="handleRegister" :disabled="isRegistering" />
->>>>>>> 8c0c9dc (feat: 회원가입 후 약관동의 연결)
         </form>
 
         <div class="text-center mb-6">
@@ -43,15 +39,12 @@ import goBackButton from "@/components/base/GoBackButton.vue";
 import BaseTextInput from "@/components/base/BaseTextInput.vue";
 import authApi from "@/api/authApi";
 
-<<<<<<< HEAD
-const router = useRouter();
-=======
+
 // import { useUserStore } from "@/stores/user";
 
 const router = useRouter();
 // const auth = useAuthStore();
 const isRegistering = ref(false);
->>>>>>> 8c0c9dc (feat: 회원가입 후 약관동의 연결)
 
 const formData = reactive({
   username: "",
