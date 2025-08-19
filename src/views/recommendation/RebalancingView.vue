@@ -1,6 +1,6 @@
 <template>
   <div class="space-y-4">
-    <!-- 헤더 -->
+    <!-- 헤더 (항상 표시) -->
     <div class="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
       <div class="flex items-center justify-between">
         <div>
@@ -14,8 +14,13 @@
       </div>
     </div>
 
-    <!-- 목표별 섹션 -->
-    <div class="space-y-4">
+    <!-- 로딩 표시 -->
+    <div v-if="loading" class="flex justify-center items-center h-64">
+      <div class="w-8 h-8 border-2 border-t-blue-500 border-gray-200 rounded-full animate-spin"></div>
+    </div>
+
+    <!-- 데이터 로딩 완료 시 화면 -->
+    <div v-else class="space-y-4">
       <div
         v-for="(items, goalName) in groupedData"
         :key="goalName"
@@ -75,61 +80,24 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import InfoCard from "@/components/rebalance/InfoCard.vue";
-
 import { getRebalance } from "@/api/rebalanceApi";
 
-// API 데이터 저장
-// const apiData = ref([]);
+const apiData = ref([]);
+const loading = ref(true);
 
-// 컴포넌트 마운트 시 데이터 불러오기
-// onMounted(async () => {
-//   try {
-//     const result = await getRebalance();
-//     apiData.value = result; // API에서 받아온 데이터 저장
-//     console.log("리밸런싱 데이터:", result);
-//   } catch (error) {
-//     console.error("리밸런싱 데이터 불러오기 실패:", error);
-//   }
-// });
+onMounted(async () => {
+  try {
+    const result = await getRebalance();
+    apiData.value = result;
+  } catch (error) {
+    console.error("리밸런싱 데이터 불러오기 실패:", error);
+  } finally {
+    loading.value = false;
+  }
+});
 
-// 목표별 그룹핑
-// const groupedData = computed(() => {
-//   return apiData.value.reduce((acc, item) => {
-//     if (!acc[item.goalName]) acc[item.goalName] = [];
-//     acc[item.goalName].push(item);
-//     return acc;
-//   }, {});
-// });
-
-// 임시 데이터
-const apiData = ref([
-  {
-    goalName: "goalname1-2",
-    action: "SELL",
-    mpName: "ACE 중장기국공채액티브",
-    mpCode: "KR7272910001",
-    tradeAmount: 2130603,
-    targetIsaAmount: 2457982,
-    mpTotal: 4588585.0,
-    deposit: 327378.5,
-    reason: "ISA 목표금액 초과 → 수익률 높은 종목 매도",
-  },
-  {
-    goalName: "goalname1-1",
-    action: "BUY",
-    mpName: "KBSTAR Fn창업투자회사",
-    mpCode: "KR7427110002",
-    tradeAmount: 75392,
-    targetIsaAmount: 251987,
-    mpTotal: 176595.0,
-    deposit: 327378.5,
-    reason: "ISA 목표금액 미달 → 수익률 높은 종목 매수",
-  },
-]);
-
-// 목표별 그룹핑
 const groupedData = computed(() => {
   return apiData.value.reduce((acc, item) => {
     if (!acc[item.goalName]) acc[item.goalName] = [];

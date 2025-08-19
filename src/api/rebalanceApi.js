@@ -22,9 +22,9 @@ export const fetchYieldData = async () => {
 };
 export const getRebalance = async () => {
   try {
-    const { data } = await api.get(`${BASE_URL}/invest/info`);
+    const { data } = await api.get(`${BASE_URL}/rate`);
 
-    console.log("getTaxSavingSummary:", data);
+    console.log("리밸런싱 목록 조회:", data);
     return data.data ? data.data : data; // data.data가 있으면 반환, 없으면 전체 반환
   } catch (error) {
     console.error("getTaxSavingSummary 실패:", error);
