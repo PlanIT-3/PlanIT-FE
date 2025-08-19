@@ -13,6 +13,7 @@
 
       <!-- 버튼: 아래로 내림 -->
       <button
+        @click="goToSurvey"
         class="mt-10 px-6 py-3 bg-[#433D8B] hover:bg-[#3c3497] text-white text-sm border border-white font-semibold rounded-lg shadow bg-opacity-70"
       >
         투자 성향 검사하기
@@ -24,6 +25,13 @@
 <script setup>
 import background from "@/assets/images/background.png";
 import logo from "@/assets/images/logo.svg";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
+
+const goToSurvey = () => {
+  router.push("/investment-survey");
+};
 </script>
 
 <style scoped></style>
