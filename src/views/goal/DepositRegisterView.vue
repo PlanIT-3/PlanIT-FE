@@ -1,196 +1,364 @@
 <template>
   <DefaultLayout>
-    <!-- Header -->
-    <div class="relative flex items-center py-4">
-      <div class="absolute left-0">
+    <!-- 토스 스타일 헤더 -->
+    <header class="relative bg-white">
+      <div class="flex items-center justify-between px-4 py-4">
         <GoBackButton />
+        <h1 class="text-lg font-bold text-gray-900 absolute left-1/2 transform -translate-x-1/2">
+          예적금 계좌 할당
+        </h1>
+        <div class="w-10"></div> <!-- 오른쪽 공간 균형용 -->
       </div>
-      <h1 class="mx-auto text-lg font-semibold">예적금 계좌 할당</h1>
+    </header>
+
+    <!-- 토스 스타일 로딩 -->
+    <div v-if="loading" class="flex flex-col items-center justify-center py-20">
+      <div class="w-8 h-8 mb-4">
+        <div class="animate-spin rounded-full h-8 w-8 border-2 border-blue-500 border-t-transparent"></div>
+      </div>
+      <p class="text-gray-600 text-sm">잠시만 기다려주세요</p>
     </div>
 
-    <!-- 로딩 상태 -->
-    <div v-if="loading" class="mb-6 text-center">
-      <p class="text-gray-600">계좌 정보를 불러오는 중...</p>
-    </div>
-
-    <!-- 에러 상태 -->
-    <div v-if="error" class="mb-6 p-4 bg-red-100 border border-red-300 rounded">
-      <p class="text-red-700">{{ error }}</p>
-      <button @click="loadAvailableAccounts" class="mt-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
+    <!-- 토스 스타일 에러 -->
+    <div v-if="error" class="mx-4 mb-6 p-4 bg-red-50 rounded-2xl border border-red-100">
+      <div class="flex items-center mb-2">
+        <div class="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center mr-3">
+          <svg class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </div>
+        <p class="text-red-800 font-medium">오류가 발생했어요</p>
+      </div>
+      <p class="text-red-700 text-sm leading-relaxed">{{ error }}</p>
+      <button 
+        @click="loadAvailableAccounts" 
+        class="mt-4 px-4 py-2 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors duration-200"
+        aria-label="계좌 정보 다시 불러오기"
+      >
         다시 시도
       </button>
     </div>
 
     <!-- 목표 할당 금액 -->
-    <div class="mb-6" v-if="!loading && !error">
-      <label class="block mb-2 font-medium text-gray-700">목표에 할당할 금액</label>
-      <BaseTextInput
-        :model-value="totalGoalAmount.toLocaleString()"
-        type="text"
-        :placeholder="`${totalGoalAmount.toLocaleString()}원`"
-        class="w-full max-w-lg mb-3"
-        disabled
-      />
-
-      <p class="mt-1 text-sm text-gray-400">목표 남은 금액: {{ leftGoalAmount.toLocaleString() }}원</p>
-    </div>
-
-    <!-- 할당 가능한 계좌가 없을 때 안내 메시지 -->
-    <div v-if="!loading && !error && accountOptions.length === 0" class="text-center py-12">
-      <div class="mb-6">
-        <svg class="mx-auto h-16 w-16 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="1"
-            d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-          />
-        </svg>
-      </div>
-      <h3 class="text-lg font-medium text-gray-900 mb-3">할당 가능한 예적금 계좌가 없습니다</h3>
-      <div class="text-sm text-gray-500 mb-6 space-y-1">
-        <p>다음 중 하나의 이유일 수 있습니다:</p>
-        <p>• 모든 예적금 계좌가 다른 목표에 할당됨</p>
-        <p>• 연결된 예적금 계좌가 없음</p>
-        <p>• 할당 가능한 잔액이 부족함</p>
-      </div>
-      <div class="space-y-3">
-        <Button label="계좌 연결하러 가기" @click="goToAccountLink" class="w-full max-w-sm mx-auto" />
-        <button
-          @click="goToGoalList"
-          class="block w-full max-w-sm mx-auto px-4 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-md transition-colors"
-        >
-          다른 목표 확인하기
-        </button>
-      </div>
-    </div>
-
-    <!-- 계좌 목록 -->
-    <div v-else-if="!loading && !error && accounts.length > 0">
-      <GraphsContainer v-for="(account, index) in accounts" :key="index" class="relative bg-white shadow-sm mb-5">
-        <!-- 삭제 버튼 -->
-        <div class="absolute top-[1px] right-[6px] flex justify-end">
-          <button
-            @click="removeAccount(index)"
-            class="text-gray-400 hover:text-red-500 focus:outline-none"
-            :disabled="accounts.length === 1"
-            title="계좌 삭제"
-          >
-            ✕
-          </button>
+    <section 
+      class="px-4 mb-8" 
+      v-if="!loading && !error"
+      aria-labelledby="goal-amount-title"
+    >
+      <h2 
+        id="goal-amount-title" 
+        class="text-lg font-bold text-gray-900 mb-5"
+      >
+        목표 할당 금액
+      </h2>
+      
+      <div class="space-y-4">
+        <div>
+          <p class="text-3xl font-bold text-gray-900 mb-1">
+            {{ totalGoalAmount.toLocaleString() }}원
+          </p>
+          <p class="text-sm text-gray-500">총 할당할 금액</p>
         </div>
-
-        <!-- 계좌 선택 -->
-        <div class="mb-5 mt-2 mx-2">
-          <select
-            v-model="account.name"
-            class="w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400"
-          >
-            <option v-for="option in availableAccountOptions(index)" :key="option.name" :value="option.name">
-              {{ option.name }}
-            </option>
-          </select>
-        </div>
-
-        <!-- 슬라이더 -->
-        <div class="mx-2 mb-5">
-          <div class="font-bold text-gray-800 mb-1">할당 비율 설정</div>
-          <div class="flex items-center gap-2 mb-2">
-            <input
-              type="range"
-              min="0"
-              max="100"
-              :value="account.percentage"
-              @input="updatePercentage(index, $event.target.value)"
-              class="flex-1 accent-purple-400"
-            />
-          </div>
-          <div class="flex justify-between text-xs text-gray-400">
-            <span>총액: {{ formatMoney(getMaxAllocatableAmount(account.name)) }}</span>
-            <span>할당: {{ formatMoney(getAllocatedAmount(account)) }}</span>
-          </div>
-        </div>
-
-        <!-- 할당 상태 바차트 -->
-        <div class="mx-2 mb-3">
-          <div class="flex items-center justify-between mb-2">
-            <h4 class="text-sm font-medium text-gray-700">계좌 할당 현황</h4>
-            <span class="text-xs text-gray-500">
-              {{ formatMoney(getAccountInfo(account.name)?.remainingAmount || 0) }} 중
-              {{ formatMoney(getAllocatedAmount(account)) }} 할당
+        
+        <div>
+          <div class="flex justify-between items-center mb-2">
+            <span class="text-sm text-gray-600">남은 금액</span>
+            <span 
+              class="text-sm font-semibold"
+              :class="leftGoalAmount >= 0 ? 'text-blue-600' : 'text-red-600'"
+            >
+              {{ leftGoalAmount.toLocaleString() }}원
             </span>
           </div>
+          <div class="w-full bg-gray-200 rounded-full h-2">
+            <div 
+              class="h-2 rounded-full transition-all duration-300"
+              :class="leftGoalAmount >= 0 ? 'bg-blue-500' : 'bg-red-500'"
+              :style="{ width: `${Math.min(100, Math.max(0, ((totalGoalAmount - leftGoalAmount) / totalGoalAmount) * 100))}%` }"
+            ></div>
+          </div>
+        </div>
+      </div>
+    </section>
 
-          <BarChart :data="getAccountAllocationData(account)" />
+    <!-- 토스 스타일 Empty State -->
+    <div 
+      v-if="!loading && !error && accountOptions.length === 0" 
+      class="mx-4 p-6 bg-white rounded-2xl border border-gray-100"
+      role="region"
+      aria-labelledby="empty-state-title"
+    >
+      <div class="text-center py-8">
+        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg class="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+          </svg>
+        </div>
+        
+        <h3 class="text-lg font-bold text-gray-900 mb-2">
+          할당 가능한 예적금 계좌가 없어요
+        </h3>
+        
+        <p class="text-sm text-gray-500 mb-6">
+          계좌를 연결하거나 다른 목표를 확인해보세요
+        </p>
+        
+        <div class="space-y-3">
+          <Button 
+            label="계좌 연결하러 가기" 
+            @click="goToAccountLink" 
+            class="w-full"
+          />
+          <button
+            @click="goToGoalList"
+            class="w-full px-4 py-3 text-sm font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-xl border border-gray-200 transition-colors"
+          >
+            다른 목표 확인하기
+          </button>
+        </div>
+      </div>
+    </div>
 
-          <!-- 범례 -->
-          <div class="grid grid-cols-1 gap-2 mt-2 text-xs">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <div class="w-3 h-3 rounded" style="background-color: #4a90e2"></div>
-                <span class="text-gray-600">할당된 자산</span>
+    <!-- 연속형 계좌 할당 설정 -->
+    <div v-else-if="!loading && !error && accounts.length > 0" class="px-4">
+      <h2 class="text-lg font-bold text-gray-900 mb-6">
+        계좌 할당 설정 <span class="text-blue-500">({{ accounts.length }}개)</span>
+      </h2>
+      
+      <div class="space-y-8">
+        <div
+          v-for="(account, index) in accounts" 
+          :key="`account-${index}-${account.name}`" 
+          :aria-labelledby="`account-title-${index}`"
+          role="group"
+        >
+          <!-- 계좌 헤더 -->
+          <div class="flex items-center justify-between mb-5">
+            <h3 
+              :id="`account-title-${index}`" 
+              class="text-lg font-bold text-gray-900"
+            >
+              계좌 {{ index + 1 }}
+            </h3>
+            <button
+              v-if="accounts.length > 1"
+              @click="removeAccount(index)"
+              class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
+              :aria-label="`계좌 ${index + 1} 삭제`"
+            >
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+              </svg>
+            </button>
+          </div>
+
+          <!-- 계좌 선택 -->
+          <div class="mb-5">
+            <label 
+              :for="`account-select-${index}`" 
+              class="block text-sm font-medium text-gray-700 mb-2"
+            >
+              계좌 선택
+            </label>
+            <div class="relative">
+              <select
+                :id="`account-select-${index}`"
+                v-model="account.name"
+                class="w-full rounded-lg border border-gray-300 px-3 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors appearance-none bg-white"
+                @change="onAccountChange(index, $event)"
+              >
+                <option value="" disabled>계좌를 선택해주세요</option>
+                <option 
+                  v-for="option in availableAccountOptions(index)" 
+                  :key="option.name" 
+                  :value="option.name"
+                >
+                  {{ option.name }}
+                </option>
+              </select>
+              <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
               </div>
-              <span class="text-black font-medium">
-                {{ formatMoney(getLegendAllocatedAmount(account.name)) }}
-              </span>
             </div>
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <div class="w-3 h-3 rounded bg-gray-300"></div>
-                <span class="text-gray-600">선택된 자산</span>
+            <p v-if="account.name" class="mt-2 text-xs text-gray-500">
+              사용 가능: <span class="font-medium text-blue-600">{{ formatMoney(getAccountInfo(account.name)?.remainingAmount || 0) }}</span>
+            </p>
+          </div>
+
+          <!-- 할당 비율 설정 -->
+          <div class="mb-5">
+            <div class="flex items-center justify-between mb-3">
+              <label 
+                :for="`allocation-slider-${index}`" 
+                class="text-sm font-medium text-gray-700"
+              >
+                할당 비율
+              </label>
+              <div class="text-right">
+                <div class="text-lg font-bold text-blue-600">{{ account.percentage }}%</div>
+                <div class="text-xs text-gray-500">
+                  {{ formatMoney(getAllocatedAmount(account)) }}
+                </div>
               </div>
-              <span class="text-black font-medium">
-                {{ formatMoney(getAllocatedAmount(account)) }}
-              </span>
             </div>
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <div class="w-3 h-3 rounded" style="background-color: #5d00a8"></div>
-                <span class="text-gray-600">할당 가능자산</span>
+            
+            <!-- 토스 스타일 드래그 가능한 슬라이더 -->
+            <div class="relative mb-4">
+              <!-- 배경 트랙 -->
+              <div class="h-3 bg-gray-200 rounded-full overflow-hidden">
+                <!-- 활성 부분 -->
+                <div 
+                  class="h-full bg-blue-500 rounded-full transition-all duration-200"
+                  :style="{ width: `${account.percentage}%` }"
+                ></div>
               </div>
-              <span class="text-black font-medium">
-                {{ formatMoney(getLegendAvailableAmount(account.name)) }}
-              </span>
+              
+              <!-- 실제 range input (투명) -->
+              <input
+                :id="`allocation-slider-${index}`"
+                type="range"
+                min="0"
+                max="100"
+                step="1"
+                :value="account.percentage"
+                @input="updatePercentage(index, $event.target.value)"
+                class="absolute inset-0 w-full h-3 opacity-0 cursor-pointer z-10"
+                style="-webkit-appearance: none; -moz-appearance: none;"
+              />
+              
+              <!-- 슬라이더 핸들 -->
+              <div 
+                class="absolute top-1/2 -translate-y-1/2 w-6 h-6 bg-white border-2 border-blue-500 rounded-full shadow-lg transition-all duration-200 pointer-events-none"
+                :style="{ left: `calc(${account.percentage}% - 12px)` }"
+              >
+                <div class="absolute inset-1 bg-blue-500 rounded-full"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 토스 스타일 할당 현황 -->
+          <div class="mb-6">
+            <h4 class="text-sm font-semibold text-gray-900 mb-4">할당 현황</h4>
+            
+            <!-- 토스 스타일 바 차트 -->
+            <div class="relative h-3 bg-gray-100 rounded-full overflow-hidden mb-4">
+              <div 
+                v-for="(item, itemIndex) in getAccountAllocationData(account).filter(i => i.value > 0)" 
+                :key="`${item.name}-${itemIndex}`"
+                class="absolute top-0 h-full transition-all duration-300"
+                :style="{ 
+                  left: `${getItemStartPosition(item, account, itemIndex)}%`,
+                  width: `${getAmountPercentage(item, account)}%`, 
+                  backgroundColor: getItemColor(item.name)
+                }"
+              />
+            </div>
+
+            <!-- 토스 스타일 범례 -->
+            <div class="space-y-3">
+              <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                <div class="flex items-center gap-3">
+                  <div class="w-3 h-3 rounded-full bg-blue-500"></div>
+                  <span class="text-sm text-gray-700">다른 목표 할당액</span>
+                </div>
+                <span class="text-sm font-semibold text-gray-900">
+                  {{ formatMoney(getLegendAllocatedAmount(account.name)) }}
+                </span>
+              </div>
+              <div class="flex items-center justify-between p-3 bg-blue-50 rounded-xl">
+                <div class="flex items-center gap-3">
+                  <div class="w-3 h-3 rounded-full bg-gray-400"></div>
+                  <span class="text-sm text-gray-700">현재 선택액</span>
+                </div>
+                <span class="text-sm font-bold text-blue-600">
+                  {{ formatMoney(getAllocatedAmount(account)) }}
+                </span>
+              </div>
+              <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                <div class="flex items-center gap-3">
+                  <div class="w-3 h-3 rounded-full bg-purple-500"></div>
+                  <span class="text-sm text-gray-700">남은 할당가능액</span>
+                </div>
+                <span class="text-sm font-semibold text-gray-900">
+                  {{ formatMoney(getLegendAvailableAmount(account.name)) }}
+                </span>
+              </div>
+              
+              <!-- 총액 표시 -->
+              <div class="pt-2 border-t border-gray-200">
+                <div class="flex items-center justify-between">
+                  <span class="text-sm font-semibold text-gray-700">계좌 총액</span>
+                  <span class="text-sm font-bold text-gray-900">{{ formatMoney(getAccountInfo(account.name)?.total || 0) }}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </GraphsContainer>
-
-      <!-- 계좌 추가 버튼 -->
-      <div class="mb-6">
+      </div>
+      
+      <!-- 토스 스타일 계좌 추가 버튼 -->
+      <div class="mx-4 mt-6 mb-6">
         <button
           @click="addNextAccount"
           :disabled="remainingAccountOptions.length === 0 || loading"
-          class="w-full py-2 rounded border border-gray-300 text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          class="w-full py-4 px-6 rounded-2xl border-2 border-dashed border-gray-200 text-gray-600 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 transition-colors"
         >
-          <span>＋ 계좌 추가</span>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+          </svg>
+          <span class="font-medium">
+            {{ remainingAccountOptions.length === 0 ? '추가할 계좌가 없어요' : `계좌 추가하기` }}
+          </span>
         </button>
       </div>
     </div>
 
-    <!-- 완료 버튼 -->
-    <div v-if="!loading && !error && accounts.length > 0 && accountOptions.length > 0">
-      <!-- 완료 조건 안내 메시지 -->
-      <div v-if="!isCompletionReady" class="mb-4 p-3 bg-amber-50 border border-amber-200 rounded">
-        <div class="flex items-start gap-2">
-          <svg class="w-4 h-4 text-amber-500 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-            <path
-              fill-rule="evenodd"
-              d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-              clip-rule="evenodd"
-            />
-          </svg>
-          <div class="text-sm">
-            <p class="font-medium text-amber-800 mb-1">할당 설정을 완료해주세요</p>
-            <p class="text-amber-700">모든 계좌의 할당 비율을 0%보다 크게 설정해야 완료할 수 있습니다.</p>
+    <!-- 토스 스타일 완료 섹션 -->
+    <div v-if="!loading && !error && accounts.length > 0 && accountOptions.length > 0" class="mx-4 mt-8 mb-8">
+      <!-- 미완료 상태 -->
+      <div 
+        v-if="!isCompletionReady" 
+        class="mb-6 p-4 bg-orange-50 rounded-2xl border border-orange-100"
+      >
+        <div class="flex items-start gap-3">
+          <div class="w-5 h-5 bg-orange-100 rounded-full flex items-center justify-center mt-0.5">
+            <svg class="w-3 h-3 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+            </svg>
+          </div>
+          <div class="flex-1">
+            <h3 class="text-sm font-bold text-orange-900 mb-1">할당 비율을 설정해주세요</h3>
+            <p class="text-sm text-orange-700">모든 계좌의 할당 비율을 0%보다 크게 설정해야 완료할 수 있어요.</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 완료 상태 -->
+      <div 
+        v-else 
+        class="mb-6 p-4 bg-blue-50 rounded-2xl border border-blue-100"
+      >
+        <div class="flex items-start gap-3">
+          <div class="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center mt-0.5">
+            <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+            </svg>
+          </div>
+          <div class="flex-1">
+            <h3 class="text-sm font-bold text-blue-900 mb-1">할당 설정이 완료되었어요</h3>
+            <p class="text-sm text-blue-700">아래 버튼을 눌러 예적금 자산 할당을 저장해주세요.</p>
           </div>
         </div>
       </div>
 
+      <!-- 토스 스타일 완료 버튼 -->
       <Button
-        :label="loading ? '저장 중...' : '예치금 자산 할당 완료'"
+        :label="loading ? '저장 중...' : '예적금 자산 할당 완료'"
         :disabled="loading || !isCompletionReady"
         @click="saveDepositAllocation"
+        class="w-full"
       />
     </div>
   </DefaultLayout>
@@ -204,7 +372,6 @@ import GoBackButton from "@/components/base/GoBackButton.vue";
 import BarChart from "@/components/graph/BarChart.vue";
 import DefaultLayout from "@/components/layouts/DefaultLayout.vue";
 import Button from "@/components/base/Button.vue";
-import GraphsContainer from "@/components/graph/GraphsContainer.vue";
 import { depositService, depositUtils } from "@/api/depositApi.js";
 import objectApi from "@/api/objectApi.js";
 
@@ -626,7 +793,7 @@ async function saveDepositAllocation() {
           goalId: parseInt(localStorage.getItem("currentGoalId") || goalId.value),
           memberAccountId: account.memberAccountId,
           accountNumber: account.accountNumber,
-          accountType: "Deposit",
+          accountType: "DEPOSIT",
           amount: Math.round(allocatedAmount), // 정수로 변환
           allocatedRate: account.percentage,
           accountAllocatedRate: account.percentage, // 사용자가 설정한 실제 비율
@@ -822,7 +989,30 @@ function getAllocatedAmount(account) {
 }
 
 // 전체 할당 금액
-const totalAllocated = computed(() => accounts.value.reduce((sum, acc) => sum + getAllocatedAmount(acc), 0));
+// Enhanced computed properties with better performance
+const totalAllocated = computed(() => {
+  return accounts.value.reduce((sum, acc) => {
+    const allocated = getAllocatedAmount(acc);
+    return sum + (isNaN(allocated) ? 0 : allocated);
+  }, 0);
+});
+
+// Computed property for validation status
+const validationStatus = computed(() => {
+  const accountsWithoutPercentage = accounts.value.filter(acc => !acc.percentage || acc.percentage <= 0);
+  const totalOverallocation = accounts.value.some(acc => {
+    const maxAmount = getMaxAllocatableAmount(acc.name);
+    const allocated = getAllocatedAmount(acc);
+    return allocated > maxAmount;
+  });
+  
+  return {
+    hasIncompleteAccounts: accountsWithoutPercentage.length > 0,
+    incompleteAccounts: accountsWithoutPercentage,
+    hasOverallocation: totalOverallocation,
+    isValid: accountsWithoutPercentage.length === 0 && !totalOverallocation
+  };
+});
 
 // 💡 목표 잔액 계산 (전체 목표 - 할당된 금액) - 모두 원 단위
 const leftGoalAmount = computed(() => {
@@ -913,16 +1103,18 @@ function formatMoney(totalGoalAmount) {
   return totalGoalAmount.toLocaleString() + "만원";
 }
 
-// 완료 버튼 활성화 조건 검사
+// Enhanced completion readiness with better validation
 const isCompletionReady = computed(() => {
-  // 계좌가 없으면 비활성화
-  if (accounts.value.length === 0) {
-    return false;
-  }
-
-  // 모든 계좌가 선택되어 있고 비율이 0보다 큰지 확인
+  if (accounts.value.length === 0) return false;
+  
   return accounts.value.every((account) => {
-    return account.name && account.percentage > 0;
+    const hasValidName = account.name && account.name.trim() !== '';
+    const hasValidPercentage = account.percentage > 0 && account.percentage <= 100;
+    const maxAmount = getMaxAllocatableAmount(account.name);
+    const allocatedAmount = getAllocatedAmount(account);
+    const isWithinLimits = allocatedAmount <= maxAmount;
+    
+    return hasValidName && hasValidPercentage && isWithinLimits;
   });
 });
 
@@ -989,37 +1181,43 @@ function getAccountAllocationData(account) {
     return [{ something: "데이터 없음", value: 100 }];
   }
 
-  // 백분율로 변환 (전체 계좌 잔액 100% 기준)
-  const alreadyAllocatedPercent = totalAmount > 0 ? Math.round((alreadyAllocated / totalAmount) * 100) : 0;
-  const currentAllocationPercent = totalAmount > 0 ? Math.round((currentAllocation / totalAmount) * 100) : 0;
-  const availableAmountPercent = totalAmount > 0 ? Math.round((availableAmount / totalAmount) * 100) : 0;
+  // 금액 기준으로 변경 (만원 단위, 0원도 자연스럽게 표시)
+  const alreadyAllocatedAmount = Math.max(0, isNaN(alreadyAllocated) ? 0 : alreadyAllocated);
+  const currentAllocationAmount = Math.max(0, isNaN(currentAllocation) ? 0 : currentAllocation);
+  const availableAmountDisplay = Math.max(0, isNaN(availableAmount) ? 0 : availableAmount);
   
-  console.log("📊 백분율 계산:", {
-    alreadyAllocated,
-    currentAllocation,
-    availableAmount,
-    totalAmount,
-    alreadyAllocatedPercent,
-    currentAllocationPercent,
-    availableAmountPercent
+  console.log("📊 금액 계산 (만원 단위):", {
+    alreadyAllocatedAmount: alreadyAllocatedAmount + "만원",
+    currentAllocationAmount: currentAllocationAmount + "만원", 
+    availableAmountDisplay: availableAmountDisplay + "만원",
+    totalAmount: totalAmount + "만원"
   });
 
+  // BarChart colors 순서에 맞춰 데이터 재배열
+  // colors: ["#4a90e2", "#ff7f50", "#5D00A8", ...]
+  // 범례 색깔에 맞추기 위한 순서 조정:
+  // 할당된 자산: 파란색(#4a90e2) → 첫 번째 위치
+  // 선택된 자산: 회색 → 보라색(#5D00A8)으로 대체, 세 번째 위치
+  // 할당 가능자산: 보라색 → 주황색(#ff7f50)으로 대체, 두 번째 위치
+  // 금액 그대로 반환 (만원 단위)
   const result = [
     {
-      something: "할당된 자산", // 다른 목표에 이미 할당된 자산
-      value: Math.max(isNaN(alreadyAllocatedPercent) ? 0 : alreadyAllocatedPercent, 0),
+      name: "할당된 자산",
+      value: alreadyAllocatedAmount,
     },
     {
-      something: "선택된 자산", // 현재 슬라이더로 선택한 자산
-      value: Math.max(isNaN(currentAllocationPercent) ? 0 : currentAllocationPercent, 0),
+      name: "선택된 자산", 
+      value: currentAllocationAmount,
     },
     {
-      something: "할당 가능자산", // 아직 할당되지 않은 남은 자산
-      value: Math.max(isNaN(availableAmountPercent) ? 0 : availableAmountPercent, 0),
+      name: "할당 가능자산",
+      value: availableAmountDisplay,
     },
   ];
   
-  console.log("📊 최종 BarChart 데이터:", result);
+  console.log("📊 최종 BarChart 데이터 (금액 기준):", result);
+  console.log("📊 각 항목별 상세:", result.map(item => `${item.name}: ${item.value}만원`));
+  console.log("📊 0보다 큰 항목들:", result.filter(item => item.value > 0));
   return result;
 }
 
@@ -1062,4 +1260,315 @@ function goToGoalList() {
   // 목표 목록 페이지로 이동
   router.push("/goal");
 }
+
+// Enhanced helper functions for custom bar chart
+function getAmountPercentage(item, account) {
+  const data = getAccountAllocationData(account);
+  const totalAmount = data.reduce((sum, d) => sum + d.value, 0);
+  return totalAmount > 0 ? (item.value / totalAmount) * 100 : 0;
+}
+
+// Calculate start position for stacked bar chart segments
+function getItemStartPosition(item, account, itemIndex) {
+  const data = getAccountAllocationData(account).filter(i => i.value > 0);
+  let startPosition = 0;
+  
+  for (let i = 0; i < itemIndex; i++) {
+    startPosition += getAmountPercentage(data[i], account);
+  }
+  
+  return startPosition;
+}
+
+function getItemColor(itemName) {
+  const colorMap = {
+    "다른 목표 할당액": "#4a90e2",
+    "할당된 자산": "#4a90e2",
+    "현재 선택액": "#d1d5db",
+    "선택된 자산": "#d1d5db", 
+    "남은 할당가능액": "#5d00a8",
+    "할당 가능자산": "#5d00a8"
+  };
+  return colorMap[itemName] || "#e5e7eb";
+}
+
+// Enhanced account change handler
+function onAccountChange(index, event) {
+  const newAccountName = event.target.value;
+  console.log(`계좌 변경: 인덱스 ${index}, 새 계좌: ${newAccountName}`);
+  
+  // Reset percentage when account changes
+  if (accounts.value[index].name !== newAccountName) {
+    accounts.value[index].percentage = 0;
+  }
+  
+  // Provide user feedback
+  console.log(`계좌이 ${newAccountName}로 변경되었습니다. 할당 비율을 설정해주세요.`);
+}
 </script>
+
+<style scoped>
+/* Enhanced responsive design and interactive elements */
+
+/* Custom slider styling for better visual feedback */
+.slider-purple {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.slider-purple::-webkit-slider-track {
+  background: #e5e7eb;
+  border-radius: 0.5rem;
+  height: 0.75rem;
+}
+
+.slider-purple::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  background: linear-gradient(135deg, #8b5cf6, #a855f7);
+  border: 3px solid #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+  cursor: pointer;
+  height: 1.5rem;
+  width: 1.5rem;
+  margin-top: -0.375rem;
+  transition: all 0.2s ease;
+}
+
+.slider-purple::-webkit-slider-thumb:hover {
+  background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+  transform: scale(1.1);
+}
+
+.slider-purple::-webkit-slider-thumb:active {
+  transform: scale(0.95);
+}
+
+.slider-purple::-moz-range-track {
+  background: #e5e7eb;
+  border-radius: 0.5rem;
+  height: 0.75rem;
+  border: none;
+}
+
+.slider-purple::-moz-range-thumb {
+  background: linear-gradient(135deg, #8b5cf6, #a855f7);
+  border: 3px solid #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+  cursor: pointer;
+  height: 1.5rem;
+  width: 1.5rem;
+  transition: all 0.2s ease;
+}
+
+.slider-purple::-moz-range-thumb:hover {
+  background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+  transform: scale(1.1);
+}
+
+/* Enhanced custom bar chart styling */
+.deposit-amount-chart {
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.deposit-amount-chart:hover {
+  transform: translateY(-1px);
+}
+
+/* Improved focus styles for accessibility */
+.focus\:ring-purple-500:focus {
+  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
+  --tw-ring-color: rgb(168 85 247 / 0.5);
+}
+
+/* Mobile responsiveness improvements */
+@media (max-width: 640px) {
+  /* Adjust spacing for mobile */
+  .space-y-6 > * + * {
+    margin-top: 1rem;
+  }
+  
+  /* Adjust font sizes for mobile */
+  h1 {
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+  }
+  
+  h2 {
+    font-size: 1rem;
+    line-height: 1.5rem;
+  }
+  
+  /* Adjust padding for mobile */
+  .p-6 {
+    padding: 1rem;
+  }
+  
+  .p-4 {
+    padding: 0.75rem;
+  }
+  
+  /* Improve button sizes for touch */
+  button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Adjust slider for touch interfaces */
+  .slider-purple::-webkit-slider-thumb {
+    height: 2rem;
+    width: 2rem;
+    margin-top: -0.625rem;
+  }
+  
+  .slider-purple::-moz-range-thumb {
+    height: 2rem;
+    width: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Extra small screens */
+  .text-xl {
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+  }
+  
+  .text-lg {
+    font-size: 1rem;
+    line-height: 1.5rem;
+  }
+  
+  /* Compact legend on small screens */
+  .grid-cols-1 {
+    gap: 0.5rem;
+  }
+}
+
+/* Enhanced animations and transitions */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+/* Enhanced loading spinner */
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Improved hover effects */
+.hover-lift {
+  transition: all 0.2s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Enhanced gradient backgrounds */
+.bg-gradient-purple {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.bg-gradient-success {
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+}
+
+.bg-gradient-warning {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+/* Accessibility improvements */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .border-gray-200 {
+    border-color: #000000;
+  }
+  
+  .text-gray-600 {
+    color: #000000;
+  }
+  
+  .bg-gray-50 {
+    background-color: #ffffff;
+  }
+}
+
+/* Reduced motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .print-break-inside-avoid {
+    break-inside: avoid;
+  }
+}
+</style>
