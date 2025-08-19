@@ -73,9 +73,8 @@
               <div class="text-xs text-blue-700">합계 {{ formatWan(depositTotal) }}</div>
             </div>
             <ul class="mt-2 text-xs text-blue-800 space-y-1">
-              <li v-for="acc in depositAccounts" :key="acc.accountId" class="leading-5">
+              <li v-for="acc in depositAccounts" :key="acc.id" class="leading-5">
                 <span class="font-medium">{{ acc.accountName }}</span>
-                <!-- <span v-if="acc.bankName" class="text-blue-600"> · {{ acc.bankName }}</span> -->
                 <span class="ml-1">— {{ formatWan(acc.myAmount ?? 0) }}</span>
               </li>
             </ul>
@@ -100,7 +99,8 @@
           <div class="flex justify-center">
             <button
               @click="handleOpenModal"
-              class="mt-1 w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 bg-white text-2xl text-gray-400 hover:bg-gray-100"
+              :disabled="isSaving"
+              class="mt-1 w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 bg-white text-2xl text-gray-400 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               +
             </button>
@@ -115,7 +115,8 @@
           <span class="text-gray-400 text-sm mb-2">할당할 자산이 없습니다.</span>
           <button
             @click="handleOpenModal"
-            class="w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 bg-white text-2xl text-gray-400 hover:bg-gray-100"
+            :disabled="isSaving"
+            class="w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 bg-white text-2xl text-gray-400 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             +
           </button>
@@ -135,7 +136,7 @@
       <div v-if="isEditMode" class="mt-6 pb-24">
         <button
           class="w-full bg-indigo-700 hover:bg-indigo-800 text-white py-3 rounded font-bold text-base disabled:opacity-50 disabled:cursor-not-allowed"
-          :disabled="!canComplete"
+          :disabled="!canComplete || isSaving"
           @click="handleCompleteGoal"
         >
           목표 설정 완료
@@ -146,7 +147,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import DefaultLayout from "@/components/layouts/DefaultLayout.vue";
 import AddRegisterModal from "./AddRegisterModal.vue";
@@ -157,6 +158,8 @@ const route = useRoute();
 const router = useRouter();
 
 const showModal = ref(false);
+const isSaving = ref(false);
+
 const goalId = ref(null);
 const goalName = ref("");
 const goalAmount = ref(0); // 원 단위
@@ -165,6 +168,15 @@ const startDate = ref("");
 const endDate = ref("");
 const isaProducts = ref([]);
 const depositAccounts = ref([]);
+
+const buildGoalPayload = () => ({
+  goalName: goalName.value,
+  targetAmount: Number(goalAmount.value),
+  startDate: startDate.value,
+  endDate: endDate.value,
+  depositRate: Number(depositRatio.value),
+  isaRate: Number(100 - depositRatio.value),
+});
 
 const isaRate = computed(() => 100 - depositRatio.value);
 // 분배 금액 - 원 단위
@@ -180,14 +192,13 @@ const isEditMode = computed(() => !!goalId.value);
 const isaTotal = computed(() =>
   isaProducts.value.reduce((sum, p) => sum + Number(p.presentAmount ?? 0) * Number(p.quantity ?? 1), 0)
 );
-
 const depositTotal = computed(() => depositAccounts.value.reduce((sum, acc) => sum + Number(acc.myAmount ?? 0), 0));
 
-// 원 → 만원(절삭) 함수 →
+// 원 → 만원(절삭) 함수
 const toWanFloor = (n) => Math.round(Number(n ?? 0) / 10000);
 const formatWan = (n) => toWanFloor(n).toLocaleString("ko-KR") + "만원";
 
-// 완료 버튼 활성 조건 1: 목표 이름 , 금액 , 날짜
+// 완료 버튼 활성 조건 1: 목표 이름 / 금액 / 날짜
 const requiredFilled = computed(
   () =>
     String(goalName.value || "").trim().length > 0 &&
@@ -196,18 +207,23 @@ const requiredFilled = computed(
     !!endDate.value
 );
 
+// 완료 버튼 활성 조건 2 : ISA 또는 예적금이 하나 이상 선택
+const hasAnyAllocation = computed(
+  () => (isaProducts.value?.length || 0) > 0 || (depositAccounts.value?.length || 0) > 0
+);
+
+// 완료버튼 활성
+const canComplete = computed(() => requiredFilled.value && hasAnyAllocation.value);
+
+// ISA 체크된 항목만 로드
 const fetchIsaChecked = async (gid) => {
   try {
     const res = await isaApi.getIsaProductsForEdit(gid);
     const list = res?.data ?? res;
     const rows = Array.isArray(list?.data) ? list.data : Array.isArray(list) ? list : [];
 
-    // checked=true만 필터 → 화면에서 쓰는 필드로 매핑
-    // 1) 체크된 것만
     const onlyChecked = rows.filter((r) => !!r.checked);
-    // 2) 같은 memberProductId 중복 제거
     const deduped = dedupeBy(onlyChecked, "memberProductId");
-    // 3) 화면 모델로 매핑
     isaProducts.value = deduped.map((r) => ({
       memberProductId: toNum(r.memberProductId),
       itemName: r.itemName ?? "",
@@ -220,15 +236,7 @@ const fetchIsaChecked = async (gid) => {
   }
 };
 
-//완료 버튼 활성 조건 2 : isa 나 예적금 할당하기
-const hasAnyAllocation = computed(
-  () => (isaProducts.value?.length || 0) > 0 || (depositAccounts.value?.length || 0) > 0
-);
-
-// 완료버튼 활성
-const canComplete = computed(() => requiredFilled.value && hasAnyAllocation.value);
-
-//ISA  할당 후 edit 페이지 돌아올 때 get api 데이터받아오기
+// 목표 상세 조회
 const fetchGoalDetails = async (id) => {
   try {
     const res = await Api.getGoal(id);
@@ -241,7 +249,6 @@ const fetchGoalDetails = async (id) => {
     depositRatio.value =
       typeof goalData.depositRate === "number" ? goalData.depositRate : 100 - Number(goalData.isaRate ?? 50);
 
-    // 날짜 처리 (배열 또는 문자열 모두 대응)
     if (Array.isArray(goalData.startDate)) {
       const [year, month, day] = goalData.startDate;
       startDate.value = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
@@ -255,7 +262,8 @@ const fetchGoalDetails = async (id) => {
     } else {
       endDate.value = (goalData.endDate ?? "").toString().slice(0, 10);
     }
-    //예적금
+
+    // 예적금 중복 제거한 최소 모델
     const rawDeposits = Array.isArray(goalData.depositAccounts) ? goalData.depositAccounts : [];
     const seen = new Set();
     const minimalDeposits = [];
@@ -272,13 +280,14 @@ const fetchGoalDetails = async (id) => {
       });
     }
     depositAccounts.value = minimalDeposits;
+
     await fetchIsaChecked(id);
   } catch (error) {
     console.error("목표 상세 정보 불러오기 실패:", error);
   }
 };
 
-// 라우터 쿼리 감지()
+// 라우터 쿼리 감지
 watch(
   () => route.query.goalId,
   async (newId) => {
@@ -288,20 +297,19 @@ watch(
       await fetchGoalDetails(id);
     }
   },
-  { immediate: true } //처음 마운트 될 때 바로 한번 실행
+  { immediate: true }
 );
 
-// + 버튼: 생성 모드면 먼저 생성, 편집 모드면 모달만 오픈
+// + 버튼: 생성 모드면 먼저 생성, 수정 모드면 업데이트 후 모달 오픈
 const handleOpenModal = async () => {
+  if (!requiredFilled.value) {
+    alert("목표명/금액/기간을 먼저 입력해 주세요.");
+    return;
+  }
+
+  // 생성 모드
   if (!isEditMode.value) {
-    const payload = {
-      goalName: goalName.value,
-      targetAmount: Number(goalAmount.value),
-      startDate: startDate.value,
-      endDate: endDate.value,
-      depositRate: Number(depositRatio.value),
-      isaRate: Number(100 - depositRatio.value),
-    };
+    const payload = buildGoalPayload();
     try {
       const response = await Api.createNewGoal(payload);
       if (response?.status === 200 || response?.status === 201 || response?.data?.status === "OK") {
@@ -310,28 +318,50 @@ const handleOpenModal = async () => {
         localStorage.setItem("currentGoalId", createdGoalId);
         router.replace({ query: { goalId: createdGoalId } });
         showModal.value = true;
+      } else {
+        console.warn("create 응답 확인:", response);
+        alert("목표 생성 결과를 확인할 수 없습니다.");
       }
     } catch (e) {
       console.error("목표 생성 실패:", e);
       alert("목표 생성에 실패했습니다. 다시 시도해주세요.");
     }
-  } else {
+    return;
+  }
+
+  // 수정 모드: 업데이트 후 모달
+  try {
+    if (isSaving.value) return;
+    isSaving.value = true;
+
+    const payload = buildGoalPayload();
+    const res = await Api.saveGoal(goalId.value, payload);
+    const ok = res?.status === 200 || res?.status === 201 || res?.data?.status === "OK";
+    if (!ok) {
+      console.warn("update 응답 확인:", res);
+      alert("목표 저장 결과를 확인할 수 없습니다.");
+      return;
+    }
+
+    // 필요하면 최신값 재반영
+    // await fetchGoalDetails(goalId.value);
+
     showModal.value = true;
+  } catch (e) {
+    console.error("목표 업데이트 실패:", e);
+    alert("목표 저장에 실패했습니다. 다시 시도해주세요.");
+  } finally {
+    isSaving.value = false;
   }
 };
 
 // 완료 버튼: 기본 필드 업데이트 후 이동
 const handleCompleteGoal = async () => {
   try {
-    const payload = {
-      goalName: goalName.value,
-      targetAmount: Number(goalAmount.value),
-      startDate: startDate.value,
-      endDate: endDate.value,
-      depositRate: Number(depositRatio.value),
-      isaRate: Number(100 - depositRatio.value),
-    };
+    if (isSaving.value) return;
+    isSaving.value = true;
 
+    const payload = buildGoalPayload();
     const res = await Api.saveGoal(goalId.value, payload);
     const ok = res?.status === 200 || res?.status === 201 || res?.data?.status === "OK";
     if (ok) {
@@ -345,14 +375,13 @@ const handleCompleteGoal = async () => {
   } catch (e) {
     console.error("목표 수정 실패:", e);
     alert("목표 저장에 실패했습니다. 다시 시도해주세요.");
+  } finally {
+    isSaving.value = false;
   }
 };
 
-//중복이슈
-// --- helpers: 숫자화 & 중복제거 ---
+// --- helpers ---
 const toNum = (v) => Number(v ?? 0);
-
-/** rows 배열에서 key(기본 memberProductId) 기준으로 중복 제거 */
 function dedupeBy(rows, key = "memberProductId") {
   const m = new Map();
   for (const r of rows) {
