@@ -1,16 +1,19 @@
 <template>
   <div class="min-h-screen h-full flex flex-col">
+    <!-- 헤더 -->
     <MainHeader class="flex-shrink-0 relative z-10" />
+
     <div
       id="content"
       class="bg-white rounded-t-3xl shadow px-6 pt-10 pb-8 z-* -mt-[84px] w-full"
       :style="{ maxHeight: 'calc(852px - 148px)', minHeight: 'calc(852px - 148px)' }"
     >
-      <!-- 이 부분이 고정될 박스입니다 -->
+      <!-- 고정 박스 -->
       <div
         class="sticky -top-10 bg-white rounded-2xl shadow-lg p-5 flex items-center justify-around -mt-13 mb-6 z-30"
         style="height: 150px"
       >
+        <!-- 전체 자산 정보 -->
         <div class="flex flex-col justify-center items-start h-[132px] mr-0 pr-0 flex-shrink-0 min-w-0">
           <div class="text-black text-base font-semibold mb-1 text-left whitespace-nowrap">전체 자산</div>
           <div class="text-gray-600 text-sm mb-1 text-left whitespace-nowrap">총 {{ goalCount }}개 목표</div>
@@ -30,12 +33,23 @@
             {{ getGrowthRateText() }}
           </div>
         </div>
+
+        <!-- 차트 영역 -->
         <div class="ml-4 h-56 w-full flex items-center justify-center">
-          <v-chart class="w-full h-full" :option="chartOption" autoresize />
+          <template v-if="isLoading || !chartOption || Object.keys(chartOption).length === 0">
+            <div class="text-gray-400 text-sm">차트 데이터 로딩 중...</div>
+          </template>
+          <template v-else>
+            <v-chart class="w-full h-full" :option="chartOption" autoresize />
+          </template>
         </div>
       </div>
+
+      <!-- 슬롯 영역 -->
       <div><slot></slot></div>
     </div>
+
+    <!-- 네비게이션 바 -->
     <NavBar class="sticky bottom-0 bg-white z-10" />
   </div>
 </template>
@@ -48,7 +62,7 @@ import NavBar from "@/components/common/NavBar.vue";
 import VChart from "vue-echarts";
 import { useBalanceStore } from "@/stores/balance";
 
-// 🔹 외부에서 chartOption 받기
+// 🔹 외부 props
 const props = defineProps({
   chartOption: {
     type: Object,
@@ -79,6 +93,8 @@ const formattedTotalBalance = computed(() => {
     return Math.round(props.totalBalance).toLocaleString() + "원";
   }
 });
+
+// 수익률 텍스트
 const getGrowthRateText = () => {
   if (props.isLoading) {
     return "데이터 로딩 중...";
@@ -88,9 +104,8 @@ const getGrowthRateText = () => {
     return "전월 대비 +0.0%";
   }
 };
-// balance store에서 수익률 데이터 가져오기
 
-// 컴포넌트 마운트 시 월별 데이터 로드
+// 마운트 시 월별 데이터 로드
 onMounted(async () => {
   await balanceStore.fetchMonthlyData();
 });
