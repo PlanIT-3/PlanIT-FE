@@ -51,23 +51,18 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { use } from "echarts/core";
 import { CanvasRenderer } from "echarts/renderers";
 import { LineChart } from "echarts/charts";
 import { TitleComponent, TooltipComponent, LegendComponent, GridComponent } from "echarts/components";
 import VChart from "vue-echarts";
-import mainApi from "@/api/mainApi";
+import { useBalanceStore } from "@/stores/balance";
 
 use([CanvasRenderer, LineChart, TitleComponent, TooltipComponent, LegendComponent, GridComponent]);
 
 const selectedPeriod = ref("daily");
-const loading = ref(false);
-
-// API에서 받아온 데이터
-const dailyData = ref([]);
-const weeklyData = ref([]);
-const monthlyData = ref([]);
+const balanceStore = useBalanceStore();
 
 const investmentChartOption = ref({});
 
@@ -87,92 +82,45 @@ const investmentData = {
   },
 };
 
-// 일별 데이터 API 호출
-const fetchDailyData = async () => {
-  loading.value = true;
-  try {
-    const data = await mainApi.getPeriod("day");
-    if (data.status === "OK" && data.data && data.data.balanceResList) {
-      dailyData.value = data.data.balanceResList;
-    }
-  } catch (error) {
-    console.error("일별 데이터 불러오기 실패:", error);
-  } finally {
-    loading.value = false;
-    updateInvestmentChart();
-  }
-};
-
-// 주별 데이터 API 호출
-const fetchWeeklyData = async () => {
-  loading.value = true;
-  try {
-    const data = await mainApi.getPeriod("week");
-    if (data.status === "OK" && data.data && data.data.balanceResList) {
-      weeklyData.value = data.data.balanceResList;
-    }
-  } catch (error) {
-    console.error("주별 데이터 불러오기 실패:", error);
-  } finally {
-    loading.value = false;
-    updateInvestmentChart();
-  }
-};
-
-// 월별 데이터 API 호출
-const fetchMonthlyData = async () => {
-  loading.value = true;
-  try {
-    const data = await mainApi.getPeriod("month");
-    if (data.status === "OK" && data.data && data.data.balanceResList) {
-      monthlyData.value = data.data.balanceResList;
-    }
-  } catch (error) {
-    console.error("월별 데이터 불러오기 실패:", error);
-  } finally {
-    loading.value = false;
-    updateInvestmentChart();
-  }
-};
-
 // 기간 선택
-const selectPeriod = (period) => {
+const selectPeriod = async (period) => {
   selectedPeriod.value = period;
   if (period === "daily") {
-    fetchDailyData();
+    await balanceStore.fetchDailyData();
   } else if (period === "weekly") {
-    fetchWeeklyData();
+    await balanceStore.fetchWeeklyData();
   } else if (period === "monthly") {
-    fetchMonthlyData();
+    await balanceStore.fetchMonthlyData();
   }
+  updateInvestmentChart();
 };
 
 // 차트 업데이트
 const updateInvestmentChart = () => {
   let data;
 
-  if (selectedPeriod.value === "daily" && dailyData.value.length > 0) {
-    const labels = dailyData.value.map((item) => {
+  if (selectedPeriod.value === "daily" && balanceStore.hasDailyData) {
+    const labels = balanceStore.dailyData.map((item) => {
       const date = new Date(item.createdAt);
       return `${date.getMonth() + 1}/${date.getDate()}`;
     });
-    const amounts = dailyData.value.map((item) => Math.round(item.amount / 10000));
+    const amounts = balanceStore.dailyData.map((item) => Math.round(item.amount / 10000));
 
     data = { labels, returns: amounts };
-  } else if (selectedPeriod.value === "weekly" && weeklyData.value.length > 0) {
-    const labels = weeklyData.value.map((item) => {
+  } else if (selectedPeriod.value === "weekly" && balanceStore.hasWeeklyData) {
+    const labels = balanceStore.weeklyData.map((item) => {
       const date = new Date(item.createdAt);
       return `${date.getMonth() + 1}/${date.getDate()}`;
     });
-    const amounts = weeklyData.value.map((item) => Math.round(item.amount / 10000));
+    const amounts = balanceStore.weeklyData.map((item) => Math.round(item.amount / 10000));
 
     data = { labels, returns: amounts };
-  } else if (selectedPeriod.value === "monthly" && monthlyData.value.length > 0) {
-    const labels = monthlyData.value.map((item) => {
+  } else if (selectedPeriod.value === "monthly" && balanceStore.hasMonthlyData) {
+    const labels = balanceStore.monthlyData.map((item) => {
       const date = new Date(item.createdAt);
       return `${date.getMonth() + 1}/${date.getDate()}`;
     });
-    const amounts = monthlyData.value.map((item) => Math.round(item.amount / 10000));
+    const amounts = balanceStore.monthlyData.map((item) => Math.round(item.amount / 10000));
 
     data = { labels, returns: amounts };
   } else {
@@ -254,7 +202,8 @@ const updateInvestmentChart = () => {
 };
 
 // 초기 로드
-onMounted(() => {
-  fetchDailyData();
+onMounted(async () => {
+  await balanceStore.fetchDailyData();
+  updateInvestmentChart();
 });
 </script>

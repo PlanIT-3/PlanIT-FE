@@ -1,11 +1,11 @@
 <template>
-  <div class="min-h-screen w-full flex flex-col items-center justify-center relative overflow-hidden">
+  <div class="min-h-[852px] w-full flex flex-col items-center justify-center relative overflow-hidden">
     <img
       src="@/assets/images/background.png"
       alt="Result Background"
-      class="absolute inset-0 w-full h-full object-cover z-0"
+      class="absolute inset-0 w-full h-[852px] object-cover z-0"
     />
-    <div class="relative z-10 flex flex-col items-center justify-center min-h-screen w-full">
+    <div class="relative z-10 flex flex-col items-center justify-center w-full">
       <div class="flex flex-col items-center mb-8">
         <!-- <h1 class="text-3xl font-bold text-white mb-6">나의 투자성향</h1> -->
         <img :src="characterImg" :alt="resultInfo.name" class="w-40 h-40 object-contain" />
@@ -79,6 +79,13 @@ const resultMap = {
     apiType: "AGGRESSIVE",
     desc: "최고의 수익을 위해 높은 위험도 마다하지 않는 투자자입니다. 주식, 파생상품, 가상자산 등 고위험 상품에 관심이 많습니다.",
     img: "nevula.svg",
+  },
+  김동윤: {
+    name: "김동윤",
+    type: "리더형",
+    apiType: "KIM",
+    desc: "팀의 리더로서, 팀원들을 이끌고 목표를 달성하는 데 중점을 둡니다. 팀워크와 협업을 중요시하며, 팀의 성공을 위해 헌신합니다. 진짜입니다. 김동윤은 팀의 중심이자, 모든 팀원들에게 영감을 주는 존재입니다.",
+    img: "KIM.png",
   },
 };
 

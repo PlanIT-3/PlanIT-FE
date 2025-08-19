@@ -167,6 +167,7 @@ const load = async () => {
     isLoading.value = true;
 
     goalDetail.value = (await api.getGoal(id)).data;
+    console.log("Goal Detail Response:", goalDetail.value);
     rateList.value = await api.getGoalAccountRates(id);
     // goalProgress.value = await api.getGoalProgress(id);
     accounts.value = await api.getGoalAccounts(id);
@@ -226,6 +227,6 @@ const currentAmount = computed(() => {
 });
 
 const remainingAmount = computed(() => (goalDetail.value?.targetAmount || 0) - currentAmount.value);
-
+console.log((isaAccounts.value[0]?.isaBalance / (goalDetail.value?.targetAmount || 1)) * 100);
 onMounted(load);
 </script>

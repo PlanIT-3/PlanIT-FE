@@ -111,7 +111,6 @@ const fetchGoalListData = async () => {
   }
 };
 
-
 onMounted(() => {
   fetchDailyData();
   fetchGoalListData();
@@ -135,7 +134,7 @@ const chartOption = ref({
       name: "목표 현황",
       type: "pie",
       radius: ["35%", "65%"],
-      center: ["40%", "50%"],
+      center: ["50%", "50%"],
       avoidLabelOverlap: true,
       itemStyle: {
         borderRadius: 2,
