@@ -1,4 +1,5 @@
 import api from "@/api";
+const BASE_URL = "/auth/rebalance";
 
 export const fetchInvestmentData = async () => {
   try {
@@ -16,6 +17,17 @@ export const fetchYieldData = async () => {
     return response.data;
   } catch (error) {
     console.error("수익률 조회 실패:", error);
+    throw error;
+  }
+};
+export const getRebalance = async () => {
+  try {
+    const { data } = await api.get(`${BASE_URL}/invest/info`);
+
+    console.log("getTaxSavingSummary:", data);
+    return data.data ? data.data : data; // data.data가 있으면 반환, 없으면 전체 반환
+  } catch (error) {
+    console.error("getTaxSavingSummary 실패:", error);
     throw error;
   }
 };
