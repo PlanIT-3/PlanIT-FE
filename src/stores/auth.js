@@ -4,6 +4,7 @@ import { defineStore } from "pinia";
 import { api } from "@/api";
 import { STORAGE_KEYS } from "@/utils/constants";
 import router from "@/router";
+import { setupFCM } from "@/config/firebase";
 
 // 초기 상태 정의
 const initState = {
@@ -53,10 +54,34 @@ export const useAuthStore = defineStore("auth", () => {
         email: data.email,
         username: data.username || "",
         role: data.role || [],
+        memberId: data.id || data.memberId, // memberId 저장
       };
 
       localStorage.setItem("auth", JSON.stringify(state.value));
       isLoggedIn.value = true;
+
+      // FCM 토큰 설정 (로그인 성공 후)
+      try {
+        const memberId = data.memberId || data.id;
+        console.log("로그인 응답 데이터:", data);
+        console.log("추출된 memberId:", memberId);
+        
+        if (memberId) {
+          console.log("FCM 설정 시작 - memberId:", memberId);
+          const fcmToken = await setupFCM(memberId);
+          if (fcmToken) {
+            console.log("FCM 토큰 발급 및 저장 완료:", fcmToken);
+          } else {
+            console.warn("FCM 토큰 설정 실패");
+          }
+        } else {
+          console.warn("memberId가 없어서 FCM 설정을 건너뜁니다");
+        }
+      } catch (fcmError) {
+        // FCM 실패해도 로그인은 성공 처리
+        console.error("FCM 설정 중 오류:", fcmError);
+      }
+
       return data;
     } catch (error) {
       console.error("로그인 실패:", error);
