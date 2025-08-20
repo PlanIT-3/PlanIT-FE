@@ -1,6 +1,5 @@
 <template>
   <div class="bg-blue-50 rounded-2xl border border-blue-200 p-6 shadow">
-
     <div class="flex flex-col mb-4">
       <h3 class="text-medium font-bold text-gray-800">🔍 AI 투자 제언</h3>
       <p class="text-xs text-gray-500 ml-2">투자 성향 분석 결과 기반 맞춤 제언</p>
@@ -57,16 +56,15 @@ const fetchAdvice = async () => {
   loading.value = true;
   error.value = false;
 
-
-  // try {
-  //   const response = await api.get("/api/openai/invest-type-advice");
-  //   adviceData.value = response.data;
-  // } catch (err) {
-  //   console.error("AI 투자 제언 가져오기 실패:", err);
-  //   error.value = true;
-  // } finally {
-  //   loading.value = false;
-  // }
+  try {
+    const response = await api.get("/api/openai/invest-type-advice");
+    adviceData.value = response.data;
+  } catch (err) {
+    console.error("AI 투자 제언 가져오기 실패:", err);
+    error.value = true;
+  } finally {
+    loading.value = false;
+  }
 };
 
 onMounted(() => {

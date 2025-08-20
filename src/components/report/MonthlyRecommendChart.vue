@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full h-full">
+  <div class="w-full h-80">
     <VChart :option="chartOptions" autoresize />
   </div>
 </template>
@@ -17,113 +17,113 @@ use([CanvasRenderer, BarChart, LineChart, GridComponent, TooltipComponent, Legen
 const props = defineProps({
   monthlyData: {
     type: Object,
-    default: () => ({})
+    default: () => ({}),
   },
   recommendData: {
     type: Object,
-    default: () => ({})
-  }
+    default: () => ({}),
+  },
 });
 
 const chartOptions = computed(() => {
   const monthlyAmounts = props.monthlyData?.monthlyTotalAmount || [];
   const recommendedAmounts = props.recommendData?.recommendedInvestmentAmount || [];
   const dates = props.monthlyData?.date || [];
-  
+
   // 날짜 라벨을 월 형식으로 변환
-  const monthLabels = dates.map(date => {
+  const monthLabels = dates.map((date) => {
     if (date) {
       const d = new Date(date);
-      return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}`;
+      return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}`;
     }
-    return '';
+    return "";
   });
 
   return {
     tooltip: {
-      trigger: 'axis',
+      trigger: "axis",
       axisPointer: {
-        type: 'cross'
+        type: "cross",
       },
-      formatter: function(params) {
+      formatter: function (params) {
         let result = `${params[0].axisValue}<br/>`;
-        params.forEach(param => {
-          const value = param.value ? param.value.toLocaleString() : '0';
+        params.forEach((param) => {
+          const value = param.value ? param.value.toLocaleString() : "0";
           result += `${param.marker}${param.seriesName}: ₩${value}<br/>`;
         });
         return result;
-      }
+      },
     },
     legend: {
-      data: ['월별 투자금액', '권장 투자금액'],
+      data: ["월별 투자금액", "권장 투자금액"],
       top: 10,
       textStyle: {
-        fontSize: 12
-      }
+        fontSize: 12,
+      },
     },
     grid: {
-      left: '10%',
-      right: '10%',
-      bottom: '15%',
-      top: '20%'
+      left: "15%",
+      right: "10%",
+      bottom: "10%",
+      top: "20%",
     },
     xAxis: {
-      type: 'category',
+      type: "category",
       data: monthLabels,
       axisTick: {
-        alignWithLabel: true
+        alignWithLabel: true,
       },
       axisLabel: {
         fontSize: 10,
-        color: '#666'
-      }
+        color: "#666",
+      },
     },
     yAxis: {
-      type: 'value',
-      name: '금액 (₩)',
-      position: 'left',
+      type: "value",
+      name: "금액 (₩)",
+      position: "left",
       axisLabel: {
-        formatter: function(value) {
+        formatter: function (value) {
           if (value >= 100000) {
-            return (value / 10000).toFixed(0) + '만';
+            return (value / 10000).toFixed(0) + "만";
           }
           return value.toLocaleString();
         },
         fontSize: 10,
-        color: '#666'
+        color: "#666",
       },
       nameTextStyle: {
         fontSize: 10,
-        color: '#666'
-      }
+        color: "#666",
+      },
     },
     series: [
       {
-        name: '월별 투자금액',
-        type: 'bar',
+        name: "월별 투자금액",
+        type: "bar",
         data: monthlyAmounts,
         itemStyle: {
-          color: '#3b82f6',
-          borderRadius: [4, 4, 0, 0]
+          color: "#3b82f6",
+          borderRadius: [4, 4, 0, 0],
         },
-        barWidth: '60%'
+        barWidth: "60%",
       },
       {
-        name: '권장 투자금액',
-        type: 'line',
+        name: "권장 투자금액",
+        type: "line",
         data: recommendedAmounts.slice(0, monthLabels.length),
         lineStyle: {
-          color: '#f59e0b',
-          width: 3
+          color: "#f59e0b",
+          width: 3,
         },
         itemStyle: {
-          color: '#f59e0b'
+          color: "#f59e0b",
         },
-        symbol: 'circle',
+        symbol: "circle",
         symbolSize: 6,
-        smooth: true
-      }
-    ]
+        smooth: true,
+      },
+    ],
   };
 });
 </script>
