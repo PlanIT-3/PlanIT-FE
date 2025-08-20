@@ -144,7 +144,7 @@ const generateChartData = (baseAmount) => {
 // ISA 절세 데이터 로딩
 const fetchTaxSavingsData = async () => {
   try {
-    const response = await api.get("http://localhost:8080/api/isa/reports/cumulative-tax-saving");
+    const response = await api.get("/api/isa/reports/cumulative-tax-saving");
 
     if (response.data.status === "OK" && response.data.data && Array.isArray(response.data.data)) {
       const cumulativeData = response.data.data;
