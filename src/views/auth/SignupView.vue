@@ -38,6 +38,7 @@ import Button from "@/components/base/Button.vue";
 import goBackButton from "@/components/base/GoBackButton.vue";
 import BaseTextInput from "@/components/base/BaseTextInput.vue";
 import authApi from "@/api/authApi";
+import { trackEvent } from "@/analytics";
 
 
 // import { useUserStore } from "@/stores/user";
@@ -73,6 +74,10 @@ const handleRegister = async () => {
       password: formData.password,
       nickname: formData.username,
     });
+    
+    // GA 회원가입 이벤트 추적
+    trackEvent('sign_up', 'auth');
+    
     router.push("/agree-condition");
   } catch (error) {
     const msg = error?.response?.data?.message || "회원 가입 실패";

@@ -12,6 +12,7 @@ import alarmRoutes from "./alarm";
 import reportRoutes from "./report";
 import { STORAGE_KEYS } from "@/utils/constants";
 import { useAuthStore } from "@/stores/auth";
+import { trackPage } from "@/analytics";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -90,6 +91,11 @@ router.beforeEach((to, _from, next) => {
   }
 
   next();
+});
+
+// 페이지 뷰 추적
+router.afterEach((to) => {
+  trackPage(to.name || to.path);
 });
 
 export default router;

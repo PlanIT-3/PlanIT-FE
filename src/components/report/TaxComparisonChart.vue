@@ -13,6 +13,7 @@ import { CanvasRenderer } from "echarts/renderers";
 import { BarChart, LineChart } from "echarts/charts";
 import { GridComponent, TooltipComponent, LegendComponent } from "echarts/components";
 import api from "@/api";
+import { trackTaxSavingsView } from "@/analytics";
 
 use([CanvasRenderer, BarChart, LineChart, GridComponent, TooltipComponent, LegendComponent]);
 
@@ -174,6 +175,10 @@ const fetchData = async () => {
       quarterlyData: [],
       summary: {},
     };
+    
+    // GA 세금 절약 데이터 조회 추적
+    const totalSavings = taxData.value.quarterlyData?.reduce((sum, item) => sum + (item.isaTaxSaved || 0), 0) || 0;
+    trackTaxSavingsView(totalSavings);
   } catch (err) {
     console.error("세금 비교 데이터 가져오기 실패:", err);
     error.value = true;

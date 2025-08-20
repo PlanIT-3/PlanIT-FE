@@ -50,6 +50,7 @@ import Button from "@/components/base/Button.vue";
 import { useAuthStore } from "@/stores/auth";
 import { ref, reactive } from "vue";
 import { useRouter } from "vue-router";
+import { trackEvent } from "@/analytics";
 const auth = useAuthStore();
 const userData = reactive({
   email: "",
@@ -63,6 +64,10 @@ const login = async () => {
   try {
     isLoading.value = true;
     await auth.login(userData);
+    
+    // GA 로그인 이벤트 추적
+    trackEvent('login', 'auth');
+    
     //semi_user , user 따라 라우팅
     const authData = JSON.parse(localStorage.getItem("auth"));
     const userRole = authData?.user?.role;

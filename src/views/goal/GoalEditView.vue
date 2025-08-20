@@ -414,6 +414,7 @@ import DefaultLayout from "@/components/layouts/DefaultLayout.vue";
 import AddRegisterModal from "./AddRegisterModal.vue";
 import Api from "@/api/objectApi";
 import isaApi from "@/api/isaApi";
+import { trackGoalCreated } from "@/analytics";
 
 const route = useRoute();
 const router = useRouter();
@@ -723,6 +724,9 @@ const handleCompleteGoal = async () => {
     const ok = res?.status === 200 || res?.status === 201 || res?.data?.status === "OK";
     
     if (ok) {
+      // GA 목표 생성/수정 이벤트 추적
+      trackGoalCreated(goalName.value, goalAmount.value);
+      
       localStorage.removeItem("currentGoalId");
       router.push({ path: "/goal" });
     } else {
