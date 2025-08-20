@@ -1,6 +1,6 @@
 // FCM 관련 컴포저블
 import { ref, onMounted } from 'vue';
-import { setupFCM, onForegroundMessage } from '@/config/firebase';
+import { setupFCM, onForegroundMessage } from '@/fcm/firebase';
 
 export const useFCM = () => {
   const fcmToken = ref(null);
@@ -23,7 +23,7 @@ export const useFCM = () => {
         isSetupComplete.value = true;
         
         // 포그라운드 메시지 수신 설정
-        setupForegroundMessage();
+        await setupForegroundMessage();
         
         console.log('FCM 초기화 완료:', token);
       } else {
@@ -36,10 +36,10 @@ export const useFCM = () => {
   };
 
   /**
-   * 포그라운드 메시지 수신 설정
+   * 포그라운드 메시지 수신 설정 (async 함수로 변경)
    */
-  const setupForegroundMessage = () => {
-    onForegroundMessage((payload) => {
+  const setupForegroundMessage = async () => {
+    await onForegroundMessage((payload) => {
       console.log('알림 수신:', payload);
       
       // 토스트 알림이나 모달 표시
