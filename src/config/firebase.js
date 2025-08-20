@@ -29,7 +29,7 @@ const getVapidKey = async () => {
     const authData = JSON.parse(localStorage.getItem("auth") || "{}");
     const accessToken = authData?.token?.accessToken;
     
-    const response = await fetch("http://localhost:8080/api/fcm/vapid-key", {
+    const response = await fetch("https://srv.woojooin.site/api/fcm/vapid-key", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -120,13 +120,13 @@ export const registerFCMToken = async (token, memberId) => {
     }
 
     console.log("FCM 토큰 등록 요청:", {
-      url: "http://localhost:8080/api/fcm/register",
+      url: "https://srv.woojooin.site/api/fcm/register",
       memberId: memberId,
       token: token,
       hasAccessToken: !!accessToken
     });
 
-    const response = await fetch("http://localhost:8080/api/fcm/register", {
+    const response = await fetch("https://srv.woojooin.site/api/fcm/register", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
