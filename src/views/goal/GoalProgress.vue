@@ -108,7 +108,7 @@ watch(
         type: "value",
         name: "진행률 (%)",
         nameTextStyle: { color: "#6b7280", fontSize: 12 },
-        axisLabel: { formatter: "{value}%", color: "#6b7280", fontSize: 12 },
+        axisLabel: { formatter: (value) => `${value * 100}%`, color: "#6b7280", fontSize: 12 },
         axisLine: { lineStyle: { color: "#e5e7eb" } },
         splitLine: { lineStyle: { color: "#f3f4f6", type: "dashed" } },
       },

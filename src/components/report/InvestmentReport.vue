@@ -16,9 +16,9 @@
     <GraphBoxNonPeriod title="투자 성향 vs 실제 투자 행동">
       <RadarChart :survey-data="investScoreData?.surveyInvestmentType" :real-data="investScoreData?.realInvestType" />
     </GraphBoxNonPeriod>
-    <!-- <InvestAiAdvice />
+    <InvestAiAdvice />
 
-   <GraphBoxNonPeriod title="월별 권장 투자 금액">
+    <GraphBoxNonPeriod title="월별 권장 투자 금액">
       <MonthlyRecommendChart :monthly-data="monthlyData || {}" :recommend-data="recommendData || {}" />
     </GraphBoxNonPeriod>
 
@@ -27,7 +27,7 @@
       :loading="recommendLoading"
       :error="recommendError"
       @retry="fetchRecommendData"
-    /> -->
+    />
   </div>
 </template>
 
@@ -98,20 +98,21 @@ const fetchMonthlyData = async () => {
   }
 };
 
-// const fetchRecommendData = async () => {
-//   recommendLoading.value = true;
-//   recommendError.value = false;
+const fetchRecommendData = async () => {
+  recommendLoading.value = true;
+  recommendError.value = false;
 
-//   try {
-//     const response = await api.get("/api/openai/recommendated-investment");
-//     recommendData.value = response.data;
-//   } catch (error) {
-//     console.error("권장 투자 데이터 가져오기 실패:", error);
-//     recommendError.value = true;
-//   } finally {
-//     recommendLoading.value = false;
-//   }
-// };
+  try {
+    const response = await api.get("/api/openai/recommendated-investment");
+    recommendData.value = response.data;
+    console.log("추천 투자 데이터:", recommendData.value);
+  } catch (error) {
+    console.error("권장 투자 데이터 가져오기 실패:", error);
+    recommendError.value = true;
+  } finally {
+    recommendLoading.value = false;
+  }
+};
 
 const fetchReturnRateData = async (period) => {
   try {
@@ -144,7 +145,7 @@ onMounted(() => {
   fetchInvestScore();
   fetchInvestmentData(period2.value);
   fetchMonthlyData();
-  // fetchRecommendData();
+  fetchRecommendData();
   fetchReturnRateData(period1.value);
 });
 </script>

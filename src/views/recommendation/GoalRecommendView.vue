@@ -65,8 +65,8 @@
                 :expected-yield="rebalanceItem.expectedReturnRate.toFixed(2) + '%'"
                 :risk-level="getRiskLevel(rebalanceItem.investType)"
                 :risk-color="getRiskColor(rebalanceItem.investType)"
-                :comment="rebalanceItem.comment"
-                comment-emoji="🔄"
+                :comment="parseComment(rebalanceItem.comment).part1"
+                :comment2="parseComment(rebalanceItem.comment).part2"
               />
             </template>
           </div>
@@ -143,7 +143,7 @@ const mockRebalanceData = {
             productCode: "0023A0",
             memberProductId: 25940,
             goalId: 18092,
-            comment: "Rotate KBSTAR 팔라듐선물(H) → SOL 미국양자컴퓨팅TOP10 | ΔExp=4.13%, ΔDiff=+1095",
+            comment: "만약 이 상품으로 교체했다면,\n수익이 +4.13%p 높아지고\n구조 지표는 1034만큼 개선됐을 거예요.",
             expectedReturnRate: -14.36,
             previousProductName: "KBSTAR 팔라듐선물(H)",
             nextProductName: "SOL 미국양자컴퓨팅TOP10",
@@ -158,7 +158,7 @@ const mockRebalanceData = {
             productCode: "0007N0",
             memberProductId: 25941,
             goalId: 8093,
-            comment: "Rotate TIGER 글로벌멀티에셋TIF액티브 → 아이엠에셋 200 | ΔExp=-2.78%, ΔDiff=+630",
+            comment: "만약 이 상품으로 교체했다면,\n수익이 +4.13%p 높아지고\n구조 지표는 1034만큼 개선됐을 거예요.",
             expectedReturnRate: -0.52,
             previousProductName: "TIGER 글로벌멀티에셋TIF액티브",
             nextProductName: "아이엠에셋 200",
@@ -173,7 +173,7 @@ const mockRebalanceData = {
             productCode: "0007N0",
             memberProductId: 25939,
             goalId: 8092,
-            comment: "Rotate KODEX Top5PlusTR → 아이엠에셋 200 | ΔExp=1.46%, ΔDiff=+670",
+            comment: "만약 이 상품으로 교체했다면,\n수익이 +4.13%p 높아지고\n구조 지표는 1034만큼 개선됐을 거예요.",
             expectedReturnRate: -0.52,
             previousProductName: "KODEX Top5PlusTR",
             nextProductName: "아이엠에셋 200",
@@ -183,6 +183,14 @@ const mockRebalanceData = {
       },
     ],
   },
+};
+
+// comment를 분리하는 함수
+const parseComment = (commentText) => {
+  const lines = commentText.split("\n");
+  const part1 = lines[0] || "";
+  const part2 = lines.slice(1).join("\n");
+  return { part1, part2 };
 };
 
 // 리밸런싱 데이터 로드

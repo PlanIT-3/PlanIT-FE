@@ -227,6 +227,20 @@ const currentAmount = computed(() => {
 });
 
 const remainingAmount = computed(() => (goalDetail.value?.targetAmount || 0) - currentAmount.value);
+
+// 목표에 할당된 계좌들의 총 퍼센트 계산
+const totalAccountRate = computed(() => {
+  const depositPercent = depositAccounts.value.reduce((sum, acc) => {
+    return sum + Math.round((acc.amount / (goalDetail.value?.targetAmount || 1)) * 100);
+  }, 0);
+
+  const isaPercent = isaAccounts.value.reduce((sum, acc) => {
+    return sum + Math.round((acc.isaBalance / (goalDetail.value?.targetAmount || 1)) * 100);
+  }, 0);
+
+  return depositPercent + isaPercent;
+});
+
 console.log((isaAccounts.value[0]?.isaBalance / (goalDetail.value?.targetAmount || 1)) * 100);
 onMounted(load);
 </script>
