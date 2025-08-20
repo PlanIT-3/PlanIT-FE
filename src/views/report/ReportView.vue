@@ -91,6 +91,7 @@ import IsaReport from "@/components/report/IsaReport.vue";
 import { ref, onMounted } from "vue";
 import api from "@/api";
 import TaxSavingsSummary from "@/components/report/TaxSavingsSummary.vue";
+import { trackReportView } from "@/analytics";
 
 const activeTab = ref("isa");
 const goals = ref([]);
@@ -113,9 +114,13 @@ const fetchGoals = async () => {
 
 const setActiveTab = (tab) => {
   activeTab.value = tab;
+  // GA 리포트 탭 변경 추적
+  trackReportView(tab === 'isa' ? 'ISA 리포트' : '투자 리포트');
 };
 
 onMounted(() => {
   fetchGoals();
+  // GA 리포트 페이지 접속 추적
+  trackReportView('리포트 메인');
 });
 </script>
